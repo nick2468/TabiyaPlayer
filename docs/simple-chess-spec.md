@@ -141,13 +141,18 @@ All in CSS pixels. The numbers come from the trainer and the reasons travel with
 The page is therefore about 1230 px wide with the large board, and the Windows window
 opens at 1280 by 1000 (section 11.1).
 
-**S2. The large board on iPad is the largest multiple of 8 that fits.** Landscape iPad
-screens are 768 or 820 px tall in CSS pixels, so 832 cannot fit. The size is worked
-out from the viewport: the smaller of 832, the width left beside the bar and padding,
-and the height left under the header and above the button row. It is rounded down to
-a multiple of 8, for the reason 416 is one. On Windows the window is big enough and
-the answer is 832; the same code runs on both and needs no platform check. The board
-is re-measured when the window or the orientation changes.
+**S2. The large board is the largest multiple of 8 that fits, up to 832.** Landscape
+iPad screens are 768 or 820 px tall in CSS pixels, so 832 cannot fit there. The size
+is worked out from the viewport: the smaller of 832, the width left beside the bar,
+the padding and the sidebar, and the height left under the header and above the
+button row and the status line. It is rounded down to a multiple of 8, for the reason
+416 is one, and never below 416. The same code runs on both platforms and needs no
+platform check. The board is re-measured when the window or the orientation changes.
+(Corrected at gate 2. The first text said the Windows window "is big enough and the
+answer is 832". It is not: measured in phase 2, the header and the padding take
+80.67 px above the board and the buttons, the status line and the padding 109.33 px
+below it, so a 1000 px window leaves 810 and the large board is 808 there. A window
+1040 px tall or more gets 832. That is the honest rule, and it is one rule.)
 
 ### 4.3 The narrow layout
 
@@ -493,8 +498,9 @@ changes.
 ### 11.1 The window
 
 - Title "Simple Chess". Opens at 1280 by 1000, minimum 960 by 720, centred,
-  resizable. 1280 fits the large board with the sidebar (section 4.2); 1000 fits the
-  large board under the header with the button row and status line.
+  resizable. 1280 fits the large board with the sidebar (section 4.2). 1000 is the
+  most a 1080-line display leaves under its taskbar and title bar; at that height the
+  large board fits at 808 by the rule in S2, and a taller window gets the full 832.
 - Declared in `tauri.conf.json` with `"create": false` and built in `lib.rs` from that
   same declaration, so that the WebView2 profile can be pointed at
   `%LOCALAPPDATA%\Simple Chess Data\WebView2`. The trainer's `lib.rs` says why: the

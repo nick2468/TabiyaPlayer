@@ -1,7 +1,7 @@
 # Simple Chess - build plan
 
 Version 1. Written 2026-09-11. Status: **Active**. Phases 0 and 1 passed review
-2026-09-11; phase 2 is next.
+2026-09-11, phase 2 on 2026-09-12; phase 3 is next.
 
 Read [the specification](simple-chess-spec.md) first. It says what the app does. This
 document says what gets built, in what order, and how we know each part is finished.
@@ -239,10 +239,13 @@ Read first: `../London/src/ui/Board.tsx`, `board.css`, `board-size.ts`,
       list shows both, Undo empties it, Redo puts both back; the worker guard from
       `play-game.dom.test.tsx` (a throwing `Worker` is never constructed); New game
       clears the list and the redo stack (spec S15 item 10, without the hint yet).
-- [x] 2.10 Drive it in the pane against the real engine: a game to checkmate at
-      level 4 as White. Confirm the outcome sentence and the locked board. Screenshot
-      at 1280 by 1000 in both themes. Record the probe (the placeholder bar, `.board`
-      and `cg-board` all 416 and ending on the same pixel).
+- [x] 2.10 Drive it in the pane against the real engine: several moves at level 4 as
+      White, Undo, Redo, New game. The outcome sentence and the locked board are
+      proved by the DOM test with the scripted engine, because a level 4 engine does
+      not allow itself to be mated on demand (corrected at gate 2; the box first said
+      "a game to checkmate"). Screenshot at 1280 by 1000 in both themes. Record the
+      probe (the placeholder bar, `.board` and `cg-board` all 416 and ending on the
+      same pixel).
 - [x] 2.11 Reuse review and commit.
 
 **Done when:** a full game plays in the pane and in the DOM test.
@@ -538,7 +541,7 @@ did it that way too.
 |---|---|
 | 0 - the scaffold | **Complete** 2026-09-11, gate passed the same day. 4 tests green, build clean. |
 | 1 - the engine and the model | **Complete** 2026-09-11, gate passed the same day. 90 tests green in 1.8 s. |
-| 2 - the board, the session and a playable game | Done 2026-09-12, awaiting review. 111 tests green, 2 skipped; a game plays in the pane. |
+| 2 - the board, the session and a playable game | **Complete** 2026-09-12, gate passed the same day. 111 tests green; a game plays in the pane. |
 | 3 - the sidebar and what is remembered | Not started |
 | 4 - the bar, the hint and the promotion picker | Not started |
 | 5 - save game and load game | Not started |
@@ -933,3 +936,46 @@ chip says. If it is pressed while the engine thinks, the running `play` can stil
 its reply on the discarded session and clear `thinking` while the new `start` is
 running. Nothing shows it at level 4's 200 ms. If it matters, the fix is a disabled New
 game while thinking, which is a ruling for Nick because a person would see it.
+
+### Gate 2 findings (orchestrator, 2026-09-12)
+
+- **Verified from the repo.** `npx vitest run`: 12 files, 111 passed, 2 skipped, 12.4
+  seconds on a cold cache (the builder's 3.7 warm), under the twenty-second rule.
+  `tsc -b` clean, `npx oxlint` silent, `npm run build` clean at 298.7 kB. `Board.tsx`,
+  `board.css`, `board-stub.tsx` and `rig.dom.test.tsx` diff clean against the trainer.
+  No forbidden words outside identical copies; no browser global in the pure folders;
+  no pixel number or colour in any `.ts` or `.tsx`. `../London` and `../Conquest`
+  untouched.
+- **Mutation-checked.** Pointing `undoTarget` at the engine's colour instead of the
+  user's turns three session tests red (the pair, the redo, the undo out of mate).
+  Restored from git.
+- **Driven in the pane at 1280 by 1000 against the real engine**, header v0.1.0. The
+  probe read the builder's numbers to the decimal: bar 24 wide at x 24; `.board` and
+  `cg-board` at x 68, all three from 80.67 to 496.67, height 416; controls and status at
+  x 68; sidebar 280 wide at x 508, 501.33 tall like the column; `scrollWidth` 1280
+  against `innerWidth` 1280. 1.e4 by two clicks, the engine answered d5, the list read
+  "1. e4 d5", Undo emptied it and enabled Redo, Redo put both back, New game emptied it
+  and disabled both. No console errors at any point. Storage cleared afterwards.
+- **The two faults the pane found were real and the fixes are sound.** The StrictMode
+  cleanup now waits a tick and a test holds both halves (the engine survives the second
+  mount; a real unmount still stops it). `contain: size` is the right tool for a flex
+  child that must scroll rather than grow, and the comment says what was measured.
+  Both are the kind of finding the pane drive exists for.
+- **The builder's departures are accepted.** New game calling `start` rather than
+  `reset` is what spec 5.1 says; the 44 px inset with one home is the reuse rule
+  applied; fool's mate through the scripted engine is the test the chip meant.
+- **Two rulings, taken into phase 3.** (1) **New game is disabled while the engine
+  thinks**, like Undo, Redo and Hint. The builder's "left" item is a real race, and a
+  row where three buttons grey during a think and one does not is the odder screen.
+  A person notices a 600 ms grey at level 8 less than a move that vanishes. (2)
+  **`reset` goes if phase 3 does not use it.** Nothing calls it; a function kept for a
+  caller that may never come is the dead code the brief forbids.
+- **Plan box 2.10 asked for a checkmate in the pane**, which a level 4 engine will not
+  allow. The DOM test with the scripted engine proves the mate path; the pane proves
+  the live engine and the layout. The box text is corrected below.
+- **For phase 4, noted now:** `scriptedEngine` answers every search from its queue, so
+  the bar's evaluation searches in phase 4 would eat the script. The phase 4 chip has
+  to make the script answer only the engine's own moves (by side to move) or key
+  the fake by profile. Not a phase 2 fault.
+
+- [x] **Review gate 2 passed** (2026-09-12)
