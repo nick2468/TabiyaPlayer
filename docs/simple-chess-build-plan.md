@@ -153,25 +153,25 @@ Read first: `../London/src/engine/*`, `src/model/position.ts`, `src/model/pgn.ts
 `src/model/types.ts`, `src/model/grade.ts`, `src/play/outcome.ts`,
 `src/play/evalbar.ts`, `src/test/fake-engine.ts`, and the tests beside each.
 
-- [ ] 1.1 `src/engine/`: `stockfish.ts`, `uci.ts`, `strength.ts`, `index.ts` and
+- [x] 1.1 `src/engine/`: `stockfish.ts`, `uci.ts`, `strength.ts`, `index.ts` and
       `engine.test.ts`, identical, each with its `Origin:` line.
-- [ ] 1.2 `src/model/position.ts` identical with its test. `src/model/pgn.ts`
+- [x] 1.2 `src/model/position.ts` identical with its test. `src/model/pgn.ts`
       identical with `pgn.test.ts` (the parser and the writer are both needed).
-- [ ] 1.3 `src/model/types.ts`: only `Colour`, `Brush`, `Shape` and `colourName`
+- [x] 1.3 `src/model/types.ts`: only `Colour`, `Brush`, `Shape` and `colourName`
       from the trainer's file. `src/model/moves.ts`: `squaresForSan`, `sanForMove`
       from the trainer's `grade.ts`, identical text, with a test. (`grade.ts` is a
       drill file; these two functions are the only part this app uses, and the
       origin line says which file they came from.)
-- [ ] 1.4 `src/play/outcome.ts` identical (`outcomeOf` and `endingFromMoves`; drop
+- [x] 1.4 `src/play/outcome.ts` identical (`outcomeOf` and `endingFromMoves`; drop
       `isCheckmateOutcome` if nothing uses it) with a test.
-- [ ] 1.5 `src/play/evalbar.ts` adapted per spec 7: the evaluation map's value is
+- [x] 1.5 `src/play/evalbar.ts` adapted per spec 7: the evaluation map's value is
       `{ pawns: number; score: Score }`; `evalShare`, `evalBarLayout` unchanged;
       `shownEvaluation` returns the entry rather than the number. Add
       `evalText(score): string` giving `+0.4`, `-1.2`, `0.0`, `M5`, `-M5`, with
       the test from spec S15 item 4.
-- [ ] 1.6 `src/test/fake-engine.ts` identical.
-- [ ] 1.7 `src/play/index.ts` exporting what exists so far.
-- [ ] 1.8 Reuse review: nothing in `src/engine`, `src/model` or `src/play` imports
+- [x] 1.6 `src/test/fake-engine.ts` identical.
+- [x] 1.7 `src/play/index.ts` exporting what exists so far.
+- [x] 1.8 Reuse review: nothing in `src/engine`, `src/model` or `src/play` imports
       React or touches `window` or `document` (the worker in `stockfish.ts` is the one
       exception). Say so in the notes.
 
@@ -535,7 +535,7 @@ did it that way too.
 | Phase | State |
 |---|---|
 | 0 - the scaffold | **Complete** 2026-09-11, gate passed the same day. 4 tests green, build clean. |
-| 1 - the engine and the model | Not started |
+| 1 - the engine and the model | Done 2026-09-11, awaiting review. 90 tests green, 2 skipped. |
 | 2 - the board, the session and a playable game | Not started |
 | 3 - the sidebar and what is remembered | Not started |
 | 4 - the bar, the hint and the promotion picker | Not started |
@@ -699,3 +699,86 @@ Nothing else.
   the same triple-slash line at the top of each.
 
 - [x] **Review gate 0 passed** (2026-09-11)
+
+### Phase 1 - builder notes (2026-09-11)
+
+The chip said the session had been compacted. Nick said afterwards that it had not, so
+phase 0 was still in context. The docs were re-read fresh anyway, as the chip asked.
+
+**Measured.**
+
+- `npx vitest run`: 9 files, 90 tests passed and 2 skipped, 1.7 seconds. By project:
+  `string` 8 files, 88 passed, 2 skipped (the two Tauri version tests); `dom` 1 file,
+  2 passed. `engine.test.ts` runs in `string`, and nothing in it starts a worker.
+- `tsc -b` clean, `npx oxlint` silent, `npm run build` unchanged in shape (JavaScript
+  220.5 kB, 68.9 kB gzipped). Nothing in `src/ui` imports the new modules yet, so the
+  bundle does not carry them.
+- **Mutation-checked `evalText`.** Dropping the side from the mate sign turns three
+  tests red (M5 and -M5 with Black to move, and M0). Letting "-0.0" through turns four
+  red. Both mutations were restored and the suite re-run green.
+- `git -C ../London status` and `git -C ../Conquest status` show only the two files that
+  were there before phase 0. Nothing from this phase.
+
+**Copies, diffed against their origins with the `Origin:` line removed.**
+
+- **Identical** (one origin line added): `src/engine/stockfish.ts`, `uci.ts`,
+  `strength.ts`, `index.ts`, `engine.test.ts`; `src/model/position.ts`,
+  `position.test.ts`, `chessjs.test.ts`, `pgn.ts`, `pgn.test.ts`;
+  `src/play/outcome.ts`; `src/test/fake-engine.ts`. `index.ts`, `engine.test.ts` and
+  `position.test.ts` have no header comment, so each gets `// Origin: ...` and a blank
+  line. None needed the node types line: nothing copied this phase imports `node:fs`.
+- **Adapted:** `src/model/types.ts` (cut to `Colour`, `Brush`, `Shape`, `colourName`;
+  "authored" dropped from the `Shape` comment); `src/play/evalbar.ts` and
+  `evalbar.test.ts`; `src/play/index.ts`.
+- **New, from part of a trainer file:** `src/model/moves.ts` (`squaresForSan` and
+  `sanForMove` from `grade.ts`, code identical) and `moves.test.ts` (the two describes
+  from `grade.test.ts`, with the drill card's `fen` written out as a constant and the
+  one test renamed as the chip says). `src/play/outcome.test.ts` is new.
+- **The trainer's words in identical copies**, allowed by the chip and listed as asked:
+  `uci.ts` ("trainee"), `outcome.ts` ("trainee", "course"), `pgn.ts` and `pgn.test.ts`
+  ("repertoire", "course"). No adapted or new file says any of the three words.
+- No React import and no `window`, `document` or `localStorage` in `src/engine`,
+  `src/model` or `src/play`. The one browser global is `Worker` in `stockfish.ts`. No em
+  dashes under `src/`.
+
+**Decided (code shape).**
+
+- `sanForMove`'s code is identical, but its comment is not. The trainer's says
+  promotions become a queen "which is all this repertoire ever needs". `moves.ts` is an
+  adapted file, so the comment now says the picker passes its letter. The origin line
+  says so.
+- `evalText` builds the cp text from `whitePovPawns`, so pawns are worked out in one
+  place. It prints `Math.abs(pawns).toFixed(1)` with the sign added, so "-0.0" cannot
+  appear.
+- `shownEvaluation` takes `moves: { fen: string }[]`. Its comment says the session's
+  played moves can be passed as they are, without naming `PlayedMove` before it exists.
+- `outcome.test.ts` also tests `isCheckmateOutcome`, because the file keeps it.
+
+**Faults and contradictions, for the orchestrator.**
+
+1. **The plan's 1.4 and 1.5 box text is stale**, and the boxes were ticked against the
+   chip and the spec. 1.4 says drop `isCheckmateOutcome` if unused, but the chip says
+   keep it, and it is kept. 1.5 says the map value is `{ pawns, score }`, but spec 7 as
+   corrected at gate 0 says `{ pawns, text }`, and that is what was built.
+2. **Mate 0: the share and the text disagree, in theory.** `whitePovPawns` (trainer,
+   identical) counts `mate 0` as a win for the side to move (`moves >= 0`). But mate 0
+   means the side to move is already mated. `evalText` follows the chip and prints the
+   other side's mate, so an `evaluationOf(mate 0)` would draw the bar one way and print
+   the other. **It cannot happen in play.** Stockfish sends `mate 0` only for a
+   finished position, with no `pv`, and `StockfishEngine.search` keeps only lines with a
+   `pv`, so no candidate ever carries it. If the orchestrator wants the two to agree
+   anyway, the fix belongs in the trainer's `whitePovPawns` (`moves > 0`). That would be
+   carried back, not forked here.
+
+**Asked of Nick.** Nothing.
+
+**Reuse review.** `fen.split(' ')[1]` appears only in `sideToMove` (`position.ts`).
+Pawns from a score are worked out only in `whitePovPawns` (`uci.ts`), and `evalText`
+and `evaluationOf` both call it. `sanForMove` and `squaresForSan` exist once, in
+`moves.ts`. Nothing to refactor.
+
+**Dropped under the decision rules.** Nothing. The grade tests left behind (`judge`,
+`ratingFor`, `countsAsCorrect`, the verdict wording) test drill grading, which was
+never copied.
+
+**Left.** Nothing in phase 1.
