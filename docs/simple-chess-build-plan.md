@@ -1,6 +1,7 @@
 # Simple Chess - build plan
 
-Version 1. Written 2026-09-11. Status: **Active**, nothing built yet.
+Version 1. Written 2026-09-11. Status: **Active**. Phase 0 passed review 2026-09-11;
+phase 1 is next.
 
 Read [the specification](simple-chess-spec.md) first. It says what the app does. This
 document says what gets built, in what order, and how we know each part is finished.
@@ -45,6 +46,12 @@ every phase.
    UI-affecting phase drives the app in the pane, screenshots the scenes, and records
    the layout probe's output in its notes. Watch `scrollWidth` against `innerWidth`:
    a page that scrolls sideways is a regression, whatever else went right.
+   **No screenshot files are required** (ruled at gate 0). The pane's screenshot is
+   looked at by the session and writes no file; the phase notes say what was seen
+   and give the measured numbers, which is what the trainer's notes did. Never start
+   a headless browser on this machine to make one (see CLAUDE.md, standing hazards).
+   The only screenshot file in this project is `packaged-eval.mjs --shot` against the
+   Tauri window in phase 8.
 8. **Tests with the code.** `npx vitest run` green and `tsc -b` clean before every
    commit. A regression test is shown red before its fix. No snapshots, no fake
    timers, no worker (docs/testing.md).
@@ -123,8 +130,10 @@ Read first: `../London/package.json`, `vite.config.ts`, the three `tsconfig*.jso
 - [x] 0.10 `src/version.test.ts`: the trainer's. The two Tauri files do not exist
       until phase 8, so the two tests that read them are written now and marked
       `it.skip` with a comment naming phase 8, which unskips them.
-- [x] 0.11 `src/test/dom-setup.ts` identical. `src/test/dom.tsx` with `renderApp` and
-      `goTo` only, adapted to this app's providers as they arrive.
+- [x] 0.11 `src/test/dom-setup.ts` identical. `src/test/dom.tsx` with `renderApp`
+      only, adapted to this app's providers as they arrive. (The plan first said
+      `goTo` too; that opens a screen from a nav, and this app has one screen.
+      Corrected at gate 0.)
 - [x] 0.12 `docs/testing.md`: the trainer's, adapted. Drop the content checkers
       section. Keep the two kinds, what is faked and why, and the rules.
 - [x] 0.13 One DOM test: the header shows "Simple Chess" and the version, and the
@@ -525,7 +534,7 @@ did it that way too.
 
 | Phase | State |
 |---|---|
-| 0 - the scaffold | Done 2026-09-11, awaiting review |
+| 0 - the scaffold | **Complete** 2026-09-11, gate passed the same day. 4 tests green, build clean. |
 | 1 - the engine and the model | Not started |
 | 2 - the board, the session and a playable game | Not started |
 | 3 - the sidebar and what is remembered | Not started |
@@ -647,3 +656,46 @@ Nothing else.
 
 **Left.** Nothing in phase 0. Open for the orchestrator: how screenshot files are made
 (see above), and the stale `goTo` in 0.11.
+
+### Gate 0 findings (orchestrator, 2026-09-11)
+
+- **Verified from the repo, not from the notes.** `npx vitest run`: 4 passed, 2 skipped,
+  1.5 seconds. `tsc -b` clean, `npx oxlint` silent, `npm run build` 18 modules with
+  `dist/index.html`. Every file the notes call identical diffs clean against its origin
+  with the `Origin:` line removed (`main.tsx` differs by the blank line after its
+  comment, which is the two-line form the chip asked for). No em dashes under `src/`.
+  `../London` and `../Conquest` carry nothing from this phase.
+- **Mutation-checked.** Changing the storage key in `theme.ts` to `simple-chess.colour`
+  turns "switches the theme, remembers it, and switches back" red with "expected null to
+  be 'light'". Restored from git.
+- **Driven in the pane at 1280 by 1000** against the dev server on 5185 serving v0.1.0:
+  dark ground rgb(22, 24, 28), version at 12.8 px in `--text-faint`; after the toggle,
+  light ground rgb(244, 242, 238), the button reading "Dark" named "Switch to the dark
+  theme", `simple-chess.theme` = light; back again to dark. `scrollWidth` 1280 against
+  `innerWidth` 1280 in both. Storage cleared afterwards.
+- **The builder's two departures from the chip are right.** The shell test reading
+  `__APP_VERSION__` rather than `package.json` is the reuse rule applied correctly:
+  `version.test.ts` already holds that constant to the file. `theme.ts` with its comment
+  rewritten is what S3 says an adapted file does; the chip's "identical but for the key"
+  was the looser wording and the spec wins.
+- **Two rulings on what the builder left open.** No screenshot files are required; rule 7
+  above now says so. `goTo` was stale in 0.11 and is corrected.
+- **One process finding, and it is the chip's fault, not the builder's.** The chip asked
+  for "two file names" of screenshots, which the pane cannot produce, and the builder
+  reached for headless Edge to satisfy it. Edge signed a scratch profile into Nick's
+  Windows account and loaded his extensions before it was stopped. The builder stopped
+  it, deleted both profiles, and recorded it under CLAUDE.md's standing hazards and in
+  memory. Nothing was kept and nothing in the repo came from it. Nick should know that
+  a sync was briefly started from a profile that no longer exists, in case his Microsoft
+  account lists a device it should not. The rule from here: a chip never asks for a
+  file the pane cannot write, and no session starts a headless browser on this machine.
+- **Accepted as is.** `version.test.ts` keeps the trainer's comment about its phase 17
+  although its origin line says adapted; `dom-setup.ts` keeps the trainer's comment
+  because it is identical. Both are cosmetic and a later adaptation of either file
+  takes its comment with it.
+- **Carried back to the trainer (for Nick, not for this repo):** `London/src/version.test.ts`
+  and `installer-hook.test.ts` compile only because `blank-start-real.test.ts` carries
+  `/// <reference types="node" />`. Copied alone, `tsc -b` fails with TS2591. The fix is
+  the same triple-slash line at the top of each.
+
+- [x] **Review gate 0 passed** (2026-09-11)

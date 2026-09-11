@@ -341,10 +341,14 @@ inside the larger share, at that share's outer end, in the other piece colour, 1
 bold with tabular figures. A screen reader gets the same text as the bar's accessible
 name ("Evaluation: +0.4").
 
-To show a mate count the evaluation has to keep the engine's `Score`, not only the
-pawns. The evaluation map holds `{ pawns, score }` per position: `pawns` drives the
-share as it always did and `score` drives the text. `whitePovPawns` is unchanged and
-still turns a mate into plus or minus 100 for the share.
+To show a mate count the evaluation has to keep more than the pawns. The evaluation
+map holds `{ pawns, text }` per position, both worked out once from the engine's
+`Score` and the side to move at the moment the search answers: `pawns` drives the
+share as it always did and `text` is the string the bar prints. `whitePovPawns` is
+unchanged and still turns a mate into plus or minus 100 for the share. (Written as
+`{ pawns, score }` until gate 0; a `Score` alone cannot give the sign, because the
+engine reports mate from the side to move, so the text is made where the side is
+known.)
 
 ---
 
