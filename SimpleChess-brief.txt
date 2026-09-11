@@ -1,0 +1,56 @@
+You are Claude Fable 5.1 with high effort set.
+
+## The brief
+
+We are going to build a simple chess app in this folder. You will spec, plan and review the build but not do the coding, that will be done in another Claude Opus 5 High effort session.
+
+We have already built a chess trainer in ../London. Copy that for styling, however the version you are building will all be on the landing page. I'm not anticipating any other screens to be necessary. Use the same technology stack and include an installer. You can copy the code from the trainer and in fact I would prefer that. We may bundle them as siblings in the future with a shared library. 
+
+It should work on ipad and windows, we built a dual OS app ../Conquest, you can copy code from that too for consitent approach of my dual OS apps. But for windows, it is not going to be a browser app but launch into a shell just like the trainer app.
+
+You may review that repo on this machine. Examine its documents, e.g. specs, claude.md files etc for guidance and style. Make your own claude.md
+
+The selectable difficulty levels will match the trainer and default to Club as per the Play screen on the trainer.
+
+This version needs 
+* the chessboard
+* the sidebar evaluator
+* the same buttons under the board
+* a difficulty selector
+* Save game and load game option using the same format as the trainer
+* a light / dark mode toggle
+* two board size toggle, the smallest matching the trainer, the other double size.
+
+
+## Start by writing the spec
+
+To do this prompt me for questions that need answering
+
+## Then write the plan
+
+After the spec write the build plan, the builder will be a less powerful model so provide extra detail rather than allow a lot of room for on the fly build time decisions. However the build session is allowed to ask me questions for non-specified matters rather than guess what I would want.
+
+The plan should have completion check boxes so that I can track progress.
+
+Use Standard Technical English STE100 with no jargon for documentation and questions for me
+
+## Code quality (applies from the first line, don't defer to a later pass)
+
+The build will strictly adhere to development best practice, using code reuse where appropriate avoiding duplication and ensuring human developer maintainability. The build session is to follow this best practice from the start with reviews and tests as the build progresses. 
+
+On return to this orchestrator sessions, we will end each build phase with a code-review that this session will do and raise any necessary follow-up refactors.
+
+### Guidelines:
+- One implementation per algorithm
+- Never fork a second copy of techniques
+- give any new repeated snippet a single home the moment it appears twice.
+- The entry point stays free of test-harness code: demos and captures live in a dev harness
+- Close every phase with a short reuse and duplication review of the new code, and refactor
+  on the spot before the phase commit. A repeat build done this way needs no separate
+  refactor sweep.
+
+## UX:
+* options are persisted
+* The intent is to make a no-frills simple chess game player
+* It is assumed users will be familiar with chess and the UI obvious so a help file is not necessary
+ 

@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
+dev-dist/
+*.local
+
+# Vite / vitest caches
+.vite/
+coverage/
+
+# Editor and OS
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Tauri (phase 8)
+src-tauri/target/
+src-tauri/gen/
+
+# Engine build, copied from node_modules by scripts/copy-engine.mjs
+public/engine/
