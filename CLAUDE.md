@@ -6,9 +6,9 @@ an iPad Home Screen app (a PWA on Cloudflare Pages, like Conquest in `../Conques
 from one React, TypeScript and Vite code base. The code is copied from those two apps
 wherever they already do the job, so that a shared library can follow later.
 
-Current state: phase 1 (the engine and the model) built 2026-09-11 and awaiting
-review. The header and theme toggle are on screen; the pure modules are in place and
-tested; no board yet.
+Current state: phase 2 (the board, the session and a playable game) built 2026-09-12
+and awaiting review. A game against the engine plays on screen at level 4 as White,
+with New game, Undo, Redo, the status line and the move list; no sidebar settings yet.
 
 ## Documents
 

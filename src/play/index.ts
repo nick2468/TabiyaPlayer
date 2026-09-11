@@ -9,4 +9,12 @@ export {
   type EvalBarLayout,
   type Evaluation,
 } from './evalbar'
+export { type Hint } from './hint'
 export { endingFromMoves, isCheckmateOutcome, outcomeOf } from './outcome'
+export {
+  PlaySession,
+  fullMove,
+  type PlayedMove,
+  type SessionOptions,
+  type SessionStatus,
+} from './session'

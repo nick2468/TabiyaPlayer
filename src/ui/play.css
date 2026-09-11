@@ -1,0 +1,155 @@
+/* Origin: London src/ui/play.css, adapted: cut to the board column and the
+   move list; the bar is 24px and its gap 20px (spec 4.2); .sidebar is new;
+   .notice is London src/ui/study.css and .notice.bad London src/ui/progress.css. */
+
+/* Under the buttons, starting where they do (spec 4.1). */
+.play-status {
+  margin: 0 0 0 var(--board-inset);
+  color: var(--text-dim);
+}
+
+/* Two columns: the board with its bar and controls, and the sidebar. They
+   wrap on a narrow window rather than squeezing either. */
+.play-body {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.play-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: none;
+  /* How far the board sits in from the bar's left edge: the bar (24px) and
+     the gap after it (20px) in .play-board. The buttons, the status line and
+     an engine error all start here, under the board rather than the bar.
+     The trainer's 16 and 28 made the same 44. */
+  --board-inset: 44px;
+}
+
+/* Under the board only, never under the list beside it. Real buttons: these
+   do things to the game rather than navigate away from it. */
+.play-controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-left: var(--board-inset);
+}
+
+.play-column > .notice {
+  margin-left: var(--board-inset);
+}
+
+/* The settings and the move list, beside the board column and as tall as it,
+   so the list grows when the board does (spec 4.1). 280px holds
+   "8. Unpleasant" in the select and two buttons side by side (spec 4.2). */
+.sidebar {
+  width: 280px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  gap: 12px;
+}
+
+/* Fills what the sidebar has left and scrolls inside itself.
+
+   `contain: size` is what makes it scroll rather than grow. Without it the
+   rows count towards the sidebar's own height, and a long game stretched the
+   sidebar, and the page with it, past the board: measured at 928px beside a
+   501px board column. Contained, the list is sized by the sidebar alone and
+   `flex: 1` gives it everything the sidebar has left. */
+.move-list {
+  contain: size;
+  list-style: none;
+  margin: 0;
+  /* The trainer's four pixels each side, which it needed for a highlighted
+     move's bleed. Nothing is highlighted here; kept so the list reads the
+     same as the trainer's. */
+  padding: 0 4px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  font-variant-numeric: tabular-nums;
+  /* Firefox and Chromium 121 and up. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+/* WebView2 is Chromium, and the installed app is the one this is for. */
+.move-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.move-list::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 4px;
+}
+
+/* Sized to what actually goes in each column, measured in the trainer:
+   "100." is 29px, and the longest ordinary move, "O-O-O" or "Nxd4+", is 49.
+   A promotion with check is wider than this and will spill a few pixels into
+   the gap, which is better than clipping a move: it happens about once in a
+   thousand games. */
+.move-list li {
+  display: grid;
+  grid-template-columns: 2em 3.6em 3.6em;
+  gap: 6px;
+  padding: 0;
+  line-height: 1.45;
+}
+
+.move-number {
+  color: var(--text-faint);
+}
+
+/* The bar beside the board. Board height, so it reads as the board's own
+   margin rather than as a widget of its own. */
+.play-board {
+  display: flex;
+  /* 20px rather than the trainer's 28, because the bar is 24 rather than
+     16: the two still make the 44 the buttons start at. */
+  gap: 20px;
+  align-items: stretch;
+}
+
+.live-eval {
+  position: relative;
+  /* 24px rather than the trainer's 16: this bar carries its number, "+0.4"
+     at 10px, which needs the room (spec 4.2). */
+  width: 24px;
+  /* Stretched to the board by .play-board; the border is inside that height
+     so the two boxes end on the same pixel. */
+  box-sizing: border-box;
+  flex: none;
+  /* Piece colours, not theme colours: White's share is always the light one. */
+  background: var(--piece-black);
+  border: 1px solid var(--line-strong);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.live-eval-white {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: var(--piece-white);
+}
+
+.notice {
+  background: var(--notice);
+  border: 1px solid var(--notice-edge);
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin: 0;
+  color: var(--notice-text);
+  font-size: 0.9rem;
+}
+
+.notice.bad {
+  background: var(--notice-bad);
+  border-color: var(--notice-bad-edge);
+  color: var(--notice-bad-text);
+}

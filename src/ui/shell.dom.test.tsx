@@ -1,6 +1,8 @@
 import { screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { renderApp } from '../test/dom'
+
+vi.mock('./Board', async () => await import('../test/board-stub'))
 
 /**
  * The header: the name, the version and the theme toggle (spec 4.1 and 4.5).

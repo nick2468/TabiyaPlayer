@@ -192,10 +192,10 @@ Read first: `../London/src/ui/Board.tsx`, `board.css`, `board-size.ts`,
 `MoveList`, `PlayHead`, `squaresOf`), `src/ui/play.css`, `src/test/board-stub.tsx`,
 `src/test/dom.tsx`, `src/ui/play-game.dom.test.tsx`, `src/ui/rig.dom.test.tsx`.
 
-- [ ] 2.1 `src/ui/Board.tsx` and `board.css` identical. `src/ui/board-size.ts`:
+- [x] 2.1 `src/ui/Board.tsx` and `board.css` identical. `src/ui/board-size.ts`:
       `BOARD_SIZE = 416` with the trainer's comment, plus `BOARD_SIZE_LARGE = 832`.
       The fit rule is phase 3.
-- [ ] 2.2 `src/play/session.ts` adapted: no book, no `side`/`courseMoves`, no
+- [x] 2.2 `src/play/session.ts` adapted: no book, no `side`/`courseMoves`, no
       `bookReplies`, no `hints`, no `fromBook`. Keep `moves`, `floor`, undo in pairs,
       redo, `noteOutcome`, `playStudent`, `playOpponent` (engine only), `engineMove`
       with `chooseCandidate`. Add `setProfile(profile)` which the next `engineMove`
@@ -204,10 +204,10 @@ Read first: `../London/src/ui/Board.tsx`, `board.css`, `board-size.ts`,
       `playing` otherwise. The user's colour is a constructor option `side`,
       defaulting to white; `studentColour` may keep its name (spec 3). Tests copied
       from `play.test.ts` for undo, redo and outcome, plus spec S15 items 1 and 3.
-- [ ] 2.3 `src/play/report.ts` is NOT copied. `PlayedMove` moves to
+- [x] 2.3 `src/play/report.ts` is NOT copied. `PlayedMove` moves to
       `src/play/session.ts` (ply, san, colour, fen, after) with an origin line. Add
       `fullMove(ply)` from `report.ts` beside it, with its test.
-- [ ] 2.4 `src/ui/play-context.tsx` adapted: `StartOptions` is `{ level, side,
+- [x] 2.4 `src/ui/play-context.tsx` adapted: `StartOptions` is `{ level, side,
       startMoves? }`; keep `session`, `thinking`, `engineError`, `evaluations`,
       `hint`, `start`, `play`, `undo`, `redo`, `askHint` (phase 4), `reset`,
       `canHint`; drop the report, the scan, the record, the replay ply, `extend`,
@@ -216,13 +216,13 @@ Read first: `../London/src/ui/Board.tsx`, `board.css`, `board-size.ts`,
       the provider unmounts (spec S5): `reset` calls `newGame()` on the running
       engine and does not stop it. Add `setLevel(level)` which stores the level and
       calls the session's `setProfile`.
-- [ ] 2.5 `src/ui/PlayControls.tsx`: the trainer's row one (New game, Undo, Redo,
+- [x] 2.5 `src/ui/PlayControls.tsx`: the trainer's row one (New game, Undo, Redo,
       Hint), same disabled rules; Hint disabled until phase 4 wires it.
       `src/ui/MoveList.tsx`: the trainer's `MoveList` with `activePly` and the
       buttons removed (spec 5.7), scrolled to keep the last row in view with
       `scrollIntoView({ block: 'nearest' })` on the last cell. `src/ui/StatusLine.tsx`
       with the trainer's `PlayHead` wording (spec 5.6).
-- [ ] 2.6 `src/ui/Screen.tsx`: `.play-body` holding `.play-column` (a placeholder
+- [x] 2.6 `src/ui/Screen.tsx`: `.play-body` holding `.play-column` (a placeholder
       `.live-eval` box, the `Board`, `PlayControls`, `StatusLine`) and `.sidebar`
       (the `MoveList` only, this phase). `play.css` cut to `.play-body`,
       `.play-column`, `.play-board`, `.play-controls`, `.play-status`, `.live-eval`,
@@ -230,20 +230,20 @@ Read first: `../London/src/ui/Board.tsx`, `board.css`, `board-size.ts`,
       24 px and the gap at 20 px per spec 4.2, and a new `.sidebar` block: 280 px
       wide, flex column, `align-self: stretch`. The move list fills the sidebar's
       remaining height (`flex: 1; min-height: 0`).
-- [ ] 2.7 `App.tsx` wraps `<Screen />` in `PlayProvider` and starts a fresh game on
+- [x] 2.7 `App.tsx` wraps `<Screen />` in `PlayProvider` and starts a fresh game on
       mount (level 4, white, until phase 3 reads the settings).
-- [ ] 2.8 `src/test/board-stub.tsx` identical. `src/test/dom.tsx` grows `board()`
+- [x] 2.8 `src/test/board-stub.tsx` identical. `src/test/dom.tsx` grows `board()`
       and `movesOnScreen()` from the trainer. `rig.dom.test.tsx` copied: it pins the
       chessground throw that makes the stub necessary.
-- [ ] 2.9 DOM tests, board mocked, fake engine: play `d4`, the engine replies, the
+- [x] 2.9 DOM tests, board mocked, fake engine: play `d4`, the engine replies, the
       list shows both, Undo empties it, Redo puts both back; the worker guard from
       `play-game.dom.test.tsx` (a throwing `Worker` is never constructed); New game
       clears the list and the redo stack (spec S15 item 10, without the hint yet).
-- [ ] 2.10 Drive it in the pane against the real engine: a game to checkmate at
+- [x] 2.10 Drive it in the pane against the real engine: a game to checkmate at
       level 4 as White. Confirm the outcome sentence and the locked board. Screenshot
       at 1280 by 1000 in both themes. Record the probe (the placeholder bar, `.board`
       and `cg-board` all 416 and ending on the same pixel).
-- [ ] 2.11 Reuse review and commit.
+- [x] 2.11 Reuse review and commit.
 
 **Done when:** a full game plays in the pane and in the DOM test.
 
@@ -538,7 +538,7 @@ did it that way too.
 |---|---|
 | 0 - the scaffold | **Complete** 2026-09-11, gate passed the same day. 4 tests green, build clean. |
 | 1 - the engine and the model | **Complete** 2026-09-11, gate passed the same day. 90 tests green in 1.8 s. |
-| 2 - the board, the session and a playable game | Not started |
+| 2 - the board, the session and a playable game | Done 2026-09-12, awaiting review. 111 tests green, 2 skipped; a game plays in the pane. |
 | 3 - the sidebar and what is remembered | Not started |
 | 4 - the bar, the hint and the promotion picker | Not started |
 | 5 - save game and load game | Not started |
@@ -818,3 +818,118 @@ never copied.
   Later chips keep the instruction, because the compaction is Nick's call each time.
 
 - [x] **Review gate 1 passed** (2026-09-11)
+
+### Phase 2 - builder notes (2026-09-12)
+
+The session was not compacted between phases 1 and 2. The docs named in the chip were
+re-read fresh anyway.
+
+**Measured.**
+
+- `npx vitest run`: 12 files, 111 tests passed and 2 skipped, 3.7 seconds warm. By
+  project: `string` 9 files, 99 passed, 2 skipped; `dom` 3 files, 12 passed. The first
+  run after the new files took 27.7 seconds, nearly all jsdom's start-up on a cold cache,
+  as in phase 0. Every run after it was under 4 seconds. `tsc -b` clean, `npx oxlint`
+  silent, `npm run build` clean (JavaScript 298.7 kB, 95.1 kB gzipped; CSS 21.3 kB, now
+  carrying chessground's three stylesheets).
+- **The pane, 1280 by 1000, against the real engine** (the dev server on 5185, the header
+  reading v0.1.0). The board opens with White at the bottom, the coordinates in their
+  corners, "Your move" under the buttons, and no engine error. 1.d4 went in by two clicks
+  (the pawn, then its square). The engine answered Nf6 in about 300 ms. Then 2.c4 Nc6
+  3.Nf3 d5 4.e3 dxc4, every reply legal. A 10 ms recorder of the status line and of
+  `window.__cg.state.movable.color` showed "Black is thinking..." with movable
+  `undefined` during each of the four searches, and "Your move" with movable `white`
+  after each reply. `window.__game.moves.length` was 2, 4, 6 and 8. Undo took off
+  4.e3 dxc4 and enabled Redo. Redo put both back and disabled it again. New game emptied
+  the list and disabled Undo and Redo. Hint stayed disabled throughout.
+- **The layout, dark and light alike.** `.live-eval` is 24 wide at x 24. `.board` and
+  `cg-board` start at x 68 (24 padding + 24 bar + 20 gap). All three run from top 80.67
+  to bottom 496.67, height 416. `.play-controls` and `.play-status` start at x 68, the
+  board's left edge. `.sidebar` is 280 wide at x 508 (484 + the 24 gap), and as tall as
+  `.play-column` (501.33). `scrollWidth` 1280 against `innerWidth` 1280.
+- **Seen in the screenshots.** Dark: the dark ground, the empty bar as a dark box the
+  board's height, the brown board, and the move list in the sidebar with faint numbers.
+  Light: the pale ground, the bar still in `--piece-black`, the board unchanged, and the
+  buttons as white controls. The last move is highlighted in both.
+- **Checkmate in the pane: not reached.** The real engine at level 4 defended scholar's
+  mate (1.e4 Nf6 2.Qh5 Nxh5 3.Bc4 Nf6, taking the queen). The mate path, with the
+  outcome sentence and the locked board, is proven by the DOM test with a scripted
+  engine. The chip's pane drive asks for d4 and three more moves, which was done. Plan
+  box 2.10's "a game to checkmate" is looser than the chip, like 1.4 and 1.5 were.
+- `git -C ../London status` and `git -C ../Conquest status` show only the two files that
+  were there before phase 0.
+
+**Two faults the pane found, both fixed.**
+
+1. **StrictMode killed the engine under the first game.** In development StrictMode
+   runs every effect's cleanup once between two mounts. The game now starts in
+   `Shell`'s mount effect, and the provider's unmount cleanup stopped the engine and
+   nulled `engineRef` while `start` was still awaiting it. The first game failed with
+   "Cannot read properties of null (reading 'newGame')", so the dev page would never have
+   shown a board. The trainer never met this, because its games start from a button.
+   The new DOM test "keeps its engine through StrictMode's second mount" was run red
+   against the chip's cleanup, with exactly that message. The fix: the cleanup waits a
+   tick and stops the worker only if nothing mounted again. "stops the engine when the
+   app goes away" proves the real unmount still stops it. Spec S5 stands.
+2. **A long move list stretched the sidebar instead of scrolling.** With 40 rows added
+   to the list in the pane, the sidebar grew to 928 px beside a 501 px board column. A
+   flex column's content still sizes it through `flex: 1; min-height: 0`. The fix is
+   `contain: size` on `.move-list`. Re-measured: the sidebar stays 501.33, and the list
+   scrolls (501 visible of 928) with `scrollIntoView` reaching the last row. The added
+   rows were removed afterwards.
+
+**Also changed from the chip, on purpose.**
+
+- **The status line is indented to the buttons.** Spec 4.1's diagram puts "Your move"
+  under the buttons, and the trainer's `.play-status` had no margin because its status
+  sat in a header. The 44 now has one home, `--board-inset` on `.play-column`, used by
+  the buttons, the status line and an engine error.
+- **New game calls `start`, not `reset`.** Spec 5.1 says New game starts a fresh game
+  from the current settings. `Shell` passes a `newGame` callback (level from the game,
+  side `FIRST_SIDE`), so the settings stay in one place for phase 3 to replace. `reset`
+  exists as the chip asks and nothing calls it yet.
+- **Session test 5 plays fool's mate** with the scripted engine rather than replaying it
+  through `startMoves`. Replayed moves are the floor, so undo could not take them off,
+  and the chip's recipe contradicts its own test 6. The behaviour tested is the one the
+  chip names.
+- **`src/play/hint.ts` holds the `Hint` type only**, source `'engine'`, because the
+  provider's `hint` field needs a type now. Phase 4 adds `engineHint` there.
+- **An engine that fails before the first game** shows its message on its own, because
+  with no session there is no status line to carry it (`EngineError`, shared with
+  `StatusLine`).
+- **`usePlay` carries the lint disable comment the trainer puts on `PlayContext`.**
+  `oxlint`'s `only-export-components` warned on the hook export.
+- **A promoting pawn move auto-queens this phase**, through `sanForMove`'s default. Phase
+  4 brings the picker.
+
+**Copies, diffed against their origins with the `Origin:` line removed.**
+
+- **Identical:** `src/ui/Board.tsx`, `src/ui/board.css` (its origin line is a comment of
+  its own above the first, because that comment starts with text on line 1),
+  `src/test/board-stub.tsx`, `src/ui/rig.dom.test.tsx`, and `squaresOf` inside
+  `Screen.tsx`.
+- **Adapted:** `board-size.ts`, `session.ts` (with `PlayedMove` and `fullMove` from
+  `report.ts`), `play-context.tsx`, `play.css`, `App.tsx`, `src/test/dom.tsx`,
+  `play-game.dom.test.tsx`, `hint.ts`, `src/play/index.ts`; and from `Play.tsx`:
+  `PlayControls.tsx`, `MoveList.tsx`, `StatusLine.tsx`.
+- **New:** `Screen.tsx`, `session.test.ts`, `src/test/scripted-engine.ts`.
+  `shell.dom.test.tsx` gained the board mock, because `Shell` now mounts a board.
+- The trainer's words appear only in identical copies: `board.css` ("a Black course"),
+  plus phase 1's `uci.ts`, `outcome.ts`, `pgn.ts` and `pgn.test.ts`. No adapted or new
+  file says "trainee", "student", "repertoire", "course" or "book".
+
+**Asked of Nick.** Nothing.
+
+**Reuse review.** One `squaresOf` (`Screen.tsx`) over the one `squaresForSan`. The
+side-from-FEN split exists only in `sideToMove`. No pixel number or colour is written in
+a `.ts` or `.tsx` file. The 44 px inset was about to be written three times and got one
+home instead. The engine error's markup is one component, used by the screen and the
+status line. The provider's "may the user move" guard is the session's own
+(`playUser` checks the turn; the provider checks `thinking` and `isFinished`), and
+`Screen`'s board lock reads the same two, as the trainer's does. Nothing else.
+
+**Left.** Nothing in phase 2. For the orchestrator: New game is always enabled, as the
+chip says. If it is pressed while the engine thinks, the running `play` can still land
+its reply on the discarded session and clear `thinking` while the new `start` is
+running. Nothing shows it at level 4's 200 ms. If it matters, the fix is a disabled New
+game while thinking, which is a ruling for Nick because a person would see it.

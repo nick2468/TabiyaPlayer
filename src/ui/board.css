@@ -1,0 +1,127 @@
+/* Origin: London src/ui/board.css, identical. */
+/* The chessground container needs an explicit size; the widget fills it.
+
+   Chessground does not build a wrapper INSIDE this element: it adds its own
+   cg-wrap, orientation-white or orientation-black, and manipulable classes to
+   this same div. So every rule below reads `.board`, never `.board .cg-wrap`,
+   which would look for a child that does not exist. */
+.board {
+  display: block;
+  max-width: 100%;
+
+  /* A label always takes the shade of the OTHER square, so it never
+     disappears into the one it sits on. The two shades are the brown theme's
+     own: light squares are #f0d9b5, dark ones #b58863. */
+  --coord-on-dark: #fff6e3;
+  --coord-on-light: #6b4c30;
+
+  /* How much of its square a piece is drawn at, and where in the square that
+     smaller image sits. Chessground fills the square edge to edge, which
+     crowds the board and runs the piece bases straight through the file
+     letters in the bottom corners.
+
+     The lift is the half that matters for those letters. Shrinking alone
+     takes half its room off the TOP of the piece, where nothing needed it;
+     30% puts most of the freed space under the base, which is where the
+     letters are. */
+  --piece-size: 90%;
+  --piece-lift: 30%;
+}
+
+/* Drawn smaller, but in the same box.
+
+   Chessground positions every piece by writing `transform: translate(...)`
+   straight onto the element, and it writes it again on every move, so a scale
+   added here would be wiped. The box also decides where a click and a drag
+   land. So the box keeps its full square and only the IMAGE shrinks, centred:
+   nothing about hit areas, dragging or animation changes.
+
+   `no-repeat` is not optional. Chessground uses `background-size: cover`,
+   which leaves nothing to repeat; anything smaller tiles a sliver of the next
+   copy along both edges without it. */
+.board.cg-wrap piece {
+  background-size: var(--piece-size) var(--piece-size);
+  background-position: center var(--piece-lift);
+  background-repeat: no-repeat;
+}
+
+/* -------------------------------------------------------- coordinates
+
+   Chessground's own stylesheet puts the rank numbers in a column lifted 20px
+   above the board with each one nudged down 39%, and the file letters half a
+   square to the right of the file they name. Both land near the middle of an
+   edge rather than in a corner of the square they belong to.
+
+   The brown theme does colour them, but for a board that draws its rank
+   numbers down the RIGHT edge: it paints ranks 1, 3, 5 and 7 dark, and those
+   are the ranks whose squares are dark on the a-file, where these numbers
+   actually sit. That is why rank 1 currently reads dark grey on the dark a1.
+
+   So the rules below put each rank number in the top left of its own square
+   and each file letter in the bottom right of its own, and colour every label
+   against the square under it. a1 is dark, so rank 1 reads light, rank 2
+   dark, and so on up; the same alternation runs along rank 1 for the letters.
+
+   Flipping the board for a Black course puts file h under the rank numbers and
+   rank 8 under the letters, which swaps the shade under every label. The DOM
+   order does NOT flip - chessground always writes ranks 1 to 8 and files a to
+   h and turns the flex direction round instead - so nth-child means the same
+   thing either way up, and the .black rules swap the colours back. */
+
+.board coords {
+  opacity: 1;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* Each rank number sits in the top left of its own square, as snug there as a
+   file letter is in its bottom right. The two are set the same way round: the
+   letters' row sits on the board's bottom edge with each glyph 1px in from the
+   right of its file, so the numbers' column sits 1px in from the left edge
+   with each glyph on the top of its own rank. */
+.board coords.ranks {
+  left: 1px;
+  top: 0;
+  width: auto;
+}
+
+.board coords.ranks coord {
+  transform: none;
+  padding-top: 0;
+}
+
+/* Each file letter sits at the bottom of the board, hard against the right of
+   its own file. */
+.board coords.files {
+  left: 0;
+  bottom: 0;
+  height: auto;
+  text-align: right;
+}
+
+.board coords.files coord {
+  padding-right: 1px;
+}
+
+/* White's view: ranks 1, 3, 5, 7 and files a, c, e, g sit on dark squares. */
+.board coords.ranks coord:nth-child(odd),
+.board coords.files coord:nth-child(odd) {
+  color: var(--coord-on-dark);
+}
+
+.board coords.ranks coord:nth-child(even),
+.board coords.files coord:nth-child(even) {
+  color: var(--coord-on-light);
+}
+
+/* Black's view: every one of those squares is the other shade. */
+.board coords.ranks.black coord:nth-child(odd),
+.board coords.files.black coord:nth-child(odd) {
+  color: var(--coord-on-light);
+}
+
+.board coords.ranks.black coord:nth-child(even),
+.board coords.files.black coord:nth-child(even) {
+  color: var(--coord-on-dark);
+}
