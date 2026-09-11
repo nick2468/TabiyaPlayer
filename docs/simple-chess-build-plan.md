@@ -1,7 +1,7 @@
 # Simple Chess - build plan
 
-Version 1. Written 2026-09-11. Status: **Active**. Phase 0 passed review 2026-09-11;
-phase 1 is next.
+Version 1. Written 2026-09-11. Status: **Active**. Phases 0 and 1 passed review
+2026-09-11; phase 2 is next.
 
 Read [the specification](simple-chess-spec.md) first. It says what the app does. This
 document says what gets built, in what order, and how we know each part is finished.
@@ -162,13 +162,15 @@ Read first: `../London/src/engine/*`, `src/model/position.ts`, `src/model/pgn.ts
       from the trainer's `grade.ts`, identical text, with a test. (`grade.ts` is a
       drill file; these two functions are the only part this app uses, and the
       origin line says which file they came from.)
-- [x] 1.4 `src/play/outcome.ts` identical (`outcomeOf` and `endingFromMoves`; drop
-      `isCheckmateOutcome` if nothing uses it) with a test.
-- [x] 1.5 `src/play/evalbar.ts` adapted per spec 7: the evaluation map's value is
-      `{ pawns: number; score: Score }`; `evalShare`, `evalBarLayout` unchanged;
-      `shownEvaluation` returns the entry rather than the number. Add
-      `evalText(score): string` giving `+0.4`, `-1.2`, `0.0`, `M5`, `-M5`, with
-      the test from spec S15 item 4.
+- [x] 1.4 `src/play/outcome.ts` identical, all three functions kept (the chip ruled
+      that an identical copy beats a trimmed one; the plan first said drop the
+      unused third), with a test.
+- [x] 1.5 `src/play/evalbar.ts` adapted per spec 7 as corrected at gate 0: the
+      evaluation map's value is `{ pawns: number; text: string }`, built once by
+      `evaluationOf(score, sideToMove)`; `evalShare`, `evalBarLayout` unchanged;
+      `shownEvaluation` returns the entry rather than the number.
+      `evalText(score, sideToMove)` gives `+0.4`, `-1.2`, `0.0`, `M5`, `-M5`, with
+      the test from spec S15 item 4. (The plan first said `{ pawns, score }`.)
 - [x] 1.6 `src/test/fake-engine.ts` identical.
 - [x] 1.7 `src/play/index.ts` exporting what exists so far.
 - [x] 1.8 Reuse review: nothing in `src/engine`, `src/model` or `src/play` imports
@@ -535,7 +537,7 @@ did it that way too.
 | Phase | State |
 |---|---|
 | 0 - the scaffold | **Complete** 2026-09-11, gate passed the same day. 4 tests green, build clean. |
-| 1 - the engine and the model | Done 2026-09-11, awaiting review. 90 tests green, 2 skipped. |
+| 1 - the engine and the model | **Complete** 2026-09-11, gate passed the same day. 90 tests green in 1.8 s. |
 | 2 - the board, the session and a playable game | Not started |
 | 3 - the sidebar and what is remembered | Not started |
 | 4 - the bar, the hint and the promotion picker | Not started |
@@ -782,3 +784,37 @@ and `evaluationOf` both call it. `sanForMove` and `squaresForSan` exist once, in
 never copied.
 
 **Left.** Nothing in phase 1.
+
+### Gate 1 findings (orchestrator, 2026-09-11)
+
+- **Verified from the repo.** `npx vitest run`: 9 files, 90 passed, 2 skipped, 1.8
+  seconds. `tsc -b` clean, `npx oxlint` silent, `npm run build` clean. All twelve
+  files the notes call identical diff clean against their origins with the origin line
+  removed; `engine/index.ts`, `engine.test.ts` and `position.test.ts` differ only by the
+  blank line after their `//` origin comment, which is the two-line form. No React
+  import and no `window`, `document` or `localStorage` under the three pure folders;
+  `new Worker` in `stockfish.ts` is the one browser global. No em dashes. `../London`
+  and `../Conquest` untouched.
+- **Mutation-checked.** `toFixed(1)` to `toFixed(2)` in `evalText` turns eight of the
+  number tests red. Restored from git. The builder's own two mutations (the mate sign
+  and `-0.0`) are taken on its account, which names the failing tests.
+- **The adapted files read as this app's.** `evalbar.ts` explains why the text is made
+  where the side is known; `moves.ts` says the picker passes its letter; `types.ts` is
+  the four things and nothing else. The new `outcome.test.ts` covers every sentence of
+  spec 5.5 from a named position, including the fifty-move clock and the repetition.
+- **Two stale plan boxes corrected** (1.4 and 1.5 above): the chip and the spec were
+  right and the plan text lagged. The builder ticked them against the chip, which was
+  the right call.
+- **Mate 0 is accepted as the builder left it.** `whitePovPawns` (identical copy) reads
+  `mate 0` as a win for the side to move; `evalText` reads it as the other side's mate.
+  The builder showed it cannot reach the bar: the adapter keeps only candidates with a
+  `pv`, and `mate 0` arrives without one. The right fix is `moves > 0` in the trainer's
+  `whitePovPawns`, carried back rather than forked here, so the copy stays identical.
+- **Carried back to the trainer (for Nick):** `London/src/engine/uci.ts`
+  `whitePovPawns` treats `mate 0` as a win for the side to move; `moves > 0` is the
+  correct test. Harmless there for the same reason.
+- **The chip said the session was compacted and it had not been.** Nick told the
+  builder so. No harm: re-reading the docs cost minutes and the notes say it was done.
+  Later chips keep the instruction, because the compaction is Nick's call each time.
+
+- [x] **Review gate 1 passed** (2026-09-11)
