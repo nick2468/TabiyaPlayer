@@ -1,0 +1,102 @@
+/* Origin: London src/ui/app.css, adapted: cut to the header, the buttons and
+   the tall-window block; button:disabled is London src/ui/drill.css line 132. */
+
+.app {
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.app-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--line);
+  /* The same 8px above the rule and below it. It was 8 and 16, which read as
+     the dropdown having drifted down away from the header it belongs to. */
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+}
+
+.app-header h1 {
+  margin: 0 0 4px;
+  font-size: 1.5rem;
+}
+
+/* Beside the name, not competing with it: the number is there when you look
+   for it and out of the way when you are not. */
+.app-version {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--text-faint);
+  vertical-align: middle;
+}
+
+.app-nav {
+  display: flex;
+  gap: 4px;
+}
+
+.nav-link {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  padding: 6px 12px;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+.nav-link:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+button {
+  background: var(--control);
+  color: var(--text);
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  padding: 6px 12px;
+  font: inherit;
+  cursor: pointer;
+}
+
+button:hover {
+  background: var(--control-hover);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.theme-toggle {
+  margin-left: 12px;
+  border-left: 1px solid var(--line);
+  border-bottom-color: transparent;
+  color: var(--text-faint);
+}
+
+.theme-toggle:hover {
+  color: var(--text);
+}
+
+/* A window at least the app's own minimum size pins the shell to the
+   viewport, so a view can scroll part of itself instead of the whole page.
+   Anything smaller falls back to one flowing, scrolling page. */
+@media (min-width: 900px) and (min-height: 700px) {
+  .app {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+  }
+
+  .app > main {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+  }
+}

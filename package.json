@@ -1,0 +1,46 @@
+{
+  "name": "simple-chess",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A simple chess game against Stockfish",
+  "scripts": {
+    "dev": "npm run engine && vite --port 5185 --strictPort",
+    "build": "npm run engine && tsc -b && vite build",
+    "preview": "vite preview --port 5186 --strictPort",
+    "engine": "node scripts/copy-engine.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "oxlint",
+    "icons": "node tools/make-icons.mjs",
+    "tauri": "tauri"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.11.1",
+    "@tauri-apps/plugin-dialog": "^2.7.2",
+    "@tauri-apps/plugin-fs": "^2.5.1",
+    "chess.js": "^1.4.0",
+    "chessground": "^9.2.1",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "stockfish": "^18.0.8"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.11.4",
+    "@testing-library/dom": "10.4.1",
+    "@testing-library/react": "16.3.3",
+    "@testing-library/user-event": "14.6.7",
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@vitejs/plugin-react": "^6.1.0",
+    "@vitest/coverage-v8": "^4.1.11",
+    "jsdom": "27.4.0",
+    "oxlint": "^1.79.0",
+    "sharp": "^0.35.4",
+    "typescript": "~6.0.2",
+    "vite": "^8.2.2",
+    "vite-plugin-pwa": "^1.3.0",
+    "vitest": "^4.1.11"
+  }
+}

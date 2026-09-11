@@ -6,7 +6,8 @@ an iPad Home Screen app (a PWA on Cloudflare Pages, like Conquest in `../Conques
 from one React, TypeScript and Vite code base. The code is copied from those two apps
 wherever they already do the job, so that a shared library can follow later.
 
-Current state: specified and planned 2026-09-11. Nothing built yet.
+Current state: phase 0 (the scaffold) built 2026-09-11 and awaiting review. The
+header, the version and the theme toggle are on screen; no chess yet.
 
 ## Documents
 
@@ -17,7 +18,7 @@ Current state: specified and planned 2026-09-11. Nothing built yet.
   their boxes, and the rules for the builder. Tick a box when the item lands with
   green tests and works on screen.
 - [docs/testing.md](docs/testing.md) - the two kinds of test and the rules the suite
-  keeps (arrives in phase 0).
+  keeps.
 - [docs/simple-chess-deploy.md](docs/simple-chess-deploy.md) - Nick's Cloudflare and
   iPad steps (arrives in phase 7).
 - `SimpleChess-brief.txt` - Nick's brief, kept for history. Build from the spec, not
@@ -104,5 +105,10 @@ Current state: specified and planned 2026-09-11. Nothing built yet.
   and conclude. The trainer met this twice.
 - **Chessground needs `ResizeObserver`**, which jsdom lacks. DOM tests mock the board
   with `src/test/board-stub.tsx`; `rig.dom.test.tsx` pins the throw.
+- **Headless Edge is not a screenshot tool on this machine.** Started with a fresh
+  scratch profile, and again with `--inprivate`, it signed into Nick's Windows account,
+  began syncing, and loaded his extensions (phase 0 notes). Screenshots come from the
+  pane, and from `packaged-eval.mjs --shot` against the Tauri window, which has its
+  own profile.
 - **The uninstall hook deletes a folder.** Its guard is copied from Tauri's own block
   and is not optional. `scripts/check-uninstall-hook.mjs` proves all four cases.

@@ -82,7 +82,7 @@ Read first: `../London/package.json`, `vite.config.ts`, the three `tsconfig*.jso
 `docs/testing.md`; `../Conquest/vite.config.ts`, `index.html`, `.node-version`,
 `.vscode/`.
 
-- [ ] 0.1 `package.json`: name `simple-chess`, version `0.1.0`, `"type": "module"`,
+- [x] 0.1 `package.json`: name `simple-chess`, version `0.1.0`, `"type": "module"`,
       description "A simple chess game against Stockfish". Scripts exactly:
       `dev` = `npm run engine && vite --port 5185 --strictPort`,
       `build` = `npm run engine && tsc -b && vite build`,
@@ -93,43 +93,43 @@ Read first: `../London/package.json`, `vite.config.ts`, the three `tsconfig*.jso
       `react-markdown`. Dev dependencies: the trainer's list plus `vite-plugin-pwa`
       and `sharp` at Conquest's versions. Pin the four testing-library and jsdom
       versions exactly, as the trainer does.
-- [ ] 0.2 `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`: the trainer's,
+- [x] 0.2 `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`: the trainer's,
       identical. `.oxlintrc.json` identical. `.node-version` = `22.12.0`.
-- [ ] 0.3 `vite.config.ts`: the trainer's `define` for `__APP_VERSION__`, the server
+- [x] 0.3 `vite.config.ts`: the trainer's `define` for `__APP_VERSION__`, the server
       port from `PORT` or 5185, the two vitest projects (`string` in node for
       `src/**/*.test.ts`, `dom` in jsdom for `src/**/*.dom.test.tsx` with
       `src/test/dom-setup.ts`). Leave the PWA plugin out until phase 7, so that no
       service worker exists while the screen is being built.
-- [ ] 0.4 `.gitignore`: the trainer's (`node_modules/`, `dist/`, `public/engine/`,
+- [x] 0.4 `.gitignore`: the trainer's (`node_modules/`, `dist/`, `public/engine/`,
       `src-tauri/target/`, `src-tauri/gen/`, caches, editor files, logs) plus
       Conquest's `dev-dist/`. `.vscode/extensions.json` and `settings.json` from
       Conquest, committed.
-- [ ] 0.5 `.claude/launch.json` with `simple-chess-dev` (`npm run dev`, port 5185)
+- [x] 0.5 `.claude/launch.json` with `simple-chess-dev` (`npm run dev`, port 5185)
       and `simple-chess-preview` (`npm run preview`, port 5186), in Conquest's shape
       with the `--prefix` flag pointing at this folder.
-- [ ] 0.6 `scripts/copy-engine.mjs` identical. `public/engine/` fills on
+- [x] 0.6 `scripts/copy-engine.mjs` identical. `public/engine/` fills on
       `npm run engine` and stays gitignored.
-- [ ] 0.7 `index.html`: Conquest's head (lang `en-AU`, viewport with
+- [x] 0.7 `index.html`: Conquest's head (lang `en-AU`, viewport with
       `viewport-fit=cover`, theme-color `#16181c`, the two `mobile-web-app-capable`
       metas, the apple-touch-icon and favicon links) with the title Simple Chess.
       The icon files arrive in phase 7; the links may point at files not there yet.
-- [ ] 0.8 `src/main.tsx` (the trainer's, with `./index.css`), `src/index.css`
+- [x] 0.8 `src/main.tsx` (the trainer's, with `./index.css`), `src/index.css`
       identical, `src/globals.d.ts` identical, `src/ui/theme.ts` identical but for
       the key `simple-chess.theme`, `src/ui/app.css` cut to `.app`, `.app-header`,
       `.app-version`, `.nav-link`, `.theme-toggle`, `button`, `button:disabled` and
       the `@media (min-width: 900px) and (min-height: 700px)` block.
-- [ ] 0.9 `src/ui/App.tsx`: the header (name, version, theme toggle) and an empty
+- [x] 0.9 `src/ui/App.tsx`: the header (name, version, theme toggle) and an empty
       `<main>`. No providers yet.
-- [ ] 0.10 `src/version.test.ts`: the trainer's. The two Tauri files do not exist
+- [x] 0.10 `src/version.test.ts`: the trainer's. The two Tauri files do not exist
       until phase 8, so the two tests that read them are written now and marked
       `it.skip` with a comment naming phase 8, which unskips them.
-- [ ] 0.11 `src/test/dom-setup.ts` identical. `src/test/dom.tsx` with `renderApp` and
+- [x] 0.11 `src/test/dom-setup.ts` identical. `src/test/dom.tsx` with `renderApp` and
       `goTo` only, adapted to this app's providers as they arrive.
-- [ ] 0.12 `docs/testing.md`: the trainer's, adapted. Drop the content checkers
+- [x] 0.12 `docs/testing.md`: the trainer's, adapted. Drop the content checkers
       section. Keep the two kinds, what is faked and why, and the rules.
-- [ ] 0.13 One DOM test: the header shows "Simple Chess" and the version, and the
+- [x] 0.13 One DOM test: the header shows "Simple Chess" and the version, and the
       theme toggle flips `data-theme` on the root and writes `simple-chess.theme`.
-- [ ] 0.14 `npm run dev`, `npx vitest run`, `tsc -b`, `npm run build` all work.
+- [x] 0.14 `npm run dev`, `npx vitest run`, `tsc -b`, `npm run build` all work.
 
 **Done when:** the dev page shows the header in both themes, the suite is green, and
 `dist/` exists. Screenshot the header in both themes at 1280 by 1000.
@@ -525,7 +525,7 @@ did it that way too.
 
 | Phase | State |
 |---|---|
-| 0 - the scaffold | Not started |
+| 0 - the scaffold | Done 2026-09-11, awaiting review |
 | 1 - the engine and the model | Not started |
 | 2 - the board, the session and a playable game | Not started |
 | 3 - the sidebar and what is remembered | Not started |
@@ -540,3 +540,110 @@ did it that way too.
 Each phase appends its notes here as it closes: what was measured, what was decided
 and why, what was asked of Nick and what he said, what the reuse review found, and
 what is left. The orchestrator's review adds its gate findings under them.
+
+### Phase 0 - builder notes (2026-09-11)
+
+**Measured.**
+
+- `npx vitest run`: 2 files, 4 tests passed and 2 skipped (the two Tauri version tests),
+  1.6 seconds warm. The very first run after `npm install` took 25.4 seconds, 19.5 of
+  them jsdom's environment start-up on a cold disk cache. Every run after it was under
+  2 seconds. Worth knowing before reading a first-run time as a breach of the twenty
+  second rule.
+- `tsc -b` clean. `npx oxlint` reports nothing. `npm run build`: 18 modules,
+  `dist/index.html` 1.26 kB, JavaScript 220.5 kB (68.9 kB gzipped), CSS 2.65 kB.
+- `npm install`: 459 packages, 0 vulnerabilities. Vite resolved to 8.3.0 and vitest to
+  4.1.11. npm warns that chessground 9.2.1 is deprecated ("no longer supported") and
+  that glob 11.1.0 (transitive) is old. The trainer carries the same two warnings.
+- `npm run engine` put `stockfish-18-lite-single.js` (21,429 bytes) and `.wasm`
+  (7,295,411 bytes) in `public/engine/`. `git status` shows nothing under `public/`.
+- The pane at 1280 by 1000. The served page read "Simple Chess v0.1.0", so it was this
+  folder's code. Dark: `data-theme` dark, `simple-chess.theme` = dark, ground
+  rgb(22, 24, 28), the version in rgb(122, 128, 138), which is `--text-faint`.
+  After the toggle: `data-theme` light, `simple-chess.theme` = light, ground
+  rgb(244, 242, 238), and the button reads "Dark" with the name "Switch to the dark
+  theme". Pressed again, it goes back. `scrollWidth` 1280 against `innerWidth` 1280 in
+  both themes. The pane's `localStorage` was cleared afterwards.
+- Red first: `shell.dom.test.tsx` asserted `london-trainer.theme` first and failed with
+  "expected null to be 'light'". Then it was fixed to `simple-chess.theme` and passed.
+- Every copy diffed against its origin with the `Origin:` line removed. Identical:
+  `scripts/copy-engine.mjs`, `src/index.css`, `src/globals.d.ts`,
+  `src/test/dom-setup.ts`, `src/main.tsx`. Byte-identical, with no origin line because
+  JSON has no header comment: the three `tsconfig*.json` and `.oxlintrc.json` (London),
+  and `.vscode/extensions.json` and `settings.json` (Conquest). Adapted, each saying
+  what changed: `vite.config.ts`, `src/ui/theme.ts`, `src/ui/app.css`,
+  `src/ui/App.tsx`, `src/test/dom.tsx`, `src/version.test.ts`, `index.html` (an HTML
+  comment), `docs/testing.md` (an origin paragraph).
+- `git -C ../London status` and `git -C ../Conquest status` show only what was there
+  before this phase began (`grep.exe.stackdump` in London, `tsconfig.tsbuildinfo` in
+  Conquest). Nothing from this phase.
+
+**Screenshots.** Both themes were screenshotted in the pane at 1280 by 1000 and looked
+at: the name, the faint version beside it, and the toggle at the right behind the
+trainer's rule. **There are no screenshot files.** The pane's screenshot tool hands the
+image to the session and writes no file, so the chip's "two file names" cannot be met
+from the pane. I tried headless Edge instead, driven over its DevTools port with the
+trainer's `packaged-eval.mjs --shot` (run from `../London`, not changed). **Do not do
+this on this machine.** Even with a fresh scratch profile, and again with
+`--inprivate`, Edge signed the profile into Nick's Windows account, started syncing
+("We are now syncing your browsing data across all your devices"), and loaded his
+extensions, one of which opened a claude.ai sign-in page. Both instances were stopped
+at once, both scratch profiles deleted, and the port confirmed closed. No screenshot
+was kept from either. The orchestrator should rule how a phase leaves screenshot files,
+if it must. `packaged-eval.mjs --shot` against the Tauri window in phase 8 is safe,
+because that window has its own WebView2 profile.
+
+**The icon links** in `index.html` point at files phase 7 makes. In development Vite
+answers a missing file with `index.html` (`/favicon-32.png` came back as `text/html`),
+so the pane console shows no 404 at all. The built site will 404 on them until phase 7.
+
+**Decided (code shape).**
+
+- The `Origin:` line is the first line inside the header comment. `main.tsx` has no
+  header comment, so it gets `// Origin: ...` and a blank line, which is my reading of
+  the chip's "two-line comment".
+- `shell.dom.test.tsx` checks the version against `__APP_VERSION__`, not a fresh read of
+  `package.json`. This departs from the chip (0.13) on purpose, and it is the reuse
+  review's find. `version.test.ts` already holds `__APP_VERSION__` to `package.json`,
+  so the two tests together prove the header shows the declared number. A third read of
+  `package.json` would be a second copy of `version.test.ts`'s `read`, and that copy
+  cannot be shared without breaking the identical-copy rule.
+- `src/test/dom.tsx` has `renderApp` only, as the chip says. The plan's 0.11 also names
+  `goTo`, but `goTo` opens a screen from a nav, and this app has one screen (S1). The
+  plan's mention looks stale.
+- `App.tsx`: the `nav` carries no `aria-label`. The trainer's says "Modes", which would
+  be untrue here.
+
+**Faults and contradictions, for the orchestrator.**
+
+1. **A fault in the trainer, carried back:** `London/src/version.test.ts` imports
+   `node:fs`, but `tsconfig.app.json` loads only `vite/client` types. It compiles in the
+   trainer only because `src/storage/blank-start-real.test.ts` carries
+   `/// <reference types="node" />`, which pulls node types into the whole program.
+   Copied alone, `tsc -b` fails with TS2591. The fix here is the same triple-slash line
+   at the top of `version.test.ts`. The trainer's `installer-hook.test.ts` has the same
+   hidden dependency.
+2. **`theme.ts` comment.** The chip says identical but for the key. Spec S3 and plan rule
+   5 say an adapted file's comments describe this app, and the trainer's comment named
+   its progress file and "the trainee" (spec 3 forbids the word). The spec wins: the
+   comment was rewritten, and the origin line says so.
+3. **`vite.config.ts` comments.** Besides the port comment, the projects comment drops
+   "Nothing about them is migrating." and says "the trainer's `play-context.tsx`", per
+   plan rule 5. The two projects themselves are exactly as written.
+4. **Identical copies whose comments describe the trainer.** `version.test.ts` speaks of
+   the trainer's phase 17 and "four places". `dom-setup.ts` speaks of "identity tests"
+   and a "replayed move". Both were kept word for word, because the chip and S3 say
+   identical. The orchestrator may prefer them adapted.
+5. **A small tidy in `App.tsx`.** The trainer's toggle repeats one ternary for `title`
+   and `aria-label`. Here it is one `switchTo` constant, and the wording is unchanged.
+
+**Asked of Nick.** Nothing.
+
+**Reuse review.** The version is read from `package.json` in `vite.config.ts` (the
+define) and in `version.test.ts`, both trainer copies. The new test uses the constant
+instead (above). No colour is written outside `index.css`: a search of `src/` for hex
+and `rgb(` finds only that file. The toggle label's repeated ternary now has one home.
+Nothing else.
+
+**Left.** Nothing in phase 0. Open for the orchestrator: how screenshot files are made
+(see above), and the stale `goTo` in 0.11.
