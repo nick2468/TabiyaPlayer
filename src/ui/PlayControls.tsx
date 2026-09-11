@@ -30,7 +30,11 @@ export function PlayControls({
 }) {
   return (
     <div className="play-controls">
-      <button type="button" onClick={onNew}>
+      {/* Disabled while the engine thinks, like the other three. A New game
+          started mid-search let the old game's reply land on a session that had
+          already been thrown away, and a row where three buttons grey and one
+          does not is the odder screen anyway (ruled at gate 2). */}
+      <button type="button" onClick={onNew} disabled={thinking}>
         New game
       </button>
       <button type="button" onClick={onUndo} disabled={thinking || !session.canUndo()}>

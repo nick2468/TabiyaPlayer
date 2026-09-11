@@ -38,6 +38,11 @@ function status(): string {
   return document.querySelector('.play-status')?.textContent ?? ''
 }
 
+/** The New game button, for the tests that read whether it is greyed. */
+function newGame(): HTMLButtonElement {
+  return screen.getByRole('button', { name: 'New game' }) as HTMLButtonElement
+}
+
 describe('a game on screen', () => {
   it('shows the move that was played, and the one that answered it', async () => {
     const { user } = renderApp()
@@ -152,9 +157,14 @@ describe('a game on screen', () => {
 
     await user.click(await screen.findByRole('button', { name: 'move d4' }))
     await vi.waitFor(() => expect(status()).toBe('Black is thinking...'))
+    // New game greys with the other three while a search is in flight, so the
+    // old game's reply cannot land on a session that has been thrown away
+    // (ruled at gate 2).
+    expect(newGame().disabled).toBe(true)
 
     release()
     await vi.waitFor(() => expect(status()).toBe('Your move'))
+    expect(newGame().disabled).toBe(false)
     expect(movesOnScreen()).toHaveLength(2)
   })
 

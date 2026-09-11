@@ -3,9 +3,10 @@ import { StockfishEngine, strengthProfile, type Engine } from '../engine'
 import { sanForMove } from '../model/moves'
 import type { Colour } from '../model/types'
 import { PlaySession, type Evaluation, type Hint } from '../play'
+import { forgetGame, rememberGame } from '../storage/current-game'
 
 /**
- * Origin: London src/ui/play-context.tsx, adapted: the game and nothing about reviewing or recording it; setLevel is new; New game keeps the worker; the worker's stop waits out StrictMode.
+ * Origin: London src/ui/play-context.tsx, adapted: the game and nothing about reviewing or recording it; setLevel and the remembered game are new; New game keeps the worker; the worker's stop waits out StrictMode.
  * The running game, held above the screen that shows it.
  *
  * A game is not part of a screen; it is a thing the app is doing. So it lives
@@ -43,7 +44,6 @@ export interface PlayGame {
   play: (from: string, to: string, promotion?: string) => Promise<void>
   undo: () => void
   redo: () => void
-  reset: () => void
   /** Changes the level from the engine's next move on (spec S6). */
   setLevel: (level: number) => Promise<void>
 }
@@ -107,6 +107,35 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
 
   const refresh = useCallback(() => setTick((count) => count + 1), [])
 
+  /**
+   * Writes the game down, so the app reopens on it (spec 10).
+   *
+   * One place that knows the record's shape, called after everything that
+   * changes the game: the user's move, the engine's reply, undo, redo, a new
+   * game and a level change. A game with no moves is not worth reopening, so a
+   * fresh one takes the record away rather than storing an empty one.
+   *
+   * Writing after the user's move AND again after the reply is deliberate. A
+   * page closed while the engine is thinking reopens on the position before the
+   * reply, and `start` finds the engine to move and plays it, which is the same
+   * game arriving a moment later.
+   */
+  const rememberNow = useCallback(() => {
+    const running = sessionRef.current
+    const setup = setupRef.current
+    if (!running || !setup) return
+    if (running.moves.length === 0) {
+      forgetGame()
+      return
+    }
+    rememberGame({
+      version: 1,
+      sans: running.moves.map((move) => move.san),
+      side: setup.side,
+      level: setup.level,
+    })
+  }, [])
+
   const engine = useCallback(async (): Promise<Engine> => {
     if (!engineRef.current) engineRef.current = createEngine()
     await engineRef.current.start()
@@ -140,6 +169,7 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
         refresh()
         // The engine moves first when the user plays Black.
         if (!fresh.userToMove && !fresh.isFinished()) await fresh.playEngine()
+        rememberNow()
         refresh()
       } catch (error) {
         setEngineError(asMessage(error))
@@ -147,7 +177,7 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
         setThinking(false)
       }
     },
-    [engine, refresh],
+    [engine, refresh, rememberNow],
   )
 
   const play = useCallback(
@@ -158,6 +188,7 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
       if (!san || !running.playUser(san)) return
       // A hint is about the position it was asked in, so it goes with it.
       setHint(null)
+      rememberNow()
       refresh()
       setThinking(true)
       try {
@@ -165,6 +196,7 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
         // to move, so it answers the move just played rather than the reply.
         if (running.isFinished()) return
         await running.playEngine()
+        rememberNow()
         refresh()
         // Phase 4 evaluates the reply here.
       } catch (error) {
@@ -173,7 +205,7 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
         setThinking(false)
       }
     },
-    [refresh, thinking],
+    [refresh, rememberNow, thinking],
   )
 
   /**
@@ -185,18 +217,20 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
     if (!running || thinking) return
     if (running.undo()) {
       setHint(null)
+      rememberNow()
       refresh()
     }
-  }, [refresh, thinking])
+  }, [refresh, rememberNow, thinking])
 
   const redo = useCallback(() => {
     const running = sessionRef.current
     if (!running || thinking) return
     if (running.redo()) {
       setHint(null)
+      rememberNow()
       refresh()
     }
-  }, [refresh, thinking])
+  }, [refresh, rememberNow, thinking])
 
   /**
    * A new level, heard by the engine's next move (spec S6).
@@ -206,32 +240,27 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
    * already thinking lands after that search, so it is the move after that
    * one which plays at the new level.
    */
-  const setLevel = useCallback(async (level: number) => {
-    const current = setupRef.current
-    if (!current) return
-    const next = { ...current, level }
-    setupRef.current = next
-    setSetup(next)
-    const profile = strengthProfile(level)
-    sessionRef.current?.setProfile(profile)
-    try {
-      await engineRef.current?.setStrength(profile)
-    } catch (error) {
-      setEngineError(asMessage(error))
-    }
-  }, [])
-
-  /** Puts the game away. The worker stays: it belongs to the app (spec S5). */
-  const reset = useCallback(() => {
-    sessionRef.current = null
-    setupRef.current = null
-    setSetup(null)
-    setSession(null)
-    setEngineError(null)
-    setHint(null)
-    setEvaluations(new Map())
-    void engineRef.current?.newGame().catch((error: unknown) => setEngineError(asMessage(error)))
-  }, [])
+  const setLevel = useCallback(
+    async (level: number) => {
+      const current = setupRef.current
+      if (!current) return
+      const next = { ...current, level }
+      setupRef.current = next
+      setSetup(next)
+      // The game carries its own level, so a game reopened after a mid-game
+      // change comes back at the level it was being played at, not the one it
+      // started at.
+      rememberNow()
+      const profile = strengthProfile(level)
+      sessionRef.current?.setProfile(profile)
+      try {
+        await engineRef.current?.setStrength(profile)
+      } catch (error) {
+        setEngineError(asMessage(error))
+      }
+    },
+    [rememberNow],
+  )
 
   // A fresh object every render, deliberately, with no useMemo around it.
   //
@@ -258,7 +287,6 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
     play,
     undo,
     redo,
-    reset,
     setLevel,
   }
 }

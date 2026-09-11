@@ -1,9 +1,16 @@
 /* Origin: London src/ui/app.css, adapted: cut to the header, the buttons and
    the tall-window block; button:disabled is London src/ui/drill.css line 132. */
 
+/* Origin of the padding: Conquest src/ui/styles.css .board-page, adapted: 24px
+   in place of 1rem, which is this app's page padding (spec 4.2).
+
+   Full screen on an iPad means the page runs under the rounded corners and the
+   home indicator. The safe-area insets keep the board clear of both. On every
+   other screen every inset is zero and the padding is the plain 24. */
 .app {
   margin: 0 auto;
-  padding: 24px;
+  padding: max(24px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right))
+    max(24px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
 }
 
 .app-header {
@@ -61,6 +68,9 @@ button {
   padding: 6px 12px;
   font: inherit;
   cursor: pointer;
+  /* Tall enough for a finger on an iPad (spec 4.4). The padding above already
+     gets close on this machine; this holds it wherever the font is smaller. */
+  min-height: 36px;
 }
 
 button:hover {

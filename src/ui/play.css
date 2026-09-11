@@ -52,6 +52,72 @@
   flex-direction: column;
   align-self: stretch;
   gap: 12px;
+  /* Ten rows of the move list, which is the least it is ever shown at. The
+     narrow layout below fixes the list at exactly this; beside the board it is
+     a floor and the list grows past it. One number, because a list that showed
+     ten rows in one layout and six in the other would read as two lists. */
+  --list-rows: calc(10 * 1.45em);
+}
+
+/* Origin: London src/ui/play.css lines 11 to 48, adapted: the `.play` prefix is
+   `.sidebar`, the fieldsets space themselves by the column's own gap, and the
+   select is not indented. */
+
+.sidebar fieldset {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 12px 16px;
+  /* The trainer's 16px bottom margin is gone: its fieldsets were siblings in a
+     plain block, and here the sidebar is a flex column with a 12px gap. Both
+     would make 28, which reads as the settings drifting apart. */
+  margin: 0;
+  max-width: 62ch;
+}
+
+.sidebar legend {
+  color: var(--text-faint);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0 6px;
+}
+
+.sidebar fieldset label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+  cursor: pointer;
+}
+
+.sidebar input[type='radio'] {
+  accent-color: var(--accent);
+}
+
+.sidebar select {
+  background: var(--control);
+  color: var(--text);
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  padding: 5px 8px;
+  font: inherit;
+  /* The trainer indents this under the radio above it. Here the select is the
+     fieldset's only control, so it starts at the fieldset's own edge. */
+  margin: 6px 0 0;
+  max-width: 100%;
+}
+
+/* Origin: London src/ui/study.css .hint, identical. */
+.hint {
+  color: var(--text-faint);
+  font-size: 0.85rem;
+  margin: 8px 0 0;
+}
+
+/* Save game and Load game, side by side. Both arrive in phase 5. */
+.sidebar-files {
+  display: flex;
+  gap: 8px;
 }
 
 /* Fills what the sidebar has left and scrolls inside itself.
@@ -60,7 +126,14 @@
    rows count towards the sidebar's own height, and a long game stretched the
    sidebar, and the page with it, past the board: measured at 928px beside a
    501px board column. Contained, the list is sized by the sidebar alone and
-   `flex: 1` gives it everything the sidebar has left. */
+   `flex: 1` gives it everything the sidebar has left.
+
+   The floor is what the settings left it. With the small board the three
+   fieldsets and the two file buttons come to 507px beside a 501px column, so
+   `flex: 1` had nothing to give and the list was measured at ZERO: the moves
+   disappeared the moment the sidebar arrived. The floor lets the sidebar run
+   past the board column instead, which is what a page that may scroll down is
+   for (spec 4.3). */
 .move-list {
   contain: size;
   list-style: none;
@@ -70,7 +143,12 @@
      same as the trainer's. */
   padding: 0 4px;
   flex: 1;
-  min-height: 0;
+  /* This replaces the `min-height: 0` phase 2 wrote here. That zero was the
+     usual guard for a flex item, whose min-height is otherwise `auto` and so
+     refuses to shrink below its content; but `contain: size` already makes the
+     content size zero, so the guard bought nothing. Declared twice, the later
+     one won and the floor above was never in effect. */
+  min-height: var(--list-rows);
   overflow-y: auto;
   font-variant-numeric: tabular-nums;
   /* Firefox and Chromium 121 and up. */
@@ -152,4 +230,31 @@
   background: var(--notice-bad);
   border-color: var(--notice-bad-edge);
   color: var(--notice-bad-text);
+}
+
+/* The narrow layout: an iPad held upright, or a narrow window (spec 4.3). The
+   sidebar goes under the board column and takes the full width. Nothing is
+   hidden; it only moves.
+
+   The 899 here is NARROW_BELOW's 900 in board-size.ts, one pixel down. THE TWO
+   MUST MOVE TOGETHER: the fit rule gives the board the sidebar's width in this
+   layout, and a board sized for it while the sidebar is still beside the board
+   is a page that scrolls sideways. */
+@media (max-width: 899px) {
+  .play-body {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    align-self: auto;
+  }
+
+  /* Exactly the ten rows, not a floor: there is no board column beside the list
+     here to take its height from, and a list that grew with the game would run
+     the page on for as long as the game lasted. */
+  .move-list {
+    height: var(--list-rows);
+    flex: none;
+  }
 }

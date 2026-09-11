@@ -33,7 +33,7 @@ export interface BoardProps {
 }
 
 /**
- * Origin: London src/ui/Board.tsx, identical.
+ * Origin: London src/ui/Board.tsx, adapted: the board re-measures when its size changes.
  * A thin React wrapper over chessground, the lichess board widget.
  *
  * Chessground owns its own DOM and mutates it through an imperative API, so the
@@ -110,6 +110,20 @@ export function Board({
       },
     })
   }, [fen, orientation, turnColor, movableColor, dests, lastMove])
+
+  // Chessground measures its host once and caches the bounds, and this app
+  // changes the board's size while it is mounted: the board setting and the
+  // viewport both move it (spec S2). The observer above did not fire on a size
+  // the app set itself, so the board box grew to 808 with a 416 board still
+  // drawn inside it and the bar running 392px past the last square.
+  //
+  // The size gets its own effect because React has written the new inline
+  // style by the time an effect runs, so this re-measures the box that is
+  // actually on screen. The trainer never needed either, because all three of
+  // its boards are a constant size.
+  useEffect(() => {
+    api.current?.redrawAll()
+  }, [size])
 
   useEffect(() => {
     api.current?.setAutoShapes(

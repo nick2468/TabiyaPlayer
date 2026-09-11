@@ -2,23 +2,35 @@ import { squaresForSan } from '../model/moves'
 import { legalDests, sideToMove } from '../model/position'
 import type { PlayedMove } from '../play'
 import { Board } from './Board'
-import { BOARD_SIZE } from './board-size'
-import { MoveList } from './MoveList'
 import { PlayControls } from './PlayControls'
+import { Sidebar, type SettingsProps } from './Sidebar'
 import { EngineError, StatusLine } from './StatusLine'
 import { usePlay } from './play-context'
+import { useBoardPixels } from './use-board-pixels'
 import './play.css'
 
 /**
  * The one screen (spec 4.1): the board column, with the bar, the board, the
  * buttons and the status line, and beside it the sidebar.
  *
- * Built from the provider's state and nothing else. Until the first game
- * exists there is nothing to show, except an engine that would not start.
+ * Built from the provider's state and the settings handed down from `Shell`,
+ * and nothing else. Until the first game exists there is nothing to show,
+ * except an engine that would not start.
  */
-export function Screen({ onNewGame }: { onNewGame: () => void }) {
+export function Screen({
+  settings,
+  onNewGame,
+}: {
+  settings: SettingsProps
+  onNewGame: () => void
+}) {
   const game = usePlay()
   const { session, thinking } = game
+  // Measured before the early return below, because a hook cannot be called
+  // conditionally and how big the board is drawn does not depend on there
+  // being a game to draw on it.
+  const pixels = useBoardPixels(settings.boardSize)
+
   if (!session) return game.engineError ? <EngineError message={game.engineError} /> : null
 
   const fen = session.fen
@@ -41,7 +53,7 @@ export function Screen({ onNewGame }: { onNewGame: () => void }) {
             dests={canMove ? legalDests(fen) : undefined}
             lastMove={squaresOf(session.moves.at(-1) ?? null)}
             onMove={(from, to) => void game.play(from, to)}
-            size={BOARD_SIZE}
+            size={pixels}
           />
         </div>
 
@@ -60,7 +72,7 @@ export function Screen({ onNewGame }: { onNewGame: () => void }) {
       </div>
 
       <aside className="sidebar">
-        <MoveList moves={session.moves} />
+        <Sidebar {...settings} moves={session.moves} />
       </aside>
     </div>
   )

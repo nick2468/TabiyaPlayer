@@ -1,7 +1,7 @@
 # Simple Chess - build plan
 
 Version 1. Written 2026-09-11. Status: **Active**. Phases 0 and 1 passed review
-2026-09-11, phase 2 on 2026-09-12; phase 3 is next.
+2026-09-11, phase 2 on 2026-09-12; phase 3 is built and awaiting review.
 
 Read [the specification](simple-chess-spec.md) first. It says what the app does. This
 document says what gets built, in what order, and how we know each part is finished.
@@ -262,34 +262,34 @@ Read first: `../London/src/ui/prefs.ts`, `remembered-settings.dom.test.tsx`,
 its test, `../Conquest/src/ui/styles.css` (the safe-area padding and the 900 px
 breakpoint).
 
-- [ ] 3.1 `src/storage/prefs.ts`: the trainer's `read`, `write`, `readOneOf`,
+- [x] 3.1 `src/storage/prefs.ts`: the trainer's `read`, `write`, `readOneOf`,
       `useRemembered` (identical text, origin line), and three hooks: `useLevel`
       (1 to 8, default 4), `useSide` (`white`/`black`), `useBoardSize`
       (`small`/`large`), with the keys of spec 10. Called once, in `App`, and handed
       down, for the reason the trainer gives on `useDrillScope`.
-- [ ] 3.2 `src/storage/current-game.ts`: `rememberGame({ sans, side, level })`,
+- [x] 3.2 `src/storage/current-game.ts`: `rememberGame({ sans, side, level })`,
       `recallGame()` returning the record or null, `forgetGame()`. Every field is
       checked on the way back, as Conquest's `recallSetup` checks its record: a
       version other than 1, a non-array, a side or level out of range, all give null.
       String tests, including a scrambled record.
-- [ ] 3.3 The provider writes the game after every move, undo, redo and start; a
+- [x] 3.3 The provider writes the game after every move, undo, redo and start; a
       fresh game with no moves removes the record. On mount `App` recalls the game:
       if it replays legally (`canReplayMoves`, copied from the trainer's
       `play-on.ts` as one function in `src/play/replay.ts` with an origin line), the
       game starts from it with its side and level and those become the settings;
       otherwise a fresh game.
-- [ ] 3.4 `src/ui/Sidebar.tsx`: three fieldsets in the trainer's `.play fieldset`
+- [x] 3.4 `src/ui/Sidebar.tsx`: three fieldsets in the trainer's `.play fieldset`
       style. "Difficulty": the select from the trainer's "How strong" with
       `levelName`, the level's `detail` under it and the engine-scale sentence.
       "Play as": two radios, White and Black, with one hint line: "Applies to the
       next new game." "Board": two radios, Small and Large. Under them the Save game
       and Load game buttons side by side (wired in phase 5, disabled until then).
       Then the move list.
-- [ ] 3.5 Level changes call the provider's `setLevel` (spec S6). Side changes are
+- [x] 3.5 Level changes call the provider's `setLevel` (spec S6). Side changes are
       read by the next New game. Board size changes re-render at once.
-- [ ] 3.6 Play as Black: New game starts the engine first (`!studentToMove` in the
+- [x] 3.6 Play as Black: New game starts the engine first (`!studentToMove` in the
       trainer's `start`), the board is oriented black. DOM test per spec S15 item 9.
-- [ ] 3.7 The fit rule (spec S2) in `board-size.ts`: `fitBoardSize(wanted,
+- [x] 3.7 The fit rule (spec S2) in `board-size.ts`: `fitBoardSize(wanted,
       viewportWidth, viewportHeight)` returning the largest multiple of 8 not above
       `wanted` that fits the width less padding, bar and gap, and the height less
       header, padding, buttons and status. The numbers it subtracts are named
@@ -297,18 +297,18 @@ breakpoint).
       item 11. A hook `useBoardPixels(size)` reads the viewport, re-measures on
       resize and orientation change, and returns the pixels; the small size is
       always 416.
-- [ ] 3.8 The narrow layout (spec 4.3): below 900 px the sidebar goes under the
+- [x] 3.8 The narrow layout (spec 4.3): below 900 px the sidebar goes under the
       board column at full width and the move list shows ten rows. Safe-area padding
       on `.app` as Conquest's `.board-page`. Buttons at least 36 px tall.
-- [ ] 3.9 DOM tests: every setting remembered across a remount (spec S15 item 8);
+- [x] 3.9 DOM tests: every setting remembered across a remount (spec S15 item 8);
       the game reopens after a remount and a scrambled stored game is discarded
       (item 7).
-- [ ] 3.10 Drive in the pane: change level mid-game and confirm through
+- [x] 3.10 Drive in the pane: change level mid-game and confirm through
       `window.__game` (the trainer's dev handle, kept) that the session's profile
       changed before the engine's next move. Screenshots at the three viewports of
       spec 15.2, both sizes, both themes. Record the probe at each: no sideways
       scroll; on 1180 by 820 the large board is a multiple of 8 below 832.
-- [ ] 3.11 Reuse review and commit.
+- [x] 3.11 Reuse review and commit.
 
 **Done when:** every setting survives a reload, the game survives a reload, and the
 large board fits every viewport with no sideways scroll.
@@ -542,7 +542,7 @@ did it that way too.
 | 0 - the scaffold | **Complete** 2026-09-11, gate passed the same day. 4 tests green, build clean. |
 | 1 - the engine and the model | **Complete** 2026-09-11, gate passed the same day. 90 tests green in 1.8 s. |
 | 2 - the board, the session and a playable game | **Complete** 2026-09-12, gate passed the same day. 111 tests green; a game plays in the pane. |
-| 3 - the sidebar and what is remembered | Not started |
+| 3 - the sidebar and what is remembered | **Complete** 2026-09-12, awaiting review. 155 tests green, 2 skipped; the settings and the game survive a reload; the large board is 808, 624 and 728 at the three viewports. |
 | 4 - the bar, the hint and the promotion picker | Not started |
 | 5 - save game and load game | Not started |
 | 6 - scenes, the probe and the layout pass | Not started |
@@ -979,3 +979,161 @@ game while thinking, which is a ruling for Nick because a person would see it.
   the fake by profile. Not a phase 2 fault.
 
 - [x] **Review gate 2 passed** (2026-09-12)
+
+### Phase 3 - builder notes (2026-09-12)
+
+The session was compacted between phases 2 and 3. Every document the chip named was
+read fresh before anything was touched.
+
+**Measured.**
+
+- `npx vitest run`: 17 files, 155 tests passed and 2 skipped, 4.2 seconds warm. By
+  project: `string` 13 files, 133 passed, 2 skipped (the two Tauri version tests);
+  `dom` 4 files, 22 passed. `tsc -b` clean, `npx oxlint` silent, `npm run build`
+  clean (JavaScript 302.55 kB, 96.33 kB gzipped; CSS 22.24 kB, 6.31 kB gzipped).
+- **Red first.** The New game guard was shown red before it landed: with
+  `disabled={thinking}` taken off the button, "says who is thinking and then Your
+  move" fails with "expected false to be true". Restored, and green.
+- **1280 by 1000, small board, dark.** `.live-eval` 24 wide at x 24. `.board` and
+  `cg-board` at x 68. All three run 80.67 to 496.67, height 416. `.play-controls`
+  and `.play-status` at x 68. `.sidebar` 280 wide at x 508. The move list is 232,
+  which is its ten-row floor. `scrollWidth` 1280 against `innerWidth` 1280.
+- **1280 by 1000, large board.** Bar, `.board` and `cg-board` all 808, running 81 to
+  889, the bar at x 24 and the board at x 68. The board box ends on the same pixel as
+  `cg-board` and as the bar (both differences 0). Controls 38 tall and the status 24,
+  both x 68 and 808 wide. `.sidebar` 280 at x 900, 894 tall, the same as
+  `.play-column`. The move list is 405. `scrollWidth` 1280 against 1280.
+- **1180 by 820, large board: 624**, which is the height running out first (820 less
+  191 of chrome leaves 629). Bar 624, both differences 0. The column is 668 wide at
+  x 24 and the sidebar 280 at x 716. `scrollWidth` 1180 against 1180.
+- **820 by 1180, upright, large board: 728**, which is the width running out first.
+  Bar, board and `cg-board` all 728, running 81 to 809, both differences 0. The
+  sidebar is UNDER the column, at x 24, 757 wide, which is the full width less the
+  48 of padding and the scrollbar. The move list is exactly 232, its ten rows.
+  `scrollWidth` 805 against `innerWidth` 820, so no sideways scroll; the page scrolls
+  down, which spec 4.3 allows.
+- **Both themes.** Dark ground rgb(22, 24, 28), light rgb(244, 242, 238), and the
+  toggle writes `simple-chess.theme`. The layout numbers are the same in both.
+- **A level changed in the middle of a game reaches the engine.** With two moves
+  played, choosing "6. Strong club" put the session on level 6, 300 ms, Elo 1750
+  BEFORE the next move was asked for, wrote `simple-chess.level` as 6, and rewrote
+  the remembered game at level 6. The engine's next reply was played at it.
+- **New game greys while the engine thinks** (gate 2's first ruling), seen live: a
+  10 ms recorder caught "Black is thinking... | New game disabled=true | movable=
+  undefined" and then "Your move | New game disabled=false | movable=white".
+- **Play as Black.** Choosing Black changed nothing about the game already on the
+  board: still White at the bottom, still four moves, and `simple-chess.side` written
+  as black. New game then had the engine open with g3, the board oriented black, the
+  user movable as black, and the record stored with side black.
+- **Everything survives a reload.** After one, the game came back as g3 with the user
+  on Black, the select reading 6, the board large and the position as it was left.
+- `git -C ../London status` and `git -C ../Conquest status` show only the two files
+  that were there before phase 0.
+
+**Three faults the pane found. Two fixed, one for Nick.**
+
+1. **The move list was ZERO pixels tall, so the moves vanished when the sidebar
+   arrived.** The three fieldsets and the two file buttons come to 507px beside a
+   501px board column, so `flex: 1` had nothing left to hand the list. The list now
+   has a floor of ten rows, which is the same ten the narrow layout shows, held in one
+   custom property so the two cannot drift. Worth recording HOW this was nearly
+   missed: the floor was written once and had no effect, because the rule then carried
+   `min-height` twice and phase 2's `min-height: 0` won by being later. That zero was
+   the ordinary guard for a flex item, and `contain: size` had already made it
+   pointless. A stylesheet sweep for repeated declarations in one rule now finds
+   nothing in either file.
+2. **Chessground never re-measured when the board grew.** Switching to Large gave an
+   808 box with a 416 board still drawn inside it and the bar running 392px past the
+   last square. `Board.tsx` observes its host with a `ResizeObserver`, and that did not
+   fire for a size the app set itself. The size now gets its own effect, because React
+   has written the new inline style by the time an effect runs. Verified on the case
+   that failed: 416 on load, then 808 live with no reload, both ending on the same
+   pixel as the bar. The trainer cannot meet this at all, because all three of its
+   boards are a constant size, which is why the copied file had no answer to it.
+   `Board.tsx` is therefore ADAPTED now and no longer identical.
+3. **At a display scale of 1.5 the large board cannot obey spec S2 and spec S16 at
+   once. This one is Nick's.** 808 divides by 8 in CSS pixels, which is what S2 asks.
+   It does not divide by 8 in DEVICE pixels: 808 times 1.5 is 1212, and 1212 over 8 is
+   151.5, so chessground floors each square to 151 device pixels and draws a board of
+   805.33. The bar is stretched to the 808 box, so it ends 2.67px below the board, and
+   S16 says the two must end on the same pixel. Seen twice, at `devicePixelRatio` 1.5;
+   at 1 the same 808 is exact. The small board is exact at every scale this app is
+   used at, which is why nothing showed before now: 416 times 1.25, 1.5 and 2.0 over 8
+   gives 65, 78 and 104, all whole. The fix would be to round the fit rule down to a
+   size whose squares are whole device pixels, which means passing
+   `devicePixelRatio` in. It would change numbers Nick has already been given: at a
+   scale of 1.5 the large board becomes 800 rather than 808 at 1280 by 1000, and 720
+   rather than 728 upright. That is a person-visible change to a decision recorded at
+   gate 2, so it is recorded here rather than taken.
+
+**What the pane could not do, for whoever drives it next.**
+
+- **Synthetic input does not reach chessground.** Neither the pane's own clicks nor
+  PointerEvents dispatched in the page moved a piece: `selected` stayed unset while
+  `movableColor` was white and `d2` had its two destinations. The moves in this drive
+  were played through the board's own move seam, the `movable.events.after` that
+  `Board.tsx` hands chessground, which is the same seam the DOM tests drive and the
+  same one a real click ends at. Everything above that seam is the code that ships.
+  Phase 2's notes say a move went in "by two clicks"; that did not reproduce here.
+- **Resizing the pane fires no `resize` event in the page.** `innerWidth` and
+  `innerHeight` change, but nothing tells the app, so the board kept its old size
+  until an event was dispatched by hand, and then it was right at once.
+  `useBoardPixels` is correct; a real window and a real iPad rotation both fire it.
+- **A hidden pane clamps `setTimeout` to about a second and never runs
+  `requestAnimationFrame`.** Two scripts were killed at the 45 second limit because of
+  it. A killed script has still RUN: one of them left an inline style behind from a
+  size sweep, and the next measurement read it as if it were the app's own. Keep pane
+  scripts short, and re-read from a fresh load after one dies.
+
+**Decided (code shape).**
+
+- `useRemembered` returns two things, not the trainer's three. The third, `show`,
+  displays a resumed game's strength without remembering it. This app has no such
+  case: the remembered game and phase 5's loaded file both BECOME the settings (plan
+  3.3, spec 9.2). Kept, it would be exactly the dead code gate 2 ruled against.
+- `Sidebar` takes no `thinking` prop, though the chip lists one. Nothing in the
+  sidebar uses it this phase: the file buttons are disabled outright until phase 5,
+  and spec S6 wants the level select live while the engine thinks. Phase 5 adds the
+  prop with the buttons it belongs to.
+- The six settings fields travel as one `SettingsProps` object, declared once, so
+  `Shell`, `Screen` and `Sidebar` cannot drift about what a setting is.
+- `fitBoardSize` takes a fourth argument, `narrow`, which plan box 3.7 does not name.
+  It has to: the sidebar is beside the board or under it, and the width left differs
+  by 304px, so the rule cannot answer without knowing which layout it is in.
+- The fieldsets carry no bottom margin. The sidebar is a flex column with a 12px gap,
+  and the trainer's 16px on top of that read as the settings drifting apart.
+- `reset` is gone (gate 2's second ruling). Nothing called it, and this phase found no
+  use for it: New game starts a fresh game rather than putting one away.
+
+**Copies.**
+
+- **Adapted from identical this phase:** `src/ui/Board.tsx` (the size effect) and
+  `src/test/board-stub.tsx` (`data-orientation`). Both origin lines say so. Spec
+  13.2's table still calls `Board.tsx` "London, identical", which is now stale, for
+  the orchestrator to correct.
+- **New, from the trainer:** `src/storage/prefs.ts` (`read`, `write`, `readOneOf` and
+  `useRemembered`, their text unchanged) and `src/play/replay.ts` (`canReplayMoves`,
+  its comment reworded to a stored game and the moves readonly).
+- **New, from Conquest:** `src/storage/current-game.ts`, which is `recallSetup`'s rule
+  applied to a game: every field checked, anything else discarded in silence.
+- No new or adapted file says "trainee", "student", "repertoire", "course" or "book".
+  No em dashes under `src/`.
+
+**Asked of Nick.** One question, fault 3 above: at a display scale of 1.5 the large
+board can divide by 8 or it can end where the bar ends, and not both. The small board
+is unaffected at every scale. Nothing else needed a ruling.
+
+**Reuse review.** `localStorage` is touched only in `src/storage` and `theme.ts`. The
+level check has one home, `levelOrNull`, keyed off the engine's own `STRENGTH_LEVELS`
+rather than a written-out 1 to 8, so the setting and the remembered game cannot
+disagree about what a level is; this is the find the chip predicted. The two sides are
+written out once, as `SIDES`, and both the setting and the game record read it.
+`JSON.parse` and `JSON.stringify` appear only in `current-game.ts`. The 900 has one
+code home, `NARROW_BELOW`, with the CSS 899 commented against it at both ends. No
+pixel number is written in a `.ts` or `.tsx` outside `board-size.ts`; one appears in a
+`Board.tsx` comment, describing the fault it fixes. `app.css` keeps its own 900 for
+the tall-window block, which is a different question and was left alone.
+
+**Left.** The 808 question above. And `Board.tsx` now has both a `ResizeObserver` and
+a size effect; the observer covers a host resized by CSS rather than by the prop, so
+it was kept, but the orchestrator may want to decide whether it still earns its place.

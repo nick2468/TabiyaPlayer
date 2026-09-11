@@ -38,12 +38,18 @@ export function movesOnScreen(): string[] {
   )
 }
 
-/** What the board is showing, what it is highlighting, and its arrows. */
-export function board(): { fen: string; lastMove: string; shapes: string[] } {
+/** What the board is showing, which way up, what it highlights, and its arrows. */
+export function board(): {
+  fen: string
+  orientation: string
+  lastMove: string
+  shapes: string[]
+} {
   const node = screen.getByTestId('board')
   const shapes = node.getAttribute('data-shapes') ?? ''
   return {
     fen: node.getAttribute('data-fen') ?? '',
+    orientation: node.getAttribute('data-orientation') ?? '',
     lastMove: node.getAttribute('data-last-move') ?? '',
     shapes: shapes === '' ? [] : shapes.split(' '),
   }

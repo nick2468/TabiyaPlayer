@@ -11,6 +11,7 @@ export {
 } from './evalbar'
 export { type Hint } from './hint'
 export { endingFromMoves, isCheckmateOutcome, outcomeOf } from './outcome'
+export { canReplayMoves } from './replay'
 export {
   PlaySession,
   fullMove,

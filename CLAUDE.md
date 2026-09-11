@@ -6,9 +6,11 @@ an iPad Home Screen app (a PWA on Cloudflare Pages, like Conquest in `../Conques
 from one React, TypeScript and Vite code base. The code is copied from those two apps
 wherever they already do the job, so that a shared library can follow later.
 
-Current state: phase 2 (the board, the session and a playable game) built 2026-09-12
-and awaiting review. A game against the engine plays on screen at level 4 as White,
-with New game, Undo, Redo, the status line and the move list; no sidebar settings yet.
+Current state: phase 3 (the sidebar and what is remembered) built 2026-09-12 and
+awaiting review. The sidebar carries difficulty, Play as and board size, all
+remembered with the game in progress, and the large board fits the screen it is on.
+One question is open for Nick: at a display scale of 1.5 the large board cannot be a
+multiple of 8 AND end where the bar ends, and the plan's phase 3 notes say why.
 
 ## Documents
 
