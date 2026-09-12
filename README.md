@@ -14,8 +14,10 @@ the phases and their progress.
 
 ## Status
 
-Phases 0 to 7 built. The game plays, saves and loads, remembers itself, and is a
-Home Screen app that works with no internet. The Windows installer is phase 8.
+Built, all eight phases. The game plays, saves and loads, remembers itself, is a Home
+Screen app that works with no internet, and installs on Windows as version 1.0.0.
+[docs/acceptance.md](docs/acceptance.md) walks the specification's acceptance list item
+by item and says who checked what.
 
 ## Running it
 
@@ -50,4 +52,20 @@ then Add to Home Screen. Once it has been opened once it works in aeroplane mode
 engine and all. Publishing it is Nick's job and needs his accounts:
 [docs/simple-chess-deploy.md](docs/simple-chess-deploy.md) has every step.
 
-**On Windows, as an installed app.** Arrives with phase 8.
+**On Windows, as an installed app.** The Rust toolchain has to be on the path first
+(it lives in `%USERPROFILE%\.cargo\bin` and is not there by default), then:
+
+```bash
+npx tauri build
+```
+
+That writes `src-tauri/target/release/bundle/nsis/Simple Chess_1.0.0_x64-setup.exe`.
+It installs for the current user, with no administrator prompt, into
+`%LOCALAPPDATA%\Simple Chess`. It is unsigned, so SmartScreen warns the first time:
+More info, then Run anyway. The window keeps its settings and the game in progress in
+`%LOCALAPPDATA%\Simple Chess Data`, and the uninstaller removes that folder only if you
+tick the box.
+
+`npx tauri dev` runs the same window against the dev server, and
+`node scripts/check-uninstall-hook.mjs` proves the uninstaller's four cases without
+uninstalling anything.

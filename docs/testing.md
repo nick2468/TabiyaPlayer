@@ -129,8 +129,35 @@ Two numbers have to hold at every viewport, both board sizes and both themes (S1
 the bar, `.board` and `cg-board` end on the same pixel, and `scrollWidth` never
 exceeds `innerWidth`. Every UI-affecting phase records the table in its notes.
 
-In phase 8 the same file is read a second way, against the installed Windows app,
-through `node scripts/packaged-eval.mjs @scripts/probes/layout.js`.
+In phase 8 the same file is read a second way, against the built Windows app, through
+`node scripts/packaged-eval.mjs @scripts/probes/layout.js`.
+
+## The two things only the packaged app can answer
+
+**Whether the shipped window is the app.** `npx tauri build` makes a window whose
+contents are a production bundle, and a production bundle ignores synthetic events on
+the board on purpose, so nothing in a test can play a move in it. It can still be read.
+Start the built executable with WebView2's debugging port on:
+
+```bash
+WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS="--remote-debugging-port=9333" ./src-tauri/target/release/simple-chess.exe &
+```
+
+Then `node scripts/packaged-eval.mjs "<expression>"` evaluates anything in that window,
+`@file` reads the expression from a file (which is how the layout probe runs there), and
+`--shot window.png` writes a picture of it. That picture is the one screenshot file this
+project makes, because the window has its own browser profile and the pane cannot reach
+it. Clicking a button works; making a move does not, and that move is the one step in
+the acceptance walk that belongs to a person.
+
+**Whether the uninstaller deletes the right folder.** `node
+scripts/check-uninstall-hook.mjs` compiles the shipped NSIS macro with the folder name
+pointed at a scratch folder and runs it four times, once for each combination of "the
+user ticked the box" and "this is an upgrade". Only the first combination may remove the
+folder. The script needs `makensis`, which a Tauri build downloads to
+`%LOCALAPPDATA%\tauri\NSIS`. It is a mutation test by nature: take the `$UpdateMode <> 1`
+half of the guard out and the second case fails, which is a version bump deleting the
+user's game.
 
 ## The offline proof and the update bar
 

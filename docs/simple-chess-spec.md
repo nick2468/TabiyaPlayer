@@ -677,7 +677,8 @@ SimpleChess/
       prefs.ts                    London's shape, this app's keys; oneOf, and one remember function per setting
       current-game.ts             new: the remembered game
       files.ts                    London's backup.ts pattern: save and open a .pgn
-      paths.ts                    London, cut to isDesktop; LOCAL_FOLDER arrives with the window in phase 8
+      paths.ts                    London, cut to isDesktop and LOCAL_FOLDER (phase 8)
+      local-folder.test.ts        new: holds the folder name across paths.ts, lib.rs and the hook (phase 8)
     ui/
       App.tsx                     the shell: header, theme, the one screen
       Board.tsx                   London, adapted: a size effect (phase 3; the board changes size while mounted)
@@ -711,7 +712,14 @@ SimpleChess/
       by-profile.ts                  new: a fake that answers moves and analysis differently
       held-engine.ts                 new: a fake whose move waits, for reading the screen mid-move
       played-moves.ts                London's game-pgn.test.ts playedMoves: SANs as the session played them
-  src-tauri/                      London, names changed, capabilities cut
+  src-tauri/                      London, names changed, capabilities cut (phase 8)
+    tauri.conf.json               the window of 11.1, nsis currentUser, the hook
+    Cargo.toml, Cargo.lock        package simple-chess, lib simple_chess_lib
+    build.rs                      London, identical
+    src/main.rs, src/lib.rs       London, identical but for the names and LOCAL_FOLDER
+    capabilities/default.json     the five grants of 11.4 and nothing else
+    installer-hooks.nsh           London, one folder
+    icons/                        npx tauri icon public/icon.svg
   .claude/launch.json             simple-chess-dev on 5185, simple-chess-preview on 5186
 ```
 

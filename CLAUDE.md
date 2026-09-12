@@ -6,12 +6,18 @@ an iPad Home Screen app (a PWA on Cloudflare Pages, like Conquest in `../Conques
 from one React, TypeScript and Vite code base. The code is copied from those two apps
 wherever they already do the job, so that a shared library can follow later.
 
-Current state: phase 7 (the iPad Home Screen app) built 2026-09-12 and awaiting
-review; box 7.8, which is publishing it and playing a move in aeroplane mode, is
-Nick's. The built app has an icon and a manifest, opens with the server stopped and
-answers a move from the precached engine, and offers a new version in a bar that says
-loading it loses nothing. `docs/simple-chess-deploy.md` has Nick's steps. Phases 0 to
-6 passed their gates. Phase 6 put every screen of spec 15 on the address bar in a
+Current state: all eight phases are built. Phase 8 (the Windows app and the installer)
+landed 2026-09-12 and awaits review: `src-tauri/` is the trainer's with the names
+changed, the window is 1280 by 1000 and keeps its browser profile in
+`%LOCALAPPDATA%\Simple Chess Data`, the NSIS installer installs for the current user,
+and the uninstaller removes that one folder only when the box is ticked, proved by
+`node scripts/check-uninstall-hook.mjs`. The version is 1.0.0 in three files.
+`docs/acceptance.md` walks spec 17 item by item. Two boxes are Nick's and are the only
+things left: 8.6 (run the installer, play a move, save and load, reopen, uninstall) and
+7.8 (publish, add to the Home Screen, play a move in aeroplane mode). Phases 0 to 7
+passed their gates. Phase 7 made it a Home Screen app: an icon, a manifest, the engine
+in the precache, and a new version offered in a bar that says loading it loses nothing;
+`docs/simple-chess-deploy.md` has Nick's steps for it. Phase 6 put every screen of spec 15 on the address bar in a
 development build (`?scene=midgame&size=large&theme=light`), kept all of it out of
 `npm run build`, and added `scripts/probes/layout.js` and `scripts/packaged-eval.mjs`
 for phase 8; its pass found one fault and fixed it, the move list's "keep the newest
@@ -38,7 +44,9 @@ scale).
 - [docs/testing.md](docs/testing.md) - the two kinds of test and the rules the suite
   keeps.
 - [docs/simple-chess-deploy.md](docs/simple-chess-deploy.md) - Nick's Cloudflare and
-  iPad steps (arrives in phase 7).
+  iPad steps.
+- [docs/acceptance.md](docs/acceptance.md) - spec 17 walked item by item, with what was
+  done to check each one and who did it.
 - `SimpleChess-brief.txt` - Nick's brief, kept for history. Build from the spec, not
   from this.
 
@@ -55,12 +63,19 @@ scale).
 
 ## Toolchain
 
-- Node 22.12.0 (`.node-version`), npm. Rust toolchain for phase 8 only.
+- Node 22.12.0 (`.node-version`), npm. The Rust toolchain is installed but **not on a
+  tool shell's PATH**: `cargo` and `rustc` are in `%USERPROFILE%\.cargo\bin`, so put it
+  on the path for any command that builds the window (`export
+  PATH="$HOME/.cargo/bin:$PATH"` in Bash, `$env:Path = "$env:USERPROFILE\.cargo\bin;$env:Path"`
+  in PowerShell). NSIS is already fetched, at `%LOCALAPPDATA%\tauri\NSIS`.
 - `npm run dev` on port 5185 (`--strictPort`; 5173 is dc.web, 5175 is London, 5180
   and 5181 are Conquest). `npm run preview` on 5186 serves the built files with the
   service worker, which is the only way to test offline.
 - `npx vitest run` runs both test projects. `tsc -b` type-checks. `npm run build`
-  makes `dist/`. `npx tauri build` makes the installer (phase 8).
+  makes `dist/`. `npx tauri build` makes the window and the installer, into
+  `src-tauri/target/release/` and `.../bundle/nsis/`; `npx tauri dev` runs the window
+  against the dev server. `node scripts/check-uninstall-hook.mjs` proves the
+  uninstaller's four cases without uninstalling anything.
 - Stockfish is copied into `public/engine/` by `npm run engine` (gitignored).
 
 ## Architecture rules
@@ -92,7 +107,9 @@ scale).
   scroll arithmetic); `SCENES` and `sceneFromLocation` in `dev/scenes.ts`;
   `updateNotice` in `ui/updates.ts` (the update bar's words); the four `--pad-*`
   custom properties on `.app` (the page's safe-area padding, which the update bar
-  reuses).
+  reuses); `LOCAL_FOLDER` in `storage/paths.ts` (the Windows data folder, whose name
+  is also in `src-tauri/src/lib.rs` and `installer-hooks.nsh` because neither can
+  import it, with `storage/local-folder.test.ts` holding the three together).
   Never fork a second copy, and give any new repeated snippet a single home the
   moment it appears twice.
 - Copied files are byte-identical to their origin plus one `Origin:` line; adapted

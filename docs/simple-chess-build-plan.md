@@ -1,8 +1,9 @@
 # Simple Chess - build plan
 
 Version 1. Written 2026-09-11. Status: **Active**. Phases 0 and 1 passed review
-2026-09-11, phases 2 to 7 on 2026-09-12, with box 7.8 left for Nick; phase 8 is
-next and last.
+2026-09-11, phases 2 to 7 on 2026-09-12, with box 7.8 left for Nick. Phase 8, the
+last, was built 2026-09-12 and awaits review; its box 8.6 is Nick's. Those two boxes
+are all that is open.
 
 Read [the specification](simple-chess-spec.md) first. It says what the app does. This
 document says what gets built, in what order, and how we know each part is finished.
@@ -505,29 +506,32 @@ window, and uninstalls cleanly. Version 1.0.0.**
 Read first: `../London/src-tauri/` in full, `scripts/check-uninstall-hook.mjs`,
 `scripts/packaged-eval.mjs`, `src/version.test.ts`, spec 11.
 
-- [ ] 8.1 `src-tauri/`: `tauri.conf.json` (productName "Simple Chess", identifier
+- [x] 8.1 `src-tauri/`: `tauri.conf.json` (productName "Simple Chess", identifier
       `com.nick.simple-chess`, devUrl 5185, the window per spec 11.1 with
       `"create": false`, nsis `currentUser` with `installerHooks`, `csp: null` as the
       trainer), `Cargo.toml` (package `simple-chess`, lib `simple_chess_lib`),
       `build.rs`, `src/main.rs`, `src/lib.rs` identical but for `LOCAL_FOLDER`,
       `capabilities/default.json` per spec 11.4, `.gitignore`.
-- [ ] 8.2 `installer-hooks.nsh` with one folder, and `scripts/check-uninstall-hook.
+- [x] 8.2 `installer-hooks.nsh` with one folder, and `scripts/check-uninstall-hook.
       mjs` adapted to one folder. Run the check: four cases, only the ticked
-      non-upgrade case removes the scratch folder. Record the output.
-- [ ] 8.3 Icons: `npx tauri icon public/icon.svg` (or the 512 PNG) into
-      `src-tauri/icons/`.
-- [ ] 8.4 `version.test.ts`: unskip the two Tauri tests. Set 1.0.0 in all three
-      files.
-- [ ] 8.5 `npx tauri build`. Record the installer's path and size. Start the built
+      non-upgrade case removes the scratch folder. Record the output. *(Four PASS
+      lines; the `$UpdateMode` half taken out turns case 2 red, and back.)*
+- [x] 8.3 Icons: `npx tauri icon public/icon.svg` (or the 512 PNG) into
+      `src-tauri/icons/`. *(The SVG was taken; the set matches the trainer's.)*
+- [x] 8.4 `version.test.ts`: unskip the two Tauri tests. Set 1.0.0 in all three
+      files. *(Four tests live; the bump is its own commit.)*
+- [x] 8.5 `npx tauri build`. Record the installer's path and size. Start the built
       executable with the debug port and run the probe through `packaged-eval.mjs`;
       `--shot` the window. Save a game through the real dialog and load it back: the
-      desktop half of phase 5.7.
+      desktop half of phase 5.7. *(Built, probed and looked at; Hint answered from
+      the engine inside the window. The two dialogs went to 8.6: they are windows on
+      the screen and nobody was at it.)*
 - [ ] 8.6 Nick: run the installer, open the app, play a move, save and load a game,
       close and reopen to see the game remembered. Uninstall with the box ticked and
       confirm `%LOCALAPPDATA%\Simple Chess Data` is gone. Record the date here.
-- [ ] 8.7 Acceptance walk: spec 17, item by item, each with what was done to check
-      it, in `docs/acceptance.md`.
-- [ ] 8.8 Reuse review, docs sweep (spec, plan, testing, deploy, README, CLAUDE.md
+- [x] 8.7 Acceptance walk: spec 17, item by item, each with what was done to check
+      it, in `docs/acceptance.md`. *(It found one hole, in S15 item 10.)*
+- [x] 8.8 Reuse review, docs sweep (spec, plan, testing, deploy, README, CLAUDE.md
       current), commit.
 
 **Done when:** spec 17 is green in `docs/acceptance.md`, with 7.8 and 8.6 dated by
@@ -559,7 +563,7 @@ did it that way too.
 | 5 - save game and load game | **Complete** 2026-09-12, gate passed the same day. 222 tests green. A game saves as the PGN of spec 9.1 and loads back with its moves, side and level; undo goes back through a game that arrived whole and fetches the numbers as it goes. |
 | 6 - scenes, the probe and the layout pass | **Complete** 2026-09-12, gate passed the same day. 243 tests green. The five scenes open from the address bar and none survives the build; the probe holds S16's two numbers in all twelve rows; the move list no longer scrolls the board off the screen. |
 | 7 - the iPad Home Screen app | **Complete** 2026-09-12, gate passed the same day; box 7.8 is Nick's. 250 tests green. The built app has an icon and a manifest, opens with the server stopped and answers a move, and offers a new version in a bar that says it costs nothing. |
-| 8 - the Windows app and the installer | Not started |
+| 8 - the Windows app and the installer | **Built** 2026-09-12, awaiting review; box 8.6 is Nick's. 257 tests green. The window opens at 1280 by 1000 with the engine in it, the installer is 6.6 MB and installs for the current user, and the uninstaller's four cases are proved against a scratch folder. Version 1.0.0. |
 
 ## Phase notes
 
@@ -2110,3 +2114,180 @@ reference lines. The `.update-bar` rules are Conquest's with this app's colour n
   variable, the DNS record, the Home Screen add, and the aeroplane-mode move.
 
 - [x] **Review gate 7 passed** (2026-09-12)
+
+### Phase 8 - builder notes (2026-09-12)
+
+The session was compacted before this phase. Everything the chip named was read fresh
+before anything was touched: `CLAUDE.md`, spec 9.3, 10, 11, 12.3, 13, 15.3 and 17, the
+plan's rules and phase 8, the phase 7 notes and the gate 7 findings, `docs/testing.md`,
+and then all of `../London/src-tauri/` with `check-uninstall-hook.mjs`,
+`packaged-eval.mjs`, `version.test.ts` and `docs/v1-acceptance.md`.
+
+**Measured.**
+
+- `npx vitest run`: 31 files, **257 tests passed, none skipped**, 8.1 seconds warm. By
+  project: `string` 21 files, 202 passed; `dom` 10 files, 55 passed. `tsc -b` clean,
+  `npx oxlint` silent, `npm run build` clean, `npx tauri build` clean.
+- **The build.** `npx tauri build` with `%USERPROFILE%\.cargo\bin` on the path: 2 m 54 s
+  the first time (988 crates) and 1 m 40 s for the version bump. It makes
+  `src-tauri/target/release/simple-chess.exe`, 9,147,392 bytes, and
+  `src-tauri/target/release/bundle/nsis/Simple Chess_1.0.0_x64-setup.exe`, **6,894,680
+  bytes (6.6 MB)**.
+- **The uninstall hook, all four cases**, `node scripts/check-uninstall-hook.mjs`:
+
+  ```
+        the program saw ticked=1 update=0
+  PASS  ticked, ordinary uninstall: wanted gone, got local=gone
+        the program saw ticked=1 update=1
+  PASS  ticked, but an upgrade: wanted present, got local=present
+        the program saw ticked=0 update=0
+  PASS  not ticked, ordinary uninstall: wanted present, got local=present
+        the program saw ticked=0 update=1
+  PASS  not ticked, and an upgrade: wanted present, got local=present
+  All four cases behaved.
+  ```
+
+  **Then red on purpose.** With the `$UpdateMode <> 1` half of the guard taken out, case
+  two reads `FAIL ticked, but an upgrade: wanted present, got local=gone` and the script
+  exits 1. That is a routine version bump deleting the user's settings and game. The
+  guard was put back by the reverse edit and the four cases run again green.
+- **The packaged window, driven over the debugging port.** The executable was started
+  under `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS="--remote-debugging-port=9333"` and read
+  with `scripts/packaged-eval.mjs`:
+  - `document.querySelector('h1').innerText` is **"Simple Chess v1.0.0"**.
+  - The window title is "Simple Chess" and the inner size is **1280 by 1000**, which is
+    spec 11.1 exactly.
+  - The layout probe, from the file, against that window:
+
+    | Box | x | y | width | height | bottom |
+    |---|---|---|---|---|---|
+    | `.board` | 68 | 80.67 | 416 | 416 | 496.67 |
+    | `cg-board` | 68 | 80.67 | 416 | 416 | 496.67 |
+    | `.live-eval` | 24 | 80.67 | 24 | 416 | 496.67 |
+    | `.play-controls` | 68 | 508.67 | 416 | 37.33 | 546 |
+    | `.sidebar` | 508 | 80.67 | 280 | 738.58 | 819.25 |
+    | `.move-list` | 508 | 587.25 | 280 | 232 | 819.25 |
+
+    `scrollWidth` 1280 against `innerWidth` 1280, display scale 1.5. **S16 holds in the
+    shipped window**, which is the second way spec 15.3 asks the probe to be read.
+  - **The engine runs inside it.** The bar read "+0.4" on the start position, and Hint,
+    pressed through the port, answered "The engine suggests e3." with the blue arrow
+    drawn from e2 to e3. A button press is not a synthetic board event, so this works
+    where a move would not, and it proves the whole engine path: the WASM loading from
+    the bundled files, the worker starting, a real search finishing.
+  - **No service worker, read rather than asserted** (S12):
+    `navigator.serviceWorker.getRegistrations()` is empty and there is no `.update-bar`
+    in the document.
+  - **The screenshot** (`--shot`, the one screenshot file this project makes, written to
+    the scratchpad and not the repo). It shows the whole app in the dark theme at 1280 by
+    1000: the header "Simple Chess v1.0.0" with Light at the right, the bar at the left
+    with its pale White share from the bottom and "+0.4" under it, the small board with
+    the start position and its coordinates, New game, Undo and Redo greyed, Hint live,
+    "Your move" under them, and the sidebar's Difficulty (4. Club, with the two sentences
+    about the scale), Play as (White), Board (Small), Save game and Load game. The second
+    capture, after Hint, adds the arrow and "The engine suggests e3." in the notice style.
+    Nothing is cut off and nothing scrolls.
+  - **The folders, before and after.** Before the run none of `%LOCALAPPDATA%\Simple Chess
+    Data`, `%LOCALAPPDATA%\com.nick.simple-chess` or `%APPDATA%\com.nick.simple-chess`
+    existed. After it, `%LOCALAPPDATA%\Simple Chess Data\WebView2\EBWebView` does and the
+    other two still do not. That is the whole reason the window is built in `lib.rs`
+    rather than left to the config.
+  - The app was closed afterwards. Two windows cannot share one WebView2 profile, and
+    Nick's installer run is next.
+- **The copies, diffed against the trainer's**, with the `Origin:` line stripped:
+  - `build.rs` and `.gitignore`: **0 differing lines**.
+  - `src/main.rs`: **1**, the lib it calls.
+  - `Cargo.toml`: **4**, the package name, the version, the description and the lib name.
+  - `tauri.conf.json`: **11**, the product name, the version, the identifier, the dev
+    port, the five window numbers and the two descriptions.
+  - `src/lib.rs`: **2 lines of code**, `LOCAL_FOLDER` and the message in the second
+    `expect`. The comments are rewritten (see below).
+  - `installer-hooks.nsh`: the `APP_DATA_FOLDER` define and its `RMDir` removed, the local
+    folder renamed, and one comment word changed from "these two folders" to "this
+    folder".
+  - `capabilities/default.json` is not a diff: it is the trainer's shape with five
+    permissions instead of thirty-eight.
+- `git -C ../London status` and `git -C ../Conquest status` are unchanged from gate 7.
+  Nothing under either folder was touched.
+
+**Decided (code shape).**
+
+- **`src-tauri`'s comments are rewritten where they described the trainer's data.** The
+  chip says to keep `lib.rs`'s comments, and spec S3 says an adapted file's comments
+  describe this app. They disagree wherever the trainer's comments name its progress
+  file, its marker and its backup copy, none of which exist here. S3 wins, as the chip
+  says it should: a comment naming a file the app does not have is worse than no comment.
+  The reasoning those comments carry - why the profile folder is not the install folder,
+  why the identifier does not change, why the guard is not optional - is kept in full and
+  is why the files read long.
+- **An `Origin:` line was added to `build.rs`, `main.rs`, `lib.rs`, `Cargo.toml`,
+  `check-uninstall-hook.mjs` and `installer-hooks.nsh`.** The chip calls `build.rs`
+  "identical (three lines)"; S3 says an identical copy is byte-identical plus one
+  `Origin:` line. Both are satisfied: the code is identical and the file has one comment
+  line above it. `tauri.conf.json`, `capabilities/default.json` and the one-line
+  `.gitignore` have no `Origin:` line, because JSON has nowhere to put a comment.
+- **The folder name is held by a test rather than by a comment.** Three files name
+  `Simple Chess Data` and none can import from another: `paths.ts` declares it, `lib.rs`
+  points the profile at it, `installer-hooks.nsh` deletes it. `local-folder.test.ts`
+  reads all three files and compares them, and its third case asserts the folder is not
+  the product name, which is the install folder an uninstall always removes. The trainer
+  holds its version number across three files the same way, and that test exists because
+  the three had drifted to 0.0.0, 1.1.0 and 1.1.0.
+- **The version bump is its own commit, after the shell.** The chip's 8.1 asks for
+  `version: "1.0.0"` in `tauri.conf.json` and its 8.3 asks for the bump as its own commit;
+  both cannot hold with a green suite at every commit, because `version.test.ts` compares
+  `tauri.conf.json` with `package.json`. So the shell landed at 0.1.0 and compiled, then
+  `Version 1.0.0` moved all three together. `package-lock.json` carries the number too and
+  was refreshed with `npm install --package-lock-only`.
+- **`npx tauri icon` was given the SVG**, not the 512 PNG, and took it. The set it wrote
+  matches the trainer's file for file except `source.png`, which it only writes when the
+  source is a raster; `public/icon.svg` is the tracked source here.
+- **The fixture in the hook check is a folder inside a folder.** The trainer writes one
+  file in each scratch folder so an empty folder cannot pass. This one writes
+  `WebView2/Local State`, which is both the same guard and the shape of the real thing,
+  so the check also proves the removal is recursive.
+
+**The acceptance walk found a hole, and it is closed.** Spec S15 item 10 asks for a DOM
+test that New game clears the hint, the outcome and the redo stack. Only the redo stack
+was held, through five phases and two gates. Two tests were added and both were shown red
+first against a real mutation: taking `setHint(null)` out of the provider's `start` turns
+"goes when a new game starts" red, and giving New game the old game's moves as
+`startMoves` turns "New game clears the outcome and unlocks the board" red, along with an
+existing remembered-game test. Both mutations were undone by the reverse edit.
+
+**Departures from the chip.** The comment rewrite in `src-tauri` (S3 over the chip, which
+the chip itself says is the right way round), the `Origin:` lines on the Rust and NSIS
+files, and the two commits in the order shell-then-version. Nothing else.
+
+**Asked of Nick.** Nothing. The chip said to ask him to press Save and Load in the real
+dialogs and said to say so at spawn; this session had no reply from him, so both are
+left as 8.6 items rather than faked, which is what the chip's own decision rule says to
+do. Nothing else a person sees was unsettled: the window's numbers, its title and the
+installer's mode are all in spec 11.
+
+**Reuse review.** The folder name now has one home in `src/` and a test across the other
+two files. The version has one home and a test across three. The layout probe is still
+one file, read two ways, with no second expression written anywhere. `isDesktop()` is
+still the only reader of `__TAURI_INTERNALS__`, and the packaged drive used the window's
+own global rather than a second copy of that check. No em dashes under `src/` or
+`src-tauri/`, and no forbidden word in any new or adapted file, Rust and NSIS comments
+included.
+
+**Left.**
+
+- **Box 8.6 is Nick's**, and it is the last thing in the plan besides 7.8: run the
+  installer, open the app, play a move on the board, save a game and load it back through
+  the real dialogs, close and reopen to see the game remembered, then uninstall with the
+  box ticked and check `%LOCALAPPDATA%\Simple Chess Data` is gone. `docs/acceptance.md`
+  leaves the date blank for him under item 8, and item 9 under 7.8.
+- **`%LOCALAPPDATA%\Simple Chess Data` exists on this machine now**, left by the drive.
+  Nick's first run will reuse it, which is the right behaviour, and his uninstall with the
+  box ticked is what removes it.
+- **The Tauri icon set includes `android/` and `ios/` folders.** `npx tauri icon` writes
+  them, the trainer commits them, and they are committed here for the same reason: the
+  next `npx tauri icon` would write them again and an untracked half of a generated set is
+  worse than an unused one.
+- **`npm run build` runs inside `npx tauri build`** (`beforeBuildCommand`), so the web
+  bundle in the installer is always the current one. It also means a Tauri build copies
+  the engine into `public/engine/` first, which is why a clean checkout can build the
+  installer without a separate step.
