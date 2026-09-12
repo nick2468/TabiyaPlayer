@@ -2671,4 +2671,24 @@ file.
   installs beside Simple Chess 1.0.0 rather than upgrading it. Nothing is at risk:
   box 8.6 is open and 1.0.0 has never been installed. Phase 12 says so again.
 
+- **An interim installer was built at gate 9, at Nick's request**, from the source as
+  it stands: `src-tauri/target/release/bundle/nsis/Simply Chess_1.0.0_x64-setup.exe`,
+  6,894,205 bytes, and `simply-chess.exe`, 9,147,392 bytes, built in 3 m 14 s. It
+  carries the rename and the layout and NOT phases 10 to 12's review, report or
+  viewer, so it is not what spec 18 calls version 2; phase 12 still ships 1.1.0. It
+  is the first artefact of the renamed product, so 1.0.0 is honest for it: Simple
+  Chess 1.0.0 is a different product that was never installed.
+- **The packaged window was driven** over the debugging port: the header reads
+  "Simply Chess v1.0.0", the window is 1400 by 980, the selector row is centred at
+  y 80.67 with "Difficulty" and "4. Club", the head row reads "Playing White against
+  4. Club" and "Your move", the bar reads "+0.5", the toggles read "Large" and
+  "Light", the panel holds Save game and Load game, and the move list column is 167
+  wide at the board's height. The board, `cg-board` and the bar all end on 580 and
+  `scrollWidth` is 1400 against 1400, so S16 holds in the shipped window. Hint,
+  pressed through the port, answered "The engine suggests c4." after a real search,
+  so Stockfish runs inside the packaged build. No service worker (S12).
+  `%LOCALAPPDATA%\Simply Chess Data\WebView2` was created and no identifier-named
+  folder appeared. The app was closed afterwards; the screenshot is in the
+  scratchpad.
+
 - [x] **Review gate 9 passed** (2026-09-13)
