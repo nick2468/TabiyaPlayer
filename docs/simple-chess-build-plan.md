@@ -1,9 +1,10 @@
 # Simple Chess - build plan
 
-Version 1. Written 2026-09-11. Status: **Active**. Phases 0 and 1 passed review
-2026-09-11, phases 2 to 7 on 2026-09-12, with box 7.8 left for Nick. Phase 8, the
-last, was built 2026-09-12 and awaits review; its box 8.6 is Nick's. Those two boxes
-are all that is open.
+Version 1. Written 2026-09-11. Status: **Built and reviewed.** Every phase passed its
+gate, the last on 2026-09-12. Two boxes are open and both are Nick's: 7.8 (publish
+to Cloudflare and play a move on the iPad in aeroplane mode) and 8.6 (run the
+installer, play, save, load, reopen, uninstall). When he ticks them the plan moves
+to `docs/completed/`.
 
 Read [the specification](simple-chess-spec.md) first. It says what the app does. This
 document says what gets built, in what order, and how we know each part is finished.
@@ -563,7 +564,7 @@ did it that way too.
 | 5 - save game and load game | **Complete** 2026-09-12, gate passed the same day. 222 tests green. A game saves as the PGN of spec 9.1 and loads back with its moves, side and level; undo goes back through a game that arrived whole and fetches the numbers as it goes. |
 | 6 - scenes, the probe and the layout pass | **Complete** 2026-09-12, gate passed the same day. 243 tests green. The five scenes open from the address bar and none survives the build; the probe holds S16's two numbers in all twelve rows; the move list no longer scrolls the board off the screen. |
 | 7 - the iPad Home Screen app | **Complete** 2026-09-12, gate passed the same day; box 7.8 is Nick's. 250 tests green. The built app has an icon and a manifest, opens with the server stopped and answers a move, and offers a new version in a bar that says it costs nothing. |
-| 8 - the Windows app and the installer | **Built** 2026-09-12, awaiting review; box 8.6 is Nick's. 257 tests green. The window opens at 1280 by 1000 with the engine in it, the installer is 6.6 MB and installs for the current user, and the uninstaller's four cases are proved against a scratch folder. Version 1.0.0. |
+| 8 - the Windows app and the installer | **Complete** 2026-09-12, gate passed the same day; box 8.6 is Nick's. 257 tests green. The window opens at 1280 by 1000 with the engine in it, the installer is 6.6 MB and installs for the current user, and the uninstaller's four cases are proved against a scratch folder. Version 1.0.0. |
 
 ## Phase notes
 
@@ -2291,3 +2292,51 @@ included.
   bundle in the installer is always the current one. It also means a Tauri build copies
   the engine into `public/engine/` first, which is why a clean checkout can build the
   installer without a separate step.
+
+### Gate 8 findings (orchestrator, 2026-09-12)
+
+- **Verified from the repo.** `npx vitest run`: 31 files, 257 passed, nothing skipped,
+  7.8 seconds. `tsc -b` clean, `npx oxlint` silent, `npm run build` clean. `node
+  scripts/check-uninstall-hook.mjs` here: four PASS lines and "All four cases
+  behaved." The version is 1.0.0 in all three files with the four version tests live.
+  Every `src-tauri/` file diffs against the trainer's by exactly the lines the builder
+  named; the capability file grants five things. No em dashes under `src/` or
+  `src-tauri/`; no trainer word in the Rust or NSIS comments. `../London` untouched.
+- **Mutation-checked.** Renaming the folder in `lib.rs` alone turns "is what lib.rs
+  points the window profile at" red. Restored from git. The builder's own (the
+  `$UpdateMode` half of the guard, and the two New game tests) are taken on its
+  account with their outputs recorded above.
+- **The packaged window, driven by the orchestrator over the debug port.** The
+  executable built at 15:02 (9,147,392 bytes) started under the debugging port; the
+  header read "Simple Chess v1.0.0", the title "Simple Chess", the inner size 1280 by
+  1000 at the machine's scale of 1.5. The probe from the file gave the builder's
+  numbers to the decimal: bar, `.board` and `cg-board` from 80.67 to 496.67 at 416,
+  the sidebar 280 wide at x 508, `scrollWidth` 1280 against 1280. No service worker
+  registered and no update bar (S12). `isDesktop()`'s global present. New game and
+  Hint live, Undo and Redo greyed on the start position, Save and Load live. Hint
+  pressed through the port answered "The engine suggests d4." after a real search,
+  which is the whole engine path inside the shipped window. The one screenshot file
+  was taken to the scratchpad and looked at: the dark theme, the bar with "+0.4" at
+  the bottom, the board with its coordinates, the four buttons, the sidebar as
+  specified, nothing cut off. `%LOCALAPPDATA%\Simple Chess Data\WebView2` exists and
+  no identifier-named folder was made. The app was closed afterwards.
+- **The acceptance walk is honest about what a session cannot do.** Items 8 and 9
+  name Nick's halves and leave their dates blank. The walk also found the one missing
+  test (S15 item 10's hint and outcome halves) and the builder closed it with two
+  tests shown red first. Reading the suite against the spec's list rather than
+  against itself is the habit worth keeping.
+- **Two departures accepted:** the Rust and NSIS comments rewritten for this app
+  (S3 over the chip's "keep them", which the chip itself said is the right order),
+  and the shell landing at 0.1.0 with the version bump as its own commit after it,
+  so every commit is green.
+- **Not repeated here:** `npx tauri build`. The executable and the installer carry
+  the version bump's timestamp and the commit after it changed tests and docs only,
+  so the artefacts are the current source. Nick's installer run is the build's real
+  proof.
+- **Another session's work under `../Conquest` has grown** (five modified files and
+  four new tools). None of it is this builder's; nothing under Conquest is read or
+  written by anything here.
+
+- [x] **Review gate 8 passed** (2026-09-12)
+
+The build is complete as far as a session can take it. Open: 7.8 and 8.6, Nick's.
