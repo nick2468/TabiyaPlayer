@@ -1,7 +1,7 @@
 # Simple Chess - build plan
 
 Version 1. Written 2026-09-11. Status: **Active**. Phases 0 and 1 passed review
-2026-09-11, phases 2 and 3 on 2026-09-12; phase 4 is next.
+2026-09-11, phases 2, 3 and 4 on 2026-09-12; phase 5 is next.
 
 Read [the specification](simple-chess-spec.md) first. It says what the app does. This
 document says what gets built, in what order, and how we know each part is finished.
@@ -390,11 +390,13 @@ Read first: `../London/src/play/game-pgn.ts` and its test, `src/model/pgn.ts`
       trainer's `backup.ts` shape: Tauri dialogs and fs on the desktop, a blob
       download and a hidden file input in the browser. `openPgn` in the browser
       resolves when the input changes; cancel resolves null.
-- [ ] 5.4 The provider's `load(sans, side, level)`: starts a game from the moves,
-      applies the side and level to the settings, evaluates every position with the
-      trainer's `scanGame` (copied into `session.ts` or `src/play/scan.ts`, identical
-      text) so the bar can follow undo, and lets the engine move if it is to move.
-      Errors go to the status line and leave the current game alone.
+- [ ] 5.4 Loading goes through `start` with `startMoves`, the same path the
+      remembered game uses, so the side and level become the settings and the engine
+      moves if it is to move. No `scanGame` (ruled at gate 4): undo and redo evaluate
+      the position they land on when it has no number yet, at 150 ms each, which
+      covers loaded and reopened games alike without holding the engine's queue.
+      Errors go to a notice under the status line and leave the current game alone.
+      (The box first asked for the trainer's full scan; spec 9.2 is amended.)
 - [ ] 5.5 Wire the two buttons: disabled while thinking; Save says nothing on
       success on the desktop beyond the dialog closing, and "Saved to your downloads
       folder" in the status line in the browser, for three seconds, the trainer's
@@ -543,7 +545,7 @@ did it that way too.
 | 1 - the engine and the model | **Complete** 2026-09-11, gate passed the same day. 90 tests green in 1.8 s. |
 | 2 - the board, the session and a playable game | **Complete** 2026-09-12, gate passed the same day. 111 tests green; a game plays in the pane. |
 | 3 - the sidebar and what is remembered | **Complete** 2026-09-12, gate passed the same day. 162 tests green; the settings and the game survive a reload; the large board is whatever fits and draws whole squares (808, 624 and 728 at scale 1; 800, 624 and 720 at 1.5). |
-| 4 - the bar, the hint and the promotion picker | **Built** 2026-09-12, awaiting review. 183 tests green and 2 skipped in 4.1 s; the bar carries the engine's number and follows every move, Hint draws and says one, and a pawn on the last rank asks which piece. |
+| 4 - the bar, the hint and the promotion picker | **Complete** 2026-09-12, gate passed the same day. 183 tests green; the bar carries the engine's number, Hint draws and says a move, a pawn on the last rank asks which piece. |
 | 5 - save game and load game | Not started |
 | 6 - scenes, the probe and the layout pass | Not started |
 | 7 - the iPad Home Screen app | Not started |
@@ -1371,3 +1373,48 @@ stylesheet sweep for a declaration repeated in one rule finds nothing.
   positions behind it have no number, so undoing into them shows the last number
   known rather than their own, which is `shownEvaluation` working as written. Phase 5
   brings the full scan for loaded files and could cover this too if it is worth it.
+
+### Gate 4 findings (orchestrator, 2026-09-12)
+
+- **Verified from the repo.** `npx vitest run`: 20 files, 183 passed, 2 skipped, 4.8
+  seconds. `tsc -b` clean, `npx oxlint` silent, `npm run build` clean at 306.4 kB.
+  `Board.tsx` still differs from the trainer by the size effect and its comments
+  only. No forbidden words outside identical copies; no browser global in the pure
+  folders; `localStorage` now touched only in `src/storage` (the `theme.ts` mentions
+  are its comment); no pixel number or colour in code outside `board-size.ts`; no
+  chess.js import under `src/ui`. `../London` and `../Conquest` untouched.
+- **Mutation-checked.** Turning the hint arrow green turns "draws the move on the
+  board and says it" red. Restored from git. The builder's five are taken on its
+  account, each naming its failing test.
+- **Driven in the pane at 1280 by 1000.** The start position: bar label "Evaluation:
+  +0.5", White's share 58.09 percent drawn from the bottom in the piece white, the
+  number "+0.5" at the bottom in the piece black. Hint answered "The engine suggests
+  e4." with one auto-shape `bluee2e4` and the button greyed while it thought. A
+  seeded promotion position (`a4 b5 axb5 a6 bxa6 Nc6 a7 Nb8`) through the board's
+  move seam: the picker showed Queen, Rook, Bishop and Knight as 52 by 52 pieces,
+  the pawn was already back on a7 with the board locked, Escape closed it with the
+  game unchanged and the board unlocked, and Rook played `axb8=R`, answered by
+  `Rxa1`, the bar moving from +4.9 to +3.8. Storage cleared afterwards.
+- **The builder's departures are right.** `atAnalysisProfile` with its `finally` is
+  the reuse rule applied to a silent failure; `engineByProfile` is one seam for three
+  fakes and it is the shipped code's own seam; `sanForMove` for the hint keeps
+  chess.js out of `src/ui`; dropping the `revision` prop was measured, not
+  assumed, and a prop no test can hold is the dead code gate 2 ruled against.
+- **One consequence the builder flagged, ruled:** the pawn goes back to its own
+  square while the picker is open, rather than sitting on the last rank as lichess
+  draws it. It follows from the lock spec 5.2 requires, the four pieces say what is
+  being asked, and nothing else about the screen is uncertain. Accepted as built;
+  Nick can ask for the other look.
+- **One ruling for phase 5:** no full scan on load. Undo and redo evaluate the
+  position they land on when it has no number, which covers loaded games and reopened
+  ones alike at 150 ms each, never blocks the engine's reply behind a twelve-second
+  scan, and needs no progress line. Spec 9.2 is amended and says why.
+- **Open, from Nick, after this phase landed:** "the bar is always solid black".
+  Not reproduced in the pane in either theme, at either size, at scale 1.5 or 1. A
+  solid black box with no number is exactly the phase 2 and 3 placeholder, and my
+  dev server started on 5185 during this gate, which `--strictPort` would have
+  refused if Nick's own had been running there. So a page served from before commit
+  `6762176` is the first suspect. Awaiting his answer on the address, the browser
+  and whether a number shows; taken into the phase 5 chip as a watch item.
+
+- [x] **Review gate 4 passed** (2026-09-12)

@@ -445,9 +445,13 @@ main line and ignores variations and comments.
 - The loaded game replaces the current one with no confirmation, and the side and
   level it carries become the current settings. If the loaded position is the
   engine's move, the engine moves at once.
-- The loaded game's positions are evaluated for the bar as the trainer's scan would:
-  every position, in order, at the analysis profile, so undo along a loaded game has a
-  bar to show. This is the trainer's `scanGame`, copied.
+- The loaded game is evaluated at its final position, like a game reopened from
+  storage. Undo along it has a bar to show because undo and redo evaluate the position
+  they land on when it has no number yet (ruled at gate 4). The first text here said
+  every position would be scanned on load, as the trainer does for its report; a
+  scan of eighty positions holds the engine's queue for twelve seconds before the
+  user's next move can be answered, and an evaluation made when a position is looked
+  at costs 150 ms once and is never wasted.
 
 **S8. Load takes the main line and nothing else.** The trainer's parser exists to keep
 a repertoire's tree. A saved game is a line. Variations in a foreign file are not an
