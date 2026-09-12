@@ -1,7 +1,7 @@
 # Simple Chess - build plan
 
 Version 1. Written 2026-09-11. Status: **Active**. Phases 0 and 1 passed review
-2026-09-11, phases 2, 3 and 4 on 2026-09-12; phase 5 is next.
+2026-09-11, phases 2 to 5 on 2026-09-12; phase 6 is next.
 
 Read [the specification](simple-chess-spec.md) first. It says what the app does. This
 document says what gets built, in what order, and how we know each part is finished.
@@ -547,7 +547,7 @@ did it that way too.
 | 2 - the board, the session and a playable game | **Complete** 2026-09-12, gate passed the same day. 111 tests green; a game plays in the pane. |
 | 3 - the sidebar and what is remembered | **Complete** 2026-09-12, gate passed the same day. 162 tests green; the settings and the game survive a reload; the large board is whatever fits and draws whole squares (808, 624 and 728 at scale 1; 800, 624 and 720 at 1.5). |
 | 4 - the bar, the hint and the promotion picker | **Complete** 2026-09-12, gate passed the same day. 183 tests green; the bar carries the engine's number, Hint draws and says a move, a pawn on the last rank asks which piece. |
-| 5 - save game and load game | **Built** 2026-09-12, awaiting review. 222 tests green and 2 skipped in 7.6 s. A game saves as the PGN of spec 9.1 and loads back with its moves, side and level; a file from elsewhere loads its main line; a bad one is refused and the game is untouched. Undo and redo now evaluate where they land, and go back through a game that arrived whole. |
+| 5 - save game and load game | **Complete** 2026-09-12, gate passed the same day. 222 tests green. A game saves as the PGN of spec 9.1 and loads back with its moves, side and level; undo goes back through a game that arrived whole and fetches the numbers as it goes. |
 | 6 - scenes, the probe and the layout pass | Not started |
 | 7 - the iPad Home Screen app | Not started |
 | 8 - the Windows app and the installer | Not started |
@@ -1614,3 +1614,46 @@ reason. No em dashes under `src/`.
   puts it in the document and clicks it; and the whole path after that, from the
   file's text to the game on the board, was driven by handing the real input a real
   `File`.
+
+### Gate 5 findings (orchestrator, 2026-09-12)
+
+- **Verified from the repo.** `npx vitest run`: 25 files, 222 passed, 2 skipped, 7.6
+  seconds. `tsc -b` clean, `npx oxlint` silent, `npm run build` clean. The main
+  bundle carries one `__TAURI_INTERNALS__` string and no plugin text; the two Tauri
+  plugins are three chunks of their own, as the builder said. No forbidden words
+  outside identical copies; no browser global in the pure folders; `localStorage`
+  only in `src/storage`; no pixel number or colour in code; no chess.js import under
+  `src/ui`; every Tauri import lazy and behind `isDesktop()`. `../London` and
+  `../Conquest` untouched.
+- **Mutation-checked.** Inverting the side read from the `Black` tag turns five
+  load tests red. Restored from git. The builder's seven are taken on its account.
+- **Driven in the pane at 1280 by 1000.** A ten-ply game seeded in storage reopened
+  at "+0.5"; Undo took two plies off at once with no button greyed and the bar
+  reading "the engine has not looked yet", and 600 ms later it read "+0.3". Save
+  game made one blob of 225 bytes typed `application/x-chess-pgn` and said "Saved to
+  your downloads folder" in the plain notice colour. Load game put a hidden `.pgn`
+  file input in the page, took a Black game at level 6 through it, and the board
+  came back the other way up with the select on 6, the Black radio ticked, the
+  stored game rewritten, and White's reply `d4` already played; the input was gone
+  afterwards. Storage cleared.
+- **The floor is gone and the spec agreed with the builder.** The trainer's session
+  refuses to undo below the moves it was started with, because there those moves
+  are an authored line. Here they are the game, and spec 9.2 says undo goes along a
+  loaded game. The builder stopped on the contradiction, resolved it by the spec's
+  own preamble, replaced the test that pinned the floor, and wrote the correction
+  into 5.4 with the reason. That is rule 4 done exactly as written.
+- **The background evaluation is guarded properly.** Undo's number is fetched with
+  nothing greyed, which leaves it in flight while the user may move; the three turns
+  on the engine's queue (set analysis, search, restore) could otherwise have a move
+  searched at level 8. `play` and `askHint` await the quiet promise first, and a
+  test holds the evaluation and watches the move wait. This is the second time the
+  builder has found a silent level-8 hazard on its own; it is the right instinct.
+- **Small moves accepted:** `levelOrNull` into `src/play`, `asMessage` into
+  `ui/message.ts`, `EngineError` renamed `Notice`, `pad` shared by the date and the
+  file name, `playedMoves` for three test files, and `startFrom` as the one path a
+  game arrives by. The CopyGame timing was 2500 ms, not 3000; the chip's number was
+  built and only its attribution was wrong.
+- **`LOCAL_FOLDER` waits for phase 8**, as the builder and the chip say; the plan box
+  and the spec table now agree.
+
+- [x] **Review gate 5 passed** (2026-09-12)
