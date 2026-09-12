@@ -6,14 +6,17 @@ an iPad Home Screen app (a PWA on Cloudflare Pages, like Conquest in `../Conques
 from one React, TypeScript and Vite code base. The code is copied from those two apps
 wherever they already do the job, so that a shared library can follow later.
 
-Current state: phase 6 (the dev scenes, the layout probe and the layout pass) built
-2026-09-12 and awaiting review. Every screen of spec 15 opens from the address bar in
-a development build (`?scene=midgame&size=large&theme=light`), none of it survives
-`npm run build`, `scripts/probes/layout.js` measures the layout and
-`scripts/packaged-eval.mjs` is in place for phase 8. The pass found one fault and
-fixed it: the move list's "keep the newest move in view" scrolled the whole screen,
-so on a 1180 by 820 window the top of the board was cut off from the moment the app
-opened. Phases 0 to 5 passed their gates: a game leaves the app as the PGN file of
+Current state: phase 7 (the iPad Home Screen app) built 2026-09-12 and awaiting
+review; box 7.8, which is publishing it and playing a move in aeroplane mode, is
+Nick's. The built app has an icon and a manifest, opens with the server stopped and
+answers a move from the precached engine, and offers a new version in a bar that says
+loading it loses nothing. `docs/simple-chess-deploy.md` has Nick's steps. Phases 0 to
+6 passed their gates. Phase 6 put every screen of spec 15 on the address bar in a
+development build (`?scene=midgame&size=large&theme=light`), kept all of it out of
+`npm run build`, and added `scripts/probes/layout.js` and `scripts/packaged-eval.mjs`
+for phase 8; its pass found one fault and fixed it, the move list's "keep the newest
+move in view" scrolling the whole screen, which cut the top of the board off on a
+1180 by 820 window from the moment the app opened. Phases 0 to 5: a game leaves the app as the PGN file of
 spec 9.1 and comes back with its moves, side and level; undo and redo fetch the
 number for a position they land on when it has none, and go back through a game that
 arrived whole; the bar carries the engine's number
@@ -86,7 +89,10 @@ scale).
   `remember*` helpers in `prefs.ts` (every setting; `oneOf` answers "is this one of
   these words" for storage and for the address bar alike, and each key string stays
   in the module that owns it); `scrollToShow` in `ui/keep-in-view.ts` (the only
-  scroll arithmetic); `SCENES` and `sceneFromLocation` in `dev/scenes.ts`.
+  scroll arithmetic); `SCENES` and `sceneFromLocation` in `dev/scenes.ts`;
+  `updateNotice` in `ui/updates.ts` (the update bar's words); the four `--pad-*`
+  custom properties on `.app` (the page's safe-area padding, which the update bar
+  reuses).
   Never fork a second copy, and give any new repeated snippet a single home the
   moment it appears twice.
 - Copied files are byte-identical to their origin plus one `Origin:` line; adapted
@@ -99,7 +105,9 @@ scale).
   `?scene=<fresh|midgame|mate|promotion|hint>` sets the screen up, and
   `eval(await (await fetch('/scripts/probes/layout.js')).text())` measures it. The
   bar, the board box and `cg-board` end on the same pixel, and the page never scrolls
-  sideways. jsdom has no layout, so no test can hold either number.
+  sideways. jsdom has no layout, so no test can hold either number. `?pretendUpdate`
+  shows the update bar without a real update, and offline is proved against
+  `npm run preview` on 5186 by stopping the server and playing a move.
 
 ## Conventions
 
@@ -121,7 +129,13 @@ scale).
 
 - **The engine file is bigger than Workbox's default precache limit.** Without
   `maximumFileSizeToCacheInBytes` the app opens offline and the engine never answers.
-  Spec S11.
+  Spec S11. Shown in phase 7: take the line out and Vite says "engine/
+  stockfish-18-lite-single.wasm is 7.3 MB, and won't be precached", which is a
+  warning in a build log and a broken app on an iPad.
+- **Undo a mutation check with the reverse edit, never `git checkout --`.** A
+  phase's new files are untracked, so the checkout fails; its changed files are
+  tracked, so the checkout takes the phase's own work with them. Both happened in
+  phase 7, to `updates.ts` and to `App.tsx` and `vite.config.ts`.
 - **The trainer's port is 5175 and its dev server may be running.** Confirm the
   served page shows this app's version before trusting any live check.
 - **A hidden browser pane throttles React.** A move lands in the session at once and

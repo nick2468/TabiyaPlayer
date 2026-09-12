@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!--
+    Origin: the cburnett white knight, node_modules/chessground/assets/chessground.cburnett.css
+    (a base64 SVG in the `piece.knight.white` rule), adapted: the two body paths
+    only, filled and stroked in one colour, with the eye and the nostril dropped.
+
+    The app icon: one knight, in the white piece colour on the dark ground
+    (spec 12.3). The two colours are the `piece-white` and `ground` custom
+    properties of src/index.css, written out here because an SVG loaded as a
+    file has no stylesheet to read them from.
+
+    Why the board's own knight rather than a drawing of one: the icon on the
+    Home Screen is then the same piece the user drags, and it came with a
+    licence this app already carries (chessground is GPL, spec S22).
+
+    Why the two paths and not the third: the third draws the eye and the
+    nostril as half-unit dots in a 45 unit square, which at 32 px is a third of
+    a pixel. The silhouette is what has to read at that size, and it is the
+    outline of the body stroked in its own colour, exactly as the piece set
+    draws it.
+
+    The knight's own box is 33.6 units of the piece's 45, at (5.2, 6.2). The
+    transform below puts that box in the middle of this one with 62 px clear
+    all round, which is Conquest's padding.
+  -->
+  <rect width="512" height="512" fill="#16181c"/>
+  <g
+    transform="translate(1.95 -9.6) scale(11.5476)"
+    fill="#ece9e2"
+    stroke="#ece9e2"
+    stroke-width="1.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <path d="M22 10c10.5 1 16.5 8 16 29H15c0-9 10-6.5 8-21"/>
+    <path d="M24 18c.38 2.91-5.55 7.37-8 9-3 2-2.82 4.34-5 4-1.042-.94 1.41-3.04 0-3-1 0 .19 1.23-1 2-1 0-4.003 1-4-4 0-2 6-12 6-12s1.89-1.9 2-3.5c-.73-.994-.5-2-.5-3 1-1 3 2.5 3 2.5h2s.78-1.992 2.5-3c1 0 1 3 1 3"/>
+  </g>
+</svg>

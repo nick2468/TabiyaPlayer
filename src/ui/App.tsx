@@ -4,11 +4,13 @@ import type { Colour } from '../model/types'
 import { canReplayMoves, gameToPgn, loadPgn, saveFileName } from '../play'
 import { recallGame } from '../storage/current-game'
 import { openPgn, savePgn } from '../storage/files'
+import { isDesktop } from '../storage/paths'
 import { useBoardSize, useLevel, useSide } from '../storage/prefs'
 import { asMessage } from './message'
 import { PlayProvider, usePlay } from './play-context'
 import { Screen, type ScreenNotice } from './Screen'
 import { useTheme } from './theme'
+import { UpdateWatch } from './UpdateWatch'
 import './app.css'
 
 /**
@@ -210,6 +212,11 @@ export function Shell() {
           onNewGame={newGame}
         />
       </main>
+
+      {/* Off the desktop only (spec S12). The condition is on the component
+          rather than on the hook inside it, for the reason `UpdateWatch`
+          gives. */}
+      {!isDesktop() && <UpdateWatch />}
     </div>
   )
 }

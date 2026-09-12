@@ -1,7 +1,8 @@
 # Simple Chess - build plan
 
 Version 1. Written 2026-09-11. Status: **Active**. Phases 0 and 1 passed review
-2026-09-11, phases 2 to 6 on 2026-09-12; phase 7 is next.
+2026-09-11, phases 2 to 6 on 2026-09-12. Phase 7 is built and awaiting review, with
+box 7.8 left for Nick; phase 8 is next.
 
 Read [the specification](simple-chess-spec.md) first. It says what the app does. This
 document says what gets built, in what order, and how we know each part is finished.
@@ -459,31 +460,35 @@ Read first: `../Conquest/vite.config.ts`, `src/ui/useUpdate.ts`, `UpdateBanner.t
 `updates.ts` and `updates.test.ts`, `tools/make-icons.mjs`, `docs/conquest-deploy.md`,
 spec 12.
 
-- [ ] 7.1 `public/icon.svg`: a single knight (the cburnett knight outline is GPL
+- [x] 7.1 `public/icon.svg`: a single knight (the cburnett knight outline is GPL
       and is fine here; or draw a plain one) in `#ece9e2` on `#16181c`, square.
       `tools/make-icons.mjs` adapted from Conquest's: reads the SVG, writes
       `icon-192.png`, `icon-512.png`, `apple-touch-icon.png` (180), `favicon-32.png`.
-      Run it and commit the output.
-- [ ] 7.2 `vite.config.ts`: `VitePWA` with Conquest's settings and this app's
+      Run it and commit the output. (The cburnett knight's two body paths, filled
+      and stroked in one colour. The rounded version is a clip over the committed
+      square drawing rather than a second drawing of it.)
+- [x] 7.2 `vite.config.ts`: `VitePWA` with Conquest's settings and this app's
       manifest (spec 12.1), `globPatterns` including `wasm`,
       `maximumFileSizeToCacheInBytes: 12 * 1024 * 1024` (spec S11), `devOptions`
       off.
-- [ ] 7.3 `src/ui/useUpdate.ts` and `UpdateBanner.tsx` from Conquest, `updates.ts`
+- [x] 7.3 `src/ui/useUpdate.ts` and `UpdateBanner.tsx` from Conquest, `updates.ts`
       reduced to one notice: heading "A new version is ready", detail "Your game and
       settings are remembered, so loading it loses nothing.", button "Load it", plus
       "Not now". Test copied and reduced. `useUpdate` is called only when
       `!isDesktop()` (spec S12): wrap the banner in a component rendered only off
-      the desktop, so the hook's rule of hooks is not broken.
-- [ ] 7.4 Offline proof: `npm run build`, `npm run preview` on 5186, open it in the
+      the desktop, so the hook's rule of hooks is not broken. (`UpdateWatch.tsx` is
+      that component.)
+- [x] 7.4 Offline proof: `npm run build`, `npm run preview` on 5186, open it in the
       pane, then stop the server and reload. The page opens, a move is played and
       the engine replies. Record it. If the engine does not reply, S11 is the first
-      thing to check.
-- [ ] 7.5 `docs/simple-chess-deploy.md`: Conquest's deploy document adapted for
+      thing to check. (Proved: 2. d4 e5 played with the server stopped, and a fetch
+      of anything unstored refused.)
+- [x] 7.5 `docs/simple-chess-deploy.md`: Conquest's deploy document adapted for
       project `simplechess`, repository `nick2468/SimpleChess`, domain
       `simplechess.datacrafter.net`, with the Home Screen and aeroplane-mode steps.
       These are Nick's steps; the document says so.
-- [ ] 7.6 `README.md` updated with the two ways to run it.
-- [ ] 7.7 Reuse review and commit. Tell Nick the site is ready to publish and which
+- [x] 7.6 `README.md` updated with the two ways to run it.
+- [x] 7.7 Reuse review and commit. Tell Nick the site is ready to publish and which
       steps in the deploy document are his.
 - [ ] 7.8 Nick: publish, add to the Home Screen, play a move in aeroplane mode.
       Record the date here.
@@ -553,7 +558,7 @@ did it that way too.
 | 4 - the bar, the hint and the promotion picker | **Complete** 2026-09-12, gate passed the same day. 183 tests green; the bar carries the engine's number, Hint draws and says a move, a pawn on the last rank asks which piece. |
 | 5 - save game and load game | **Complete** 2026-09-12, gate passed the same day. 222 tests green. A game saves as the PGN of spec 9.1 and loads back with its moves, side and level; undo goes back through a game that arrived whole and fetches the numbers as it goes. |
 | 6 - scenes, the probe and the layout pass | **Complete** 2026-09-12, gate passed the same day. 243 tests green. The five scenes open from the address bar and none survives the build; the probe holds S16's two numbers in all twelve rows; the move list no longer scrolls the board off the screen. |
-| 7 - the iPad Home Screen app | Not started |
+| 7 - the iPad Home Screen app | **Built** 2026-09-12, awaiting review; box 7.8 is Nick's. 250 tests green and 2 skipped in 8.2 s. The built app has an icon and a manifest, opens with the server stopped and answers a move, and offers a new version in a bar that says it costs nothing. |
 | 8 - the Windows app and the installer | Not started |
 
 ## Phase notes
@@ -1893,3 +1898,172 @@ Nothing in this repo runs it until phase 8. Everything else this phase is new.
   the copy rule says leave it. Noted so nobody wonders.
 
 - [x] **Review gate 6 passed** (2026-09-12)
+
+### Phase 7 - builder notes (2026-09-12)
+
+The session was compacted before this phase. Every document the chip named was read
+fresh before anything was touched, and so were Conquest's `vite.config.ts`,
+`index.html`, `src/vite-env.d.ts`, `src/ui/useUpdate.ts`, `UpdateBanner.tsx`,
+`updates.ts`, `updates.test.ts`, `tools/make-icons.mjs`, `docs/conquest-deploy.md`
+and the `.update-bar` rules in `src/ui/styles.css`.
+
+**Measured.**
+
+- `npx vitest run`: 30 files, 250 tests passed and 2 skipped, 8.2 seconds warm. By
+  project: `string` 20 files, 197 passed, 2 skipped; `dom` 10 files, 53 passed.
+  `tsc -b` clean, `npx oxlint` silent, `npm run build` clean.
+- **The build makes the two files that matter.** `dist/manifest.webmanifest` (453
+  bytes) and `dist/sw.js` (2,207 bytes) with `dist/workbox-2fbc6a65.js` beside it.
+  The precache list holds **21 entries, 7,518.96 KiB**, and names both engine files:
+  `engine/stockfish-18-lite-single.wasm` (7,295,411 bytes) and
+  `engine/stockfish-18-lite-single.js` (21,429 bytes). Six of the 21 are the icons
+  and the manifest listed twice, once by `includeAssets` and once by the globs, with
+  the same revision each time, which Workbox folds back into one; fifteen files are
+  precached. The main chunk is 319.66 kB against phase 6's 317.10, and the 2.5 kB is
+  `workbox-window` plus the banner.
+- **S11, shown red.** With `maximumFileSizeToCacheInBytes` taken out and the site
+  rebuilt, Vite says "engine/stockfish-18-lite-single.wasm is 7.3 MB, and won't be
+  precached" and `sw.js` no longer names it. The line was put back and the build
+  re-run. That is the difference between an app that plays offline and one that
+  opens offline and hangs.
+- **The offline proof, driven in the pane.** `npm run build`, then the
+  `simple-chess-preview` configuration on 5186. Opened at 1280 by 1000:
+  `navigator.serviceWorker.getRegistrations()` gave one registration, scope
+  `http://localhost:5186/`, script `/sw.js`, state `activated`, nothing waiting. One
+  move played on the real board by clicking e2 and then e4 (the pane's clicks are
+  real input, so chessground takes them in a production build, where a synthetic
+  drag would be ignored): the engine answered `Nf6`.
+  Then `preview_stop`, and the page reloaded with the server down. **It opened on the
+  game it was closed on** (1. e4 Nf6, the bar at +0.5), and `2. d4` was played and
+  **the engine answered `e5`** with the bar moving to +0.8. In the same breath, a
+  `fetch` of a path that was never stored came back "Failed to fetch", which is what
+  says the server really was down, and the engine's own JavaScript reported
+  `deliveryType: "cache-storage"` with a transfer size of 0. The WASM is fetched
+  inside the worker, so it does not appear in the page's resource list; the engine
+  answering at all is what proves it.
+- **No worker in a development build.** On 5185,
+  `navigator.serviceWorker.getRegistrations()` is empty, which is `devOptions:
+  { enabled: false }` working.
+- **The banner, looked at**, at `?pretendUpdate`, both themes, two viewports:
+
+  | Viewport | Theme | Banner | scrollWidth vs innerWidth |
+  |---|---|---|---|
+  | 1280x1000 | dark | 1280 x 85, bottom 1000 | 1280 vs 1280 |
+  | 1280x1000 | light | 1280 x 85, bottom 1000 | 1280 vs 1280 |
+  | 820x1180 | light | 805 x 85, bottom 1180 | 805 vs 820 |
+  | 820x1180 | dark | 805 x 85, bottom 1180 | 805 vs 820 |
+
+  It sits across the bottom over the page, the heading bold and the sentence under it
+  in `--text-dim`, "Not now" as a plain button and "Load it" in the accent green at
+  the right. Pressing "Not now" removed it and left the page as it was. **The board
+  did not move at any of them**: the bar, `.board` and `cg-board` still end on 496.67
+  together at 1280 by 1000 and at 820 by 1180, which are phase 6's numbers, and
+  `scrollWidth` never exceeded `innerWidth`. The display scale read 1.5 in these
+  rows, because they were measured some time after the navigation rather than
+  straight after one.
+- **The icons, looked at in the pane** by URL from the dev server. `favicon-32.png`:
+  a rounded dark square with a pale knight's head, the ears and the muzzle still
+  telling it apart from a bishop or a pawn at that size. `apple-touch-icon.png`: the
+  same knight square-cornered at 180, filling the square with 22 px clear all round,
+  which is what iPadOS wants because it rounds the corners itself.
+- **Red first, four times**, each restored and re-run green.
+  Taking "remembered" out of the notice's detail turns `updates.test.ts` red, and the
+  DOM test's "offers it, and says it costs nothing" with it, which is what says the
+  two files agree about the wording.
+  `updateServiceWorker()` without its `true` turns "takes the new version on Load it"
+  red: without the argument the waiting worker stays parked and the button does
+  nothing a person can see.
+  Dropping `!isDesktop() &&` in `Shell` turns "shows no bar and registers nothing"
+  red, which is S12 proved rather than asserted.
+  A "Not now" that does not dismiss turns "goes away on Not now" red.
+- `git -C ../London status` and `git -C ../Conquest status` show the same two
+  untracked files every gate since 3 has seen, both dated 2026-09-11. Nothing under
+  either folder was changed.
+- **The pane's storage was cleared, the service worker unregistered, the Workbox
+  cache deleted, the viewports reset and both servers stopped.**
+
+**Decided (code shape).**
+
+- **The icon is the board's own knight, not a drawing of one.** The cburnett white
+  knight's two body paths, filled and stroked in `--piece-white` on `--ground`, with
+  the third path (the eye and the nostril) dropped: at 32 px those are a third of a
+  pixel, and what has to read at that size is the silhouette. The piece set is GPL,
+  which this app already carries (S22), and the icon on the Home Screen is then the
+  same piece the user drags.
+- **The rounded icon is a clip, not a second drawing.** Conquest draws its art twice,
+  square and rounded, because the art is generated. Here the art is a committed file,
+  so `make-icons.mjs` wraps its content in a group with a rounded clip path. One
+  drawing, four renderings, and nothing that can drift from `icon.svg`.
+- **`virtual:pwa-register/react` is faked in the dom project, not in each test.** The
+  chip says to mock it at the top of the test file. That works for one file, and the
+  trouble is that every DOM test mounts the app and the app now imports it: the first
+  run after wiring the banner failed eight suites at import with "The argument
+  'filename' must be a file URL object, file URL string, or absolute path string".
+  So `src/test/pwa-register.ts` stands beside `fake-engine.ts` and `board-stub.tsx`,
+  aliased by the dom project, and says no version is waiting. `update.dom.test.tsx`
+  still mocks the same id itself, to say one is. The chip's other half is kept: the
+  plugin is NOT in the vitest projects.
+- **The page's four padding values are named.** The update bar needs the same
+  safe-area insets on three sides as `.app` has on four, and the chip's reuse note
+  asks for one home if they appear twice. They are now `--pad-top`, `--pad-right`,
+  `--pad-bottom` and `--pad-left` on `.app`, and the bar uses three of them. The
+  bar's words line up with the board's left edge because it is the same value, not
+  because both rules say 24.
+- **`button.primary` is copied from the trainer**, `drill.css` line 121, which is
+  where `button:disabled` already came from. Conquest's banner gives its confirm
+  button emphasis, and the class was going to be in the markup whether or not a rule
+  answered it; a class with no rule is worse than either.
+- **`lang: 'en-AU'` in the manifest.** Neither the chip nor the spec names it, and
+  the plugin's default is `en`. `index.html` says `en-AU` and the app is written in
+  Australian English, so the manifest says the same.
+- **`includeAssets` is kept although the globs already match all three files.** It
+  costs six duplicate precache entries that Workbox folds away, and it keeps the
+  three files index.html links to precached if the globs are ever narrowed. There is
+  a comment saying so, because "21 entries" for fifteen files looks like a fault.
+- **The banner is rendered inside `.app`, after `<main>`.** It is `position: fixed`,
+  so where it sits in the markup decides nothing about where it is drawn; but it
+  inherits the four padding properties there, and a screen reader meets it after the
+  screen rather than before it.
+
+**Departures from the chip.** The fake's home (the dom project rather than nine test
+files) and the rounded icon being a clip. Both are code shape and both have their
+reason above. Nothing else.
+
+**Asked of Nick.** Nothing. The two things a person sees that the chip did not settle
+are the knight's shape, which it says is mine, and the banner's colours, which are
+this app's existing tokens rather than new ones.
+
+**Reuse review.** `isDesktop` is still the only place `__TAURI_INTERNALS__` is read
+by the app; `update.dom.test.tsx` sets that global rather than mocking `isDesktop`,
+so the real check runs. The safe-area insets have one home. The manifest's two
+colours are in `vite.config.ts`, which is config and not `src/`, and a grep for a hex
+value or `rgb(` under `src/` in a `.ts` or `.tsx` still finds nothing. `updateNotice`
+is the only place the banner's words are written down, and the DOM test reads the
+rendered words rather than repeating them. No em dashes under `src/`. No new or
+adapted file says "trainee", "student", "repertoire", "course" or "book".
+
+**Copies.** `useUpdate.ts` is Conquest's with the comments rewritten for this app;
+its code is identical line for line (diffed with comments stripped).
+`UpdateBanner.tsx` is Conquest's less `gameInProgress`, which is the whole diff.
+`updates.ts` and `updates.test.ts` are Conquest's shape with one notice.
+`tools/make-icons.mjs` keeps Conquest's `wanted` table and its comment about iPadOS
+rounding the corners; the art half is this app's. `vite-env.d.ts` is Conquest's two
+reference lines. The `.update-bar` rules are Conquest's with this app's colour names.
+
+**Left.**
+
+- **Box 7.8 is Nick's**, and so is everything in `docs/simple-chess-deploy.md`: the
+  GitHub push, the Cloudflare Pages project with its `NODE_VERSION`, the DNS record,
+  the Home Screen add, and the aeroplane-mode game. The document leaves the "It is
+  live" date and the two `pages.dev` names blank for him to fill in.
+- **The manifest's `description` repeats `package.json`'s.** It is eight words and
+  the two files cannot import from each other at that point in the build, so it is
+  written twice on purpose rather than by oversight.
+- **Node on this machine is 20.20.2 and `.node-version` says 22.12.0.** Vite 8
+  accepts either (`^20.19.0 || >=22.12.0`), so every bar in this phase is green on
+  20.20.2. Cloudflare will use 22.12.0 from the file. Worth knowing if a build ever
+  differs between the two.
+- **`git checkout --` is not the way to undo a mutation in this phase's files.** Half
+  of them are new and untracked, so it fails; the other half are tracked and it takes
+  the phase's own work with them. Both happened here and both were put back by hand
+  before the bar was re-run. Each mutation is now undone by the reverse edit.

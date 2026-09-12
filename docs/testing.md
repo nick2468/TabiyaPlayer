@@ -59,6 +59,11 @@ and calls the real `onMove` seam. `rig.dom.test.tsx` (phase 2) pins the throw th
 the stub necessary, so if a later chessground or jsdom removes the need, that test goes
 red and asks.
 
+**The PWA plugin's virtual module.** `virtual:pwa-register/react` (phase 7) is not a
+file: the plugin invents it while Vite builds, and vitest's runner cannot load an id
+that is not a path. `src/test/pwa-register.ts` stands in, aliased by the dom project,
+and says no new version is waiting. See the offline section at the end.
+
 Nothing else is faked. The providers, the storage and the screen are the code that
 ships.
 
@@ -126,3 +131,32 @@ exceeds `innerWidth`. Every UI-affecting phase records the table in its notes.
 
 In phase 8 the same file is read a second way, against the installed Windows app,
 through `node scripts/packaged-eval.mjs @scripts/probes/layout.js`.
+
+## The offline proof and the update bar
+
+Two more things no test can answer, both from phase 7.
+
+**Whether the app works with no internet** is a question about a service worker, and
+a development build has none by choice (`devOptions: { enabled: false }`). So it is
+proved against the built files: `npm run build`, then the `simple-chess-preview`
+launch configuration on port 5186, open it and **play one move** (that visit is what
+lets the worker store everything), then stop the server and reload.
+
+The move is the point. The page opening again proves the HTML and the bundle were
+stored; only a move proves the engine was, and the engine is a 7 MB WASM file that
+Workbox will silently leave out unless told otherwise (spec S11). An app that opens
+offline and then never answers is the failure that looks most like a broken app.
+`navigator.serviceWorker.getRegistrations()` in the pane says whether a worker is
+registered, and a `fetch` of something that was never stored should be refused,
+which is what says the server really is down.
+
+Unregister the worker and clear the caches afterwards, or the next session's build
+is served from that one.
+
+**The update bar** (spec 12.1) cannot wait for a real new version either. A
+development build answers `?pretendUpdate` by showing the bar as though one were
+waiting, which is Conquest's trick and is `import.meta.env.DEV` gated like the
+scenes. In the suite, `virtual:pwa-register/react` is faked twice over: the dom
+project aliases it to `src/test/pwa-register.ts` so that every DOM test can mount the
+app at all, and `update.dom.test.tsx` mocks the same id again to say a version is
+waiting.

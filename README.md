@@ -14,8 +14,40 @@ the phases and their progress.
 
 ## Status
 
-Specified and planned, 2026-09-11. Nothing built yet.
+Phases 0 to 7 built. The game plays, saves and loads, remembers itself, and is a
+Home Screen app that works with no internet. The Windows installer is phase 8.
 
 ## Running it
 
-Arrives with phase 0. Until then, see the build plan.
+**In a browser, while working on it.** Node 22.12.0 and npm:
+
+```bash
+npm install
+```
+
+```bash
+npm run dev
+```
+
+That serves it on http://localhost:5185. `npm run dev` copies Stockfish into
+`public/engine/` first, which is why the first run takes a moment. There is no
+service worker in a development build, so to try the app offline build it and serve
+the built files:
+
+```bash
+npm run build
+```
+
+```bash
+npm run preview
+```
+
+That serves http://localhost:5186 with the service worker, which is the only way to
+see what the iPad sees.
+
+**On an iPad, as a Home Screen app.** Open the published site in Safari, press Share,
+then Add to Home Screen. Once it has been opened once it works in aeroplane mode,
+engine and all. Publishing it is Nick's job and needs his accounts:
+[docs/simple-chess-deploy.md](docs/simple-chess-deploy.md) has every step.
+
+**On Windows, as an installed app.** Arrives with phase 8.

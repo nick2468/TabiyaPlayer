@@ -655,6 +655,7 @@ SimpleChess/
     main.tsx
     index.css                     London, identical
     globals.d.ts                  London, identical
+    vite-env.d.ts                 Conquest, adapted: the two references only (phase 7)
     version.test.ts               London, identical
     engine/                       London, identical: stockfish.ts, uci.ts, strength.ts, index.ts, engine.test.ts
     model/
@@ -696,6 +697,7 @@ SimpleChess/
       StatusLine.tsx              London's PlayHead, cut to the line and the Notice under it
       message.ts                  new: something thrown, as a sentence for the screen
       UpdateBanner.tsx, useUpdate.ts, updates.ts   Conquest, adapted wording
+      UpdateWatch.tsx             new: the banner behind the one condition a hook cannot be behind (S12)
       app.css, play.css           London, cut to what this screen uses
     dev/
       scenes.ts                   the five scenes and the address bar they come from (section 15)
@@ -703,6 +705,7 @@ SimpleChess/
       use-dev-scene.ts            the one hook, behind import.meta.env.DEV; Shell calls it first
     test/
       fake-engine.ts, dom-setup.ts   London, identical
+      pwa-register.ts                new: virtual:pwa-register/react, which is not a file, faked for the dom project
       board-stub.tsx, dom.tsx        London, adapted (the stub reports its orientation; dom.tsx can seed a game)
       scripted-engine.ts             new: an engine that plays a script, for a mate in a test
       by-profile.ts                  new: a fake that answers moves and analysis differently

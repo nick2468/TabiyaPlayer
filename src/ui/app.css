@@ -1,16 +1,26 @@
 /* Origin: London src/ui/app.css, adapted: cut to the header, the buttons and
-   the tall-window block; button:disabled is London src/ui/drill.css line 132. */
+   the tall-window block; button.primary and button:disabled are London
+   src/ui/drill.css lines 121 and 132; the update bar is Conquest's. */
 
 /* Origin of the padding: Conquest src/ui/styles.css .board-page, adapted: 24px
-   in place of 1rem, which is this app's page padding (spec 4.2).
+   in place of 1rem, which is this app's page padding (spec 4.2), and the four
+   sides named so the update bar can reuse three of them.
 
    Full screen on an iPad means the page runs under the rounded corners and the
    home indicator. The safe-area insets keep the board clear of both. On every
-   other screen every inset is zero and the padding is the plain 24. */
+   other screen every inset is zero and the padding is the plain 24.
+
+   The four are custom properties because the update bar sits over the page at
+   the bottom and needs the same three sides. Written out twice they would be
+   two rules to keep in step; here the bar's words line up with the board's
+   left edge because they are the same value, not because both say 24. */
 .app {
+  --pad-top: max(24px, env(safe-area-inset-top));
+  --pad-right: max(24px, env(safe-area-inset-right));
+  --pad-bottom: max(24px, env(safe-area-inset-bottom));
+  --pad-left: max(24px, env(safe-area-inset-left));
   margin: 0 auto;
-  padding: max(24px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right))
-    max(24px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
+  padding: var(--pad-top) var(--pad-right) var(--pad-bottom) var(--pad-left);
 }
 
 .app-header {
@@ -77,6 +87,19 @@ button:hover {
   background: var(--control-hover);
 }
 
+/* London src/ui/drill.css line 121, identical: the button that does the thing
+   the panel is about. Here it is "Load it" on the update bar. */
+button.primary {
+  background: var(--accent-solid);
+  border-color: var(--accent-edge);
+  color: var(--text);
+  font-weight: 600;
+}
+
+button.primary:hover {
+  background: var(--accent-solid-hover);
+}
+
 button:disabled {
   opacity: 0.5;
   cursor: default;
@@ -91,6 +114,47 @@ button:disabled {
 
 .theme-toggle:hover {
   color: var(--text);
+}
+
+/* Origin: Conquest src/ui/styles.css .update-bar, .update-words and
+   .update-buttons, adapted: this app's colour names, and the page's own
+   padding on the three outer sides (above).
+
+   Across the bottom, over the page rather than beside it: a new version is
+   worth one line and is not worth moving the board for. */
+.update-bar {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px var(--pad-right) var(--pad-bottom) var(--pad-left);
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  box-shadow: 0 -6px 24px rgb(0 0 0 / 12%);
+}
+
+.update-words {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 12rem;
+  flex: 1 1 18rem;
+}
+
+.update-words span {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.update-buttons {
+  display: flex;
+  gap: 8px;
 }
 
 /* A window at least the app's own minimum size pins the shell to the
