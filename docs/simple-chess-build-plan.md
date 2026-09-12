@@ -425,21 +425,25 @@ Read first: spec 15, `../London/src/ui/Diagnostics.tsx` (dev-only pattern),
 `../Conquest/src/ui/useUpdate.ts` (`pretendUpdate` query pattern),
 `../London/scripts/packaged-eval.mjs`.
 
-- [ ] 6.1 `src/dev/scenes.ts`: the five scenes of spec 15.1 as data (fixed SAN
+- [x] 6.1 `src/dev/scenes.ts`: the five scenes of spec 15.1 as data (fixed SAN
       lists; `midgame` twenty moves, `mate` a scholar's-mate-length game or similar,
       `promotion` a position two moves from a promotion reached by a SAN list). A
       function `sceneFromLocation(search)` returning `{ scene, size, theme, side }`
       or null, tested as a string test.
-- [ ] 6.2 `useDevScene()` in `src/dev/use-dev-scene.ts`: returns null unless
+- [x] 6.2 `useDevScene()` in `src/dev/use-dev-scene.ts`: returns null unless
       `import.meta.env.DEV` and a scene is present; otherwise applies the settings
       and starts the game from the scene's moves, once. `App` calls it once. Confirm
       by reading the built bundle that no scene text survives `npm run build`.
-- [ ] 6.3 `scripts/probes/layout.js`: the expression of spec 15.3. `scripts/
+      (It is `Shell` that calls it, not `App`, and it returns the scene's hint flag
+      rather than the whole request; both reasons are in the notes. The scene does
+      not start the game: it writes storage and the ordinary start path finds it.)
+- [x] 6.3 `scripts/probes/layout.js`: the expression of spec 15.3. `scripts/
       packaged-eval.mjs` identical (used in phase 8).
-- [ ] 6.4 The layout pass: every scene at the three viewports, both sizes, both
+- [x] 6.4 The layout pass: every scene at the three viewports, both sizes, both
       themes. Fix what is wrong. Record the probe for each viewport and size in the
-      notes. The two numbers of S16 hold everywhere.
-- [ ] 6.5 Reuse review and commit.
+      notes. The two numbers of S16 hold everywhere. (One fault found and fixed: the
+      move list scrolled the whole screen, not itself.)
+- [x] 6.5 Reuse review and commit.
 
 **Done when:** the notes carry a screenshot list and the probe output for every
 viewport and size, with no sideways scroll anywhere.
@@ -548,7 +552,7 @@ did it that way too.
 | 3 - the sidebar and what is remembered | **Complete** 2026-09-12, gate passed the same day. 162 tests green; the settings and the game survive a reload; the large board is whatever fits and draws whole squares (808, 624 and 728 at scale 1; 800, 624 and 720 at 1.5). |
 | 4 - the bar, the hint and the promotion picker | **Complete** 2026-09-12, gate passed the same day. 183 tests green; the bar carries the engine's number, Hint draws and says a move, a pawn on the last rank asks which piece. |
 | 5 - save game and load game | **Complete** 2026-09-12, gate passed the same day. 222 tests green. A game saves as the PGN of spec 9.1 and loads back with its moves, side and level; undo goes back through a game that arrived whole and fetches the numbers as it goes. |
-| 6 - scenes, the probe and the layout pass | Not started |
+| 6 - scenes, the probe and the layout pass | **Built** 2026-09-12, awaiting review. 243 tests green and 2 skipped in 8.0 s. The five scenes open from the address bar and none survives the build; the probe holds S16's two numbers in all twelve rows; the move list no longer scrolls the board off the screen. |
 | 7 - the iPad Home Screen app | Not started |
 | 8 - the Windows app and the installer | Not started |
 
@@ -1657,3 +1661,193 @@ reason. No em dashes under `src/`.
   and the spec table now agree.
 
 - [x] **Review gate 5 passed** (2026-09-12)
+
+### Phase 6 - builder notes (2026-09-12)
+
+The session was compacted before this phase. Every document the chip named was read
+fresh before anything was touched, and so were `../London/scripts/packaged-eval.mjs`,
+`../London/src/ui/Diagnostics.tsx` and `../Conquest/src/ui/useUpdate.ts`.
+
+**Measured.**
+
+- `npx vitest run`: 28 files, 243 tests passed and 2 skipped, 8.0 seconds warm. By
+  project: `string` 19 files, 194 passed, 2 skipped; `dom` 9 files, 49 passed.
+  `tsc -b` clean, `npx oxlint` silent, `npm run build` clean.
+- **No scene survives the build.** After `npm run build`, in `dist/assets/*.js`:
+  `midgame` 0, `Qxf7` 0. Also 0: `scene`, `axb8`, `Nbd7`, `Ruy`. The whole of
+  `src/dev` is gone, not merely the two words the chip asked about. The main chunk
+  is 317.10 kB against phase 5's 316.95, and the 0.15 kB is the storage refactor
+  below, not the scenes.
+- **The twelve rows.** `?scene=midgame`, each viewport, both sizes, both themes. The
+  probe was fetched from the dev server and evaluated, so the file in the repo is
+  what ran. Every row: the bar, `.board` and `cg-board` end on the SAME pixel, and
+  `scrollWidth` is at or under `innerWidth`.
+
+  | Viewport | Size | Theme | Board | bar/board/cg bottom | scrollWidth vs innerWidth | Scale |
+  |---|---|---|---|---|---|---|
+  | 1280x1000 | small | dark | 416 | 497 / 497 / 497 | 1280 vs 1280 | 1 |
+  | 1280x1000 | small | light | 416 | 497 / 497 / 497 | 1280 vs 1280 | 1 |
+  | 1280x1000 | large | dark | 808 | 889 / 889 / 889 | 1280 vs 1280 | 1 |
+  | 1280x1000 | large | light | 808 | 889 / 889 / 889 | 1280 vs 1280 | 1 |
+  | 1180x820 | small | dark | 416 | 497 / 497 / 497 | 1180 vs 1180 | 1 |
+  | 1180x820 | small | light | 416 | 497 / 497 / 497 | 1180 vs 1180 | 1 |
+  | 1180x820 | large | dark | 624 | 705 / 705 / 705 | 1180 vs 1180 | 1 |
+  | 1180x820 | large | light | 624 | 705 / 705 / 705 | 1180 vs 1180 | 1 |
+  | 820x1180 | small | dark | 416 | 497 / 497 / 497 | 805 vs 820 | 1 |
+  | 820x1180 | small | light | 416 | 497 / 497 / 497 | 805 vs 820 | 1 |
+  | 820x1180 | large | dark | 728 | 809 / 809 / 809 | 805 vs 820 | 1 |
+  | 820x1180 | large | light | 728 | 809 / 809 / 809 | 805 vs 820 | 1 |
+
+  The scale was 1 in every row, which the chip's decision rule predicted: the pane
+  reports 1 just after a navigation and 1.5 later, and each row was measured straight
+  after one. So the large boards are S2's scale-1 numbers (808, 624, 728) rather than
+  phase 5's scale-1.5 ones (800, 624, 720), and both are that rule working. Phase 5
+  recorded 913 for the large board at 1280 by 1000; that drive did not pin the
+  viewport height, and 889 here is 81 + 808, which is what spec 4.2 works out.
+- **The other three scenes, at 1280 by 1000, both themes, looked at.** `mate`: the
+  white queen on f7 with the last-move highlight, "You won by checkmate" under the
+  buttons, Redo and Hint greyed and Undo live, the move list ending `4. Qxf7#`. The
+  bar is level with no number, which is spec 7's "before the first evaluation
+  arrives" state and is right here for the reason under **Left** below. `promotion`:
+  the picker opened by dragging a7 to b8 through the real chessground (the board
+  trusts synthetic events in development builds), four white pieces in a strip 210 px
+  wide and one square tall centred over the board, the pawn still on a7 and the move
+  list still at four rows until a piece is chosen. `hint`: the blue arrow drawn on
+  the board and "The engine suggests Bh6." under the status line in dark,
+  "The engine suggests axb5." in light. Both were real searches by the real engine,
+  not a fake.
+- **Red first, six times**, each restored and the suite re-run green. Blanking
+  `scrollToShow` turns three `keep-in-view` tests red. Dropping `applyScene` from the
+  hook turns three scene tests red. Moving `useDevScene` below the settings hooks in
+  `Shell` turns "applies the settings the address carries" red with `expected 'dark'
+  to be 'light'`, which is the ordering that comment claims, proved. Dropping the
+  scene's hint turns "asks for a hint when the scene wants one" red. Making `oneOf`
+  accept anything turns two scene tests AND the existing preference test red, which
+  is what says `readOneOf` still goes through it. And the layout fault below was put
+  back and measured again.
+- `git -C ../London status` shows one untracked file, `grep.exe.stackdump` dated
+  2026-09-11, and `git -C ../Conquest status` one, `tsconfig.tsbuildinfo`. They are
+  the ones gates 3, 4 and 5 saw, and nothing under either folder was changed.
+- **The pane's storage was cleared, the viewport reset and the dev server stopped.**
+
+**The fault the pass found, and what it cost to see.**
+
+**The move list scrolled the whole screen instead of itself.** `MoveList` keeps the
+newest move in view with `scrollIntoView({ block: 'nearest' })`, and that scrolls
+every scrollable ancestor, not the list. Above 900 by 700 the shell pins itself to
+the window and `main` scrolls instead of the page (`app.css`, phase 0). On a 1180 by
+820 landscape iPad the sidebar is 741 px against `main`'s 715, so `main` can scroll,
+and bringing the twentieth move into view scrolled it by 26 px and took the top of
+the board with it: the board's first rank was cut off the moment the app opened, at
+every board size, and again after every move.
+
+It was caught by the probe rather than by looking: the board's bottom read 471 and
+679 where the arithmetic said 497 and 705. The cause was pinned by opening the same
+page twice, `?scene=fresh` against `?scene=midgame` at the same size: 0 px of scroll
+with the board at y 81 and no moves in the list, 26 px with the board at y 55 and
+twenty. Nothing but the list had changed, which is the whole diagnosis.
+
+The fix is `src/ui/keep-in-view.ts`: `scrollToShow` says how far a box has to move to
+show a row in it, and `MoveList` adds that to the list's own `scrollTop` and touches
+nothing else. Measured after: `main` at 0, the board at 81, the list scrolled 232 px
+with move 20 showing. Then driven live at 1180 by 820, playing 21.Bxf6 on the board:
+the list scrolled itself to 255 to show the new row, `main` stayed at 0, the board
+stayed at 81, and the bar came back with the engine's reply at -0.5.
+
+**No DOM test can hold this.** jsdom has no layout, so every rectangle in a DOM test
+is zero and both the broken and the fixed version scroll nothing. That is why the
+arithmetic came out into a module of its own: a number is testable where a scroll is
+not, and `keep-in-view.test.ts` pins it. The behaviour itself is pinned by the
+measurement above, which is the only instrument there is for it.
+
+**Decided (code shape).**
+
+- **`Shell` calls `useDevScene`, not `App`.** The chip says `App`, for the ordering:
+  the scene's storage writes have to land before the hooks that read storage. A state
+  initializer runs during its own component's render, and hooks run in order, so the
+  first line of `Shell` is as early as `App` is for that purpose. It also has to be
+  `Shell`, because `renderApp` mounts `Shell` and not `App` (`App` builds the real
+  provider with no way in), and the chip's own DOM tests set the address and then
+  call `renderApp`. One place either way; this is the place both callers reach.
+- **The hook returns the scene's hint flag, not the whole request.** The chip's
+  `SceneRequest` would have made `Shell` ask `SCENES` what the scene wanted, and one
+  live reference to that table from a module the app always imports would put the
+  scenes' moves in the shipped bundle. Everything else a scene says is in storage by
+  then, and the screen reads storage as it always does. So `DevScene` is `{ hint }`
+  and nothing about `src/dev` reaches `src/ui` but a boolean.
+- **`rememberSide`, `rememberBoardSize` and `rememberTheme` rather than exported key
+  strings.** The chip says to export the key constants so nothing in `src/dev` writes
+  a key string. This goes one step further in the same direction: the key never
+  leaves the module that owns it, and the hook and the dev harness write a setting
+  through the same function. The hooks lost a `useCallback` each in the process,
+  because a module function is already stable.
+- **`oneOf` in `prefs.ts`, and `readOneOf` now asks it.** "Is this one of these
+  words" was about to be written a second time in `src/dev`, for the address bar
+  rather than for storage. It is the same question, so it has one home, and the
+  mutation check above shows both callers going through it.
+- **`THEMES` in `theme.ts`**, beside the type and the key, so the two theme words are
+  not written out twice. `SIDES` and `BOARD_SIZES` already existed for their pairs.
+- **The scenes write storage and nothing else.** No second way into the provider, no
+  dev-only branch in `Shell` deciding where a game comes from. A scene is a game the
+  app was closed on, which the app already knows how to reopen, so the path a scene
+  exercises is the path a person uses. The hint is the single exception, because it
+  is a question asked of the engine rather than a fact about the game, and `Shell`
+  asks it in one line after the mount start resolves.
+- **`applyScene` is idempotent rather than guarded.** StrictMode runs the initializer
+  twice in development; writing the same three keys and the same game twice is the
+  same as writing them once.
+- **The scene's level is `DEFAULT_LEVEL`.** The chip says 4, which is what
+  `DEFAULT_LEVEL` is. A scene shows the app as it comes and the sidebar's level is
+  one of the things being looked at, so it reads the constant rather than repeating
+  the number.
+- **`midgame` is twenty moves of a closed Ruy Lopez**, checked against chess.js by
+  the test beside it. A real opening rather than an invented one, because a move list
+  full of nonsense is hard to read past when the list is the thing being looked at.
+  It is nobody's authored line: it came from the opening's own main line, not from
+  the trainer.
+- **The address is reset in `scenes.dom.test.tsx`, not in `dom-setup.ts`.** The
+  address is global to a run the way `localStorage` is, and `dom-setup.ts` would be
+  the symmetric place. It is byte-identical to the trainer's (S3), and one `afterEach`
+  in the only file that touches the address is not worth making it adapted.
+
+**Departures from the chip.** The two above: `Shell` rather than `App`, and the hook
+returning the hint rather than the request. Both are code shape and both have their
+reason recorded. Nothing else.
+
+**Asked of Nick.** Nothing. The one thing a person can see that was not settled - the
+board's top rank scrolled out of sight - is a fault rather than a choice: spec 4.2
+sizes the board to FIT the space it is given, so a board that does not fit is not a
+design question. No number in spec 4.2 changed.
+
+**Reuse review.** `oneOf` is now the only membership check and `readOneOf` is its
+first caller. The three `remember*` functions are the only writers of their keys, and
+no key string appears in `src/dev`. `SIDES`, `BOARD_SIZES` and `THEMES` are each one
+list. `SCENES` is the only place a scene's moves are written down, and
+`sceneFromLocation` the only place the address is read. `scrollToShow` is the only
+scroll arithmetic. `canReplayMoves` still checks every move list, including the
+scenes' in their test. `rememberGame` writes every remembered game, the dev harness
+included. No pixel number or colour in a `.ts` or `.tsx`; `scripts/probes/layout.js`
+names selectors and is not under `src/`. No React under `src/play`, `src/model` or
+`src/engine`. No em dashes under `src/`. No new or adapted file says "trainee",
+"student", "repertoire", "course" or "book".
+
+**Copies.** `scripts/packaged-eval.mjs` is the trainer's, byte-identical below one
+`Origin:` line (`diff` against `../London/scripts/packaged-eval.mjs` is empty).
+Nothing in this repo runs it until phase 8. Everything else this phase is new.
+
+**Left.**
+
+- **`packaged-eval.mjs`'s usage comment names `repertoire-trainer.exe`**, and its
+  examples name the trainer's phases, because it is an identical copy and S3 says an
+  identical copy is identical. Phase 8 runs this app's own executable; the line above
+  it is the trainer's history, not an instruction.
+- **The `mate` scene's bar carries no number.** A mated position has no legal move,
+  so the engine returns no candidate and there is nothing to show; and a game that
+  arrived whole is evaluated at its final position only (ruled at gate 4), so there
+  is no earlier number behind it either. A game played INTO checkmate has one, from
+  the position before the mate. Both are the rules working. Worth knowing when the
+  screenshot is looked at.
+- **The `promotion` picker cannot be opened without a drag**, and the drag is
+  synthetic. Chessground ignores synthetic events unless `trustAllEvents` is on,
+  which it is in development builds only, so this works in the pane and does not
+  weaken the shipped build.

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { read, write } from '../storage/prefs'
 
 /**
- * Origin: London src/ui/theme.ts, adapted: the storage key, the storage goes through prefs.ts, and the comment (the trainer's spoke of its progress file).
+ * Origin: London src/ui/theme.ts, adapted: the storage key, the storage goes through prefs.ts, THEMES and rememberTheme are new, and the comment (the trainer's spoke of its progress file).
  * Dark or light, remembered between sessions.
  *
  * The choice is a display preference, kept in `localStorage` like every other
@@ -17,14 +17,25 @@ import { read, write } from '../storage/prefs'
 
 export type Theme = 'dark' | 'light'
 
+/** The two words, in one place, so nothing writes the pair out twice. */
+export const THEMES: readonly Theme[] = ['dark', 'light']
+
 const KEY = 'simple-chess.theme'
+
+/**
+ * The one writer, shared by the toggle below and by the dev scenes, which put
+ * a theme in storage and let the ordinary start path pick it up (spec 15.1).
+ */
+export function rememberTheme(theme: Theme): void {
+  write(KEY, theme)
+}
 
 export function useTheme(): { theme: Theme; toggle: () => void } {
   const [theme, setTheme] = useState<Theme>(() => (read(KEY) === 'light' ? 'light' : 'dark'))
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
-    write(KEY, theme)
+    rememberTheme(theme)
   }, [theme])
 
   const toggle = useCallback(() => {

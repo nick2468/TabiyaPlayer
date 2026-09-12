@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useDevScene } from '../dev/use-dev-scene'
 import type { Colour } from '../model/types'
 import { canReplayMoves, gameToPgn, loadPgn, saveFileName } from '../play'
 import { recallGame } from '../storage/current-game'
@@ -43,6 +44,10 @@ export function App() {
 const NOTICE_MS = 3000
 
 export function Shell() {
+  // First, and before anything that reads storage. In a development build this
+  // writes the scene the address bar asked for; in a shipped one it is a
+  // `return null` (spec 15.1).
+  const scene = useDevScene()
   const game = usePlay()
   const { theme, toggle } = useTheme()
   const { level, setLevel } = useLevel()
@@ -72,7 +77,7 @@ export function Shell() {
   const startFrom = (sans: string[], from: Colour, atLevel: number) => {
     setLevel(atLevel)
     setSide(from)
-    void game.start({ level: atLevel, side: from, startMoves: sans })
+    return game.start({ level: atLevel, side: from, startMoves: sans })
   }
 
   // StrictMode runs effects twice in development, and a second start would
@@ -84,16 +89,19 @@ export function Shell() {
     started.current = true
 
     // The game the app was closed on comes back, and it wins over the
-    // remembered settings, because it carries its own (spec 10).
+    // remembered settings, because it carries its own (spec 10). Nothing
+    // remembered, or a record that no longer makes a legal game: a fresh one,
+    // at the remembered settings, and no complaint about it.
     const remembered = recallGame()
-    if (remembered && canReplayMoves(remembered.sans)) {
-      startFrom([...remembered.sans], remembered.side, remembered.level)
-      return
-    }
+    const opening =
+      remembered && canReplayMoves(remembered.sans)
+        ? startFrom([...remembered.sans], remembered.side, remembered.level)
+        : game.start({ level, side })
 
-    // Nothing remembered, or a record that no longer makes a legal game: a
-    // fresh one, at the remembered settings, and no complaint about it.
-    void game.start({ level, side })
+    // A dev scene's hint, the one thing storage cannot carry (spec 15.1).
+    void opening.then(() => {
+      if (scene?.hint) void game.askHint()
+    })
     // Once, on mount. `game` is a fresh object every render by design, and the
     // settings here are the ones storage gave when this component mounted.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -158,7 +166,7 @@ export function Shell() {
         setNotice({ text: result.error, bad: true })
         return
       }
-      startFrom(result.sans, result.side, result.level ?? level)
+      void startFrom(result.sans, result.side, result.level ?? level)
     } catch (error) {
       setNotice({ text: asMessage(error), bad: true })
     }

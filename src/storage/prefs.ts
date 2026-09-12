@@ -3,7 +3,7 @@ import type { Colour } from '../model/types'
 import { levelOrNull } from '../play'
 
 /**
- * Origin: London src/ui/prefs.ts, adapted: this app's keys and three hooks; read, write, readOneOf and useRemembered keep the trainer's text, remove is new, and the show half is gone.
+ * Origin: London src/ui/prefs.ts, adapted: this app's keys and three hooks; read, write and useRemembered keep the trainer's text, readOneOf now asks oneOf, remove and the two remember functions are new, and the show half is gone.
  * The settings, remembered between sessions (spec 10).
  *
  * Every setting is remembered, the way `theme.ts` remembers dark or light and
@@ -66,10 +66,37 @@ export function remove(key: string): void {
   }
 }
 
+/**
+ * One of a fixed set of words, or nothing when it is not one of them.
+ *
+ * Storage is one source of a word this app has to check; the address bar is
+ * another, in a development build (spec 15.1). Both ask the same question, so
+ * they ask it here.
+ */
+export function oneOf<T extends string>(value: string | null, allowed: readonly T[]): T | undefined {
+  return allowed.includes(value as T) ? (value as T) : undefined
+}
+
 /** One of a fixed set of words, or the default when storage says anything else. */
 export function readOneOf<T extends string>(key: string, allowed: readonly T[], fallback: T): T {
-  const saved = read(key)
-  return allowed.includes(saved as T) ? (saved as T) : fallback
+  return oneOf(read(key), allowed) ?? fallback
+}
+
+/**
+ * The one writer for each setting that is not a number.
+ *
+ * The hooks below write through these, and so do the dev scenes, which put a
+ * scene's settings in storage and let the ordinary start path pick them up
+ * (spec 15.1). That is why they exist: a key string belongs to the module that
+ * owns it, and a harness that wrote its own copy of one would be a second
+ * place for the two to drift apart.
+ */
+export function rememberSide(side: Colour): void {
+  write(SIDE_KEY, side)
+}
+
+export function rememberBoardSize(size: BoardSizeName): void {
+  write(BOARD_SIZE_KEY, size)
 }
 
 /**
@@ -104,7 +131,7 @@ export function useLevel(): { level: number; setLevel: (level: number) => void }
 export function useSide(): { side: Colour; setSide: (side: Colour) => void } {
   const [side, setSide] = useRemembered<Colour>(
     () => readOneOf(SIDE_KEY, SIDES, 'white'),
-    useCallback((next: Colour) => write(SIDE_KEY, next), []),
+    rememberSide,
   )
   return { side, setSide }
 }
@@ -116,7 +143,7 @@ export function useBoardSize(): {
 } {
   const [boardSize, setBoardSize] = useRemembered<BoardSizeName>(
     () => readOneOf(BOARD_SIZE_KEY, BOARD_SIZES, 'small'),
-    useCallback((next: BoardSizeName) => write(BOARD_SIZE_KEY, next), []),
+    rememberBoardSize,
   )
   return { boardSize, setBoardSize }
 }

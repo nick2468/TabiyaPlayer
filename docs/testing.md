@@ -88,3 +88,41 @@ Two things to know. From phase 2, mock the board at the top of every DOM test fi
 shows it (`vi.mock('./Board', async () => await import('../test/board-stub'))`). And
 `src/test/dom-setup.ts` empties `localStorage` after every test, so each test starts
 from a fresh install unless it writes storage before `renderApp`.
+
+## The layout probe and the scenes
+
+Some things no test can answer. jsdom has no layout, so every rectangle in a DOM test
+is zero: a board with its top rank scrolled off the screen passes the whole suite.
+Those are looked at instead, in the browser pane, and measured (spec section 15).
+
+**A scene** puts the app in a state worth looking at, from the address bar:
+
+```
+http://localhost:5185/?scene=midgame&size=large&theme=light&side=black
+```
+
+The five are `fresh`, `midgame` (twenty moves), `mate` (a finished game, so the
+outcome shows), `promotion` (a pawn one step from the last rank) and `hint`
+(`midgame` with a hint already asked). `size`, `theme` and `side` are optional and
+override what is remembered for that load. They live in `src/dev/scenes.ts` and work
+by writing storage, so a scene arrives through the same path a reopened game does.
+
+Development builds only. The check is `import.meta.env.DEV`, which is a literal at
+build time, so `npm run build` drops every scene: `grep -c midgame dist/assets/*.js`
+is 0, and a phase that touches this says so in its notes.
+
+**The probe** is `scripts/probes/layout.js`, one expression returning the boxes of
+`.board`, `cg-board`, `.live-eval`, `.play-controls`, `.sidebar` and `.move-list`
+beside `scrollWidth`, `innerWidth` and the display scale. Evaluate it in the pane by
+fetching it from the dev server, so the file is what runs rather than a copy of it:
+
+```js
+eval(await (await fetch('/scripts/probes/layout.js')).text())
+```
+
+Two numbers have to hold at every viewport, both board sizes and both themes (S16):
+the bar, `.board` and `cg-board` end on the same pixel, and `scrollWidth` never
+exceeds `innerWidth`. Every UI-affecting phase records the table in its notes.
+
+In phase 8 the same file is read a second way, against the installed Windows app,
+through `node scripts/packaged-eval.mjs @scripts/probes/layout.js`.

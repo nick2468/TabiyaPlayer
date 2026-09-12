@@ -673,7 +673,7 @@ SimpleChess/
       hint.ts                     London, cut to the engine hint and its one sentence
       index.ts
     storage/
-      prefs.ts                    London's shape, this app's keys
+      prefs.ts                    London's shape, this app's keys; oneOf, and one remember function per setting
       current-game.ts             new: the remembered game
       files.ts                    London's backup.ts pattern: save and open a .pgn
       paths.ts                    London, cut to isDesktop; LOCAL_FOLDER arrives with the window in phase 8
@@ -683,11 +683,12 @@ SimpleChess/
       board.css                   London, identical
       board-size.ts               London, plus the large size and the fit rule
       use-board-pixels.ts         new: measures the viewport and the display scale for the fit rule
-      theme.ts                    London, adapted: the key, and the storage goes through prefs.ts
+      theme.ts                    London, adapted: the key, the storage goes through prefs.ts, THEMES and rememberTheme
       play-context.tsx            London, adapted: no book, no report, no record
       Screen.tsx                  the board column and the sidebar
       PlayControls.tsx            London's PlayControls, row one only
-      MoveList.tsx                London's MoveList, record only
+      MoveList.tsx                London's MoveList, record only; it scrolls itself and nothing above it
+      keep-in-view.ts             new: how far a list scrolls to show a row (phase 6 found scrollIntoView scrolling the screen)
       EvalBar.tsx                 London's LiveEvalBar, with the number
       PromotionPicker.tsx         new: the four pieces, drawn by the board's own stylesheet
       chessground-piece.d.ts      new: the <piece> element, for TypeScript
@@ -697,7 +698,9 @@ SimpleChess/
       UpdateBanner.tsx, useUpdate.ts, updates.ts   Conquest, adapted wording
       app.css, play.css           London, cut to what this screen uses
     dev/
-      scenes.ts                   the dev-only scene setup (section 15)
+      scenes.ts                   the five scenes and the address bar they come from (section 15)
+      apply-scene.ts              writes a scene to storage, so the ordinary start path finds it
+      use-dev-scene.ts            the one hook, behind import.meta.env.DEV; Shell calls it first
     test/
       fake-engine.ts, dom-setup.ts   London, identical
       board-stub.tsx, dom.tsx        London, adapted (the stub reports its orientation; dom.tsx can seed a game)

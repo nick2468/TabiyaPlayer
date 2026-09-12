@@ -6,12 +6,17 @@ an iPad Home Screen app (a PWA on Cloudflare Pages, like Conquest in `../Conques
 from one React, TypeScript and Vite code base. The code is copied from those two apps
 wherever they already do the job, so that a shared library can follow later.
 
-Current state: phase 5 (save game and load game) built 2026-09-12 and awaiting
-review. A game leaves the app as the PGN file of spec 9.1 and comes back with its
-moves, side and level; a file from elsewhere loads its main line; a bad one is
-refused and the game on the board is untouched. Undo and redo now fetch the number
-for a position they land on when it has none, and go back through a game that
-arrived whole. Phases 0 to 4 passed their gates: the bar carries the engine's number
+Current state: phase 6 (the dev scenes, the layout probe and the layout pass) built
+2026-09-12 and awaiting review. Every screen of spec 15 opens from the address bar in
+a development build (`?scene=midgame&size=large&theme=light`), none of it survives
+`npm run build`, `scripts/probes/layout.js` measures the layout and
+`scripts/packaged-eval.mjs` is in place for phase 8. The pass found one fault and
+fixed it: the move list's "keep the newest move in view" scrolled the whole screen,
+so on a 1180 by 820 window the top of the board was cut off from the moment the app
+opened. Phases 0 to 5 passed their gates: a game leaves the app as the PGN file of
+spec 9.1 and comes back with its moves, side and level; undo and redo fetch the
+number for a position they land on when it has none, and go back through a game that
+arrived whole; the bar carries the engine's number
 and Hint draws and says a move, a pawn on the last rank asks which piece, the
 settings and the game in progress are remembered, and the large board is whatever
 fits the screen it is on and draws whole squares (Nick ruled on 2026-09-12 that it
@@ -77,8 +82,11 @@ scale).
   and `evalText` (the bar); `levelName` (naming a level); `levelOrNull` in
   `play/level.ts` (a level arriving from a setting, a record or a file); `asMessage`
   in `ui/message.ts` (something thrown, as a sentence); `Notice` (every message
-  under the board); the `read`, `write`, `readOneOf` and `useRemembered` helpers in
-  `prefs.ts` (every setting).
+  under the board); the `read`, `write`, `oneOf`, `readOneOf`, `useRemembered` and
+  `remember*` helpers in `prefs.ts` (every setting; `oneOf` answers "is this one of
+  these words" for storage and for the address bar alike, and each key string stays
+  in the module that owns it); `scrollToShow` in `ui/keep-in-view.ts` (the only
+  scroll arithmetic); `SCENES` and `sceneFromLocation` in `dev/scenes.ts`.
   Never fork a second copy, and give any new repeated snippet a single home the
   moment it appears twice.
 - Copied files are byte-identical to their origin plus one `Origin:` line; adapted
@@ -87,9 +95,11 @@ scale).
 - Close every phase with a short reuse and duplication review of the new code, and
   refactor on the spot before the phase commit.
 - Check every change a person can see in the pane inside the same phase, as the
-  trainer's phases did, with the scenes and the layout probe of spec section 15. The
+  trainer's phases did, with the scenes and the layout probe of spec section 15:
+  `?scene=<fresh|midgame|mate|promotion|hint>` sets the screen up, and
+  `eval(await (await fetch('/scripts/probes/layout.js')).text())` measures it. The
   bar, the board box and `cg-board` end on the same pixel, and the page never scrolls
-  sideways.
+  sideways. jsdom has no layout, so no test can hold either number.
 
 ## Conventions
 
