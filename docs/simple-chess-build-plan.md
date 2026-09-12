@@ -1,10 +1,9 @@
 # Simple Chess - build plan
 
-Version 1. Written 2026-09-11. Status: **Built and reviewed.** Every phase passed its
-gate, the last on 2026-09-12. Two boxes are open and both are Nick's: 7.8 (publish
-to Cloudflare and play a move on the iPad in aeroplane mode) and 8.6 (run the
-installer, play, save, load, reopen, uninstall). When he ticks them the plan moves
-to `docs/completed/`.
+Version 2, 2026-09-13. Status: **Active again.** Version 1 (phases 0 to 8) is built and
+every gate passed by 2026-09-12; its boxes 7.8 and 8.6 are Nick's. Version 2 (phases 9
+to 12, spec section 18) makes the app Simply Chess, a sibling of the trainer's Play
+screen. Phase 9 is next.
 
 Read [the specification](simple-chess-spec.md) first. It says what the app does. This
 document says what gets built, in what order, and how we know each part is finished.
@@ -540,6 +539,129 @@ Nick.
 
 ---
 
+## Phase 9 - Simply Chess, and the trainer's layout
+
+**Goal: the app is called Simply Chess everywhere a person sees it, and the screen is
+laid out as the trainer's Play screen (spec 18.1): the difficulty in a selector row
+under the header, the board size toggle beside Light/Dark, the head row with the
+opening line and the status, the move list in its own column, the side panel with
+Play as and the file buttons.**
+
+Read first: spec 18 (all of it), 4.2, S2; `../London/src/ui/App.tsx` (the course
+switch row), `catalog.css` (`.course-switch`), `Play.tsx` (`PlayHead`, `openingLine`,
+`MoveList`'s column), `play.css` (`.play-head`, `.play-opening`, `.move-list`,
+`.play-side`).
+
+- [ ] 9.1 The rename (spec 18.2): every name a person sees, the folder in its three
+      files and its test, the identifier, the package name, the storage keys, the
+      manifest, the icon script's comment, the README and CLAUDE.md. The scenes and
+      the deploy document follow. `git grep -i 'simple chess'` finds only history.
+- [ ] 9.2 The header: the board size toggle beside the theme toggle, one button that
+      reads the OTHER size, in the `theme-toggle` style; the Board fieldset leaves the
+      side panel.
+- [ ] 9.3 The selector row: the trainer's `.course-switch` with "Difficulty" and the
+      select; the two description sentences into the select's `title`.
+- [ ] 9.4 The head row: the trainer's `.play-head` without its heading; the opening
+      line "Playing White against 4. Club" from the running game; the status line
+      beside it.
+- [ ] 9.5 The move list as its own column, 167 px, board height, between the board
+      column and the side panel; the side panel as `.play-side` with Play as and the
+      file buttons.
+- [ ] 9.6 The window 1400 by 980, minimum 960 by 720; the fit rule's chrome constants
+      re-measured (above: header, selector row, head row; beside: bar, gap, list column,
+      side panel minimum, gaps; below: both button rows), named, and the fit tests'
+      expected numbers updated with the arithmetic shown.
+- [ ] 9.7 The narrow layout: three columns stacked; the two rows wrap.
+- [ ] 9.8 The scenes and the probe follow the new selectors; the twelve-row layout pass
+      again, both sizes, both themes, three viewports; S16 holds.
+- [ ] 9.9 Reuse review and commit. Version stays 1.0.0 until phase 12.
+
+---
+
+## Phase 10 - stop, review, the report
+
+**Goal: a game can be stopped and reviewed, or stopped and discarded; the report says
+what the engine thought of your moves; Copy game and Save game write the report's
+comments.**
+
+Read first: spec 18.3, 18.5, 18.6; `../London/src/play/report.ts` (`scanForSlips`,
+`buildReport`, `verdictInWords`, `verdictBand`, `describeSlip`, `SLIP_THRESHOLDS`),
+`session.ts` (`scanGame`), `game-pgn.ts`, `Play.tsx` (`PlayActions`, `Report`,
+`EvalBar`, `CopyGame`, `toClipboard`), `play-context.tsx` (`finish`, `discard`,
+`scanning`, `bestMovesRef`), `play.css` (`.report`, `.slips`, `.eval-bar`,
+`.copy-game`, `.play-actions`).
+
+- [ ] 10.1 `src/play/report.ts`: the trainer's, cut to the chess half: `PlayedMove`
+      stays in `session.ts`; `scanForSlips`, `buildReport` (no deviation), the verdict
+      functions, `describeSlip`, `SLIP_THRESHOLDS`, `MoveReview`, `GameReport`. The
+      hint count on the session (`hints`), counted in `askHint`.
+- [ ] 10.2 `scanGame` from the trainer's `session.ts`, identical text, in
+      `src/play/scan.ts`; it takes the bar's evaluations and best moves as `known`.
+      The provider keeps `bestMovesRef` from every `evaluate`, as the trainer does.
+- [ ] 10.3 The provider: `finish` (scan, build, set the report), `discard` (a fresh
+      game, the remembered one forgotten), `scanning`, `report`, `inProgress`. Undo,
+      Redo, Hint and the file buttons disabled during a scan.
+- [ ] 10.4 `PlayActions` in the side panel: Stop and review / Review the game, Stop and
+      discard, the "Review it" notice for an ended game; `Report` with Your moves and
+      The final position; the horizontal `EvalBar`; `CopyGame` with `toClipboard`.
+- [ ] 10.5 `game-pgn.ts` grows the trainer's comments when a report is given; Save game
+      and Copy game share it; the hint count in the file and the report.
+- [ ] 10.6 Tests: S15 items 12, 13, 17 and 19; the trainer's `report` tests for the
+      slips and the verdict bands copied where they apply.
+- [ ] 10.7 Drive in the pane: a game with a deliberate blunder, stopped and reviewed;
+      the slip named; the verdict; Copy game's text; both themes.
+- [ ] 10.8 Reuse review and commit.
+
+---
+
+## Phase 11 - the review viewer, Keep playing, Play from here
+
+**Goal: after the review the move list is the trainer's viewer, and the two ways on
+from a reviewed game exist.**
+
+Read first: spec 18.4; `../London/src/play/replay.ts`, `src/ui/play-from-replay.ts`
+and its tests, `Play.tsx` (`MoveList` with `activePly`, `PlayControls` row two,
+`ReplayControls`, `preferredShapes`, the arrow-key effect), `play-context.tsx`
+(`replayPly`, `resume`, `canResume`), `play.css` (`.move-step`, `.play-review-row`,
+`.play-steps`, `.step-arrow`, `.jump`).
+
+- [ ] 11.1 `src/play/replay.ts` gains the trainer's `positionAtPly`, `moveAtPly`,
+      `clampPly`, `plyBeforeMove`, `plyAfterMove`, identical text.
+- [ ] 11.2 The provider holds `replayPly`, cleared with the report; `resume` (Keep
+      playing) and `canResume`; a path for Play from here that starts a new game from
+      the viewed position with the same side and level and forgets the old game.
+- [ ] 11.3 `MoveList` with `activePly`: buttons after the review, the marked row,
+      scrolling itself; the slip buttons in the report jump the board.
+- [ ] 11.4 `PlayControls` row two: Keep playing, Play from here with the trainer's
+      `whyNotPlayable` reasons, the two arrows; the arrow-key effect, never with a
+      text field focused.
+- [ ] 11.5 `preferredShapes`: the better move as a blue arrow on a slip's position; the
+      trainer's last-move highlight rule.
+- [ ] 11.6 Tests: S15 items 14, 15, 16; the trainer's replay and play-from-replay tests
+      copied where they apply.
+- [ ] 11.7 Drive in the pane: review a game, click moves, step with the keys, Keep
+      playing, Play from here; the probe with the review row showing (the board size
+      must not change); both themes.
+- [ ] 11.8 Reuse review and commit.
+
+---
+
+## Phase 12 - version 1.1.0
+
+**Goal: everything section 18 asks for is built, checked and shipped.**
+
+- [ ] 12.1 The acceptance walk (`docs/acceptance.md`) extended with 18.7's items and
+      re-checked where earlier items changed (the screen, the file).
+- [ ] 12.2 Version 1.1.0 in the three files; `npx tauri build`; the packaged window
+      driven again with the probe and the one screenshot; the installer's path and size.
+- [ ] 12.3 The deploy document updated for whichever of Q22's options Nick chooses,
+      when he chooses. Until then it documents both.
+- [ ] 12.4 Docs sweep (spec, plan, testing, deploy, README, CLAUDE.md) and commit.
+- [ ] 12.5 Nick: install 1.1.0 over 1.0.0 (the settings and the game survive), play,
+      review a game. Record the date here.
+
+---
+
 ## The order, and why
 
 Phases 1 and 2 put a playable game on screen as early as possible, because the
@@ -565,6 +687,10 @@ did it that way too.
 | 6 - scenes, the probe and the layout pass | **Complete** 2026-09-12, gate passed the same day. 243 tests green. The five scenes open from the address bar and none survives the build; the probe holds S16's two numbers in all twelve rows; the move list no longer scrolls the board off the screen. |
 | 7 - the iPad Home Screen app | **Complete** 2026-09-12, gate passed the same day; box 7.8 is Nick's. 250 tests green. The built app has an icon and a manifest, opens with the server stopped and answers a move, and offers a new version in a bar that says it costs nothing. |
 | 8 - the Windows app and the installer | **Complete** 2026-09-12, gate passed the same day; box 8.6 is Nick's. 257 tests green. The window opens at 1280 by 1000 with the engine in it, the installer is 6.6 MB and installs for the current user, and the uninstaller's four cases are proved against a scratch folder. Version 1.0.0. |
+| 9 - Simply Chess, and the trainer's layout | Not started |
+| 10 - stop, review, the report | Not started |
+| 11 - the review viewer, Keep playing, Play from here | Not started |
+| 12 - version 1.1.0 | Not started |
 
 ## Phase notes
 

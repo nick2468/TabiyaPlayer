@@ -1,8 +1,11 @@
 # Simple Chess - specification
 
-Version 1. Written 2026-09-11 by the orchestrator session from Nick's brief
-(`SimpleChess-brief.txt`) and his rulings of the same day (section 2). Status:
-**agreed, awaiting build.**
+Version 2, 2026-09-13 (version 1 shipped 2026-09-12 as 1.0.0). Written by the
+orchestrator session from Nick's brief (`SimpleChess-brief.txt`) and his rulings
+(section 2, then section 18). Sections 1 to 17 specify version 1 and stay true;
+**section 18 specifies version 2, the sibling of the trainer's Play screen, and wins
+where they differ.** The product is now called **Simply Chess**; the earlier sections
+keep the old name as history.
 
 This document says what the app does and how it is built. The
 [build plan](simple-chess-build-plan.md) says in what order. Where the two disagree,
@@ -928,3 +931,192 @@ The app is done when every line below is true, checked and recorded in the plan.
     version held in three files.
 11. **Docs**: this document, the plan with every box ticked or its gap recorded, the
     deploy document, `testing.md`, and `CLAUDE.md` all current.
+
+---
+
+## 18. Version 2: a sibling of the trainer's Play screen (ruled 2026-09-13)
+
+Nick's rulings after using version 1.0.0, folded into one section the way the
+trainer's specification folds its version 2 into section 10. **Where this section and
+sections 1 to 17 differ, this section wins.** Everything it does not mention stands.
+
+| # | Question | Ruling |
+|---|---|---|
+| Q15 | The name | **Simply Chess.** "It's not a simplified version of chess, it's a to-the-point player." Everything a person sees changes: the product name, the window title, the installer, the Home Screen label, the icon script's output, the PGN `Event` tag, the data folder (`%LOCALAPPDATA%\Simply Chess Data`), the Tauri identifier (`com.nick.simply-chess`) and the storage keys (`simply-chess.*`). The repository folder stays `SimpleChess`, and the site name is not decided (Q22). |
+| Q16 | Layout | **As close to the trainer's Play screen as the app allows.** The difficulty select sits where the trainer's course selector sits, in a row under the header. The board size toggle sits beside Light/Dark. The move list is its own narrow column at board height. The side panel holds Play as, the file buttons, the actions during a game and the report after it. The window opens at 1400 by 980, the trainer's size. |
+| Q17 | The move list during play | **A record only.** After the game is reviewed it becomes the trainer's replay viewer: click a move to see the position, the row is marked, the arrow keys step. |
+| Q18 | Stopping a game | **Stop and review** and **Stop and discard**, as the trainer's. |
+| Q19 | The report | **The trainer's, chess half only.** Your moves scanned at the analysis profile with each slip named and the engine's better move; the verdict on the final position; the outcome; the hint count. Nothing about openings or repertoires. Verdicts in the report are in the trainer's words; the bar keeps its number (Q4). |
+| Q20 | Game history | **No.** Save game is how a game is kept. |
+| Q21 | Other trainer features | Keep playing, Play from here, Copy game and the hint count come in. The game length cap, the launch shapes and Play the other side stay out. |
+| Q22 | Deployment | Not decided. Caddy on the LAN (a private root certificate trusted once on the iPad) and Cloudflare Pages are both documented as options when the choice is made. Nothing in the app depends on it. |
+
+Nick also asked for the same number on the trainer's own bar; that is a chip for the
+trainer, `../London/chips/phase-46-bar-number.md`, and not part of this app.
+
+### 18.1 The screen, version 2
+
+```
++------------------------------------------------------------------------------+
+| Simply Chess  v1.1.0                                   [ Large ]  [ Light ]  |  header
++------------------------------------------------------------------------------+
+|                         Difficulty  [4. Club        v]                       |  selector row
+|                                                                              |
+| Playing White against 4. Club                Your move                       |  head row
+|                                                                              |
+|  ||  +---------------------+   +----------+   +----------------------------+ |
+|  ||  |                     |   | 1. d4 d5 |   | PLAY AS  (o) White ( ) Black| |
+|  ||  |                     |   | 2. c4 e6 |   | [Save game] [Load game]    | |
+|  ||  |       board         |   |   ...    |   |                            | |
+|  ||  |                     |   |          |   | The engine suggests Nf3.   | |
+|  ||  |                     |   |          |   |                            | |
+|  ||  +---------------------+   +----------+   | [Stop and review]          | |
+|      [New game][Undo][Redo][Hint]             | [Stop and discard]         | |
+|      [Keep playing][Play from here]   [<][>]  |         or, after review,  | |
+|                                               | THE REPORT                 | |
++------------------------------------------------------------------------------+
+```
+
+- **Header**: the name with the version, and two toggles at the right in the trainer's
+  `theme-toggle` style: the board size, reading "Large" when the board is small and
+  "Small" when it is large, then the theme, reading "Light" or "Dark". The size toggle
+  sits first so the theme toggle keeps the end of the row it has always had.
+- **Selector row**: the trainer's `.course-switch` row (its `catalog.css`), a label
+  "Difficulty" and the select, centred, in the dim text colour. The level's one-line
+  description and the sentence about the engine's scale move to the select's `title`
+  and are no longer on the screen: the row is the trainer's shape, which is one line.
+- **Head row**: the trainer's `.play-head` without its "Play" heading: the opening line
+  on the left, "Playing White against 4. Club" (the side and the level of the RUNNING
+  game, as the trainer names its course and level), and the status line beside it.
+  The status line's words are section 5.6's; it moves up from under the buttons. An
+  engine error and the file notices stay under the buttons in the notice style.
+- **Board column**: the bar and the board, then row one of the buttons (New game, Undo,
+  Redo, Hint), then, only while a report is showing, row two (Keep playing, Play from
+  here, and the two stepping arrows at the right edge of the board), exactly the
+  trainer's `PlayControls`.
+- **Move list column**: the trainer's, 167 px wide, board height, thin scrollbar. A
+  record during the game; the viewer after the review (18.4).
+- **Side panel** (`.play-side`, the trainer's: `flex: 1; min-width: 300px; max-width:
+  52ch`): the Play as fieldset, the file buttons, then the hint sentence when there is
+  one, then the actions (18.3) while a game is going or the report (18.5) once it has
+  been reviewed.
+- **Narrow layout** (below 900 px): the three columns stack in order, board column, move
+  list at ten rows, side panel. The selector row and the head row stay single lines
+  that wrap.
+
+**S17. The layout is the trainer's Play screen with the launch options replaced by the
+settings.** The two are siblings and may share a library; a person who knows one
+should find the other where they expect it. The only things the trainer's screen has
+that this one does not are the pieces that need a repertoire.
+
+**Sizes.** The 4.2 table stands with two changes: the sidebar of 280 becomes the move
+list column of 167 plus the side panel (300 minimum, 52ch maximum, taking what is
+left), and the page is about 1400 wide with the large board, which is why the window
+opens at 1400 by 980 (minimum 960 by 720). The fit rule of S2 stands with re-measured
+chrome: above the board sit the header, the selector row and the head row; beside it
+the bar, its gap, the move list column, the side panel's minimum and the gaps; below it
+BOTH button rows, so the board does not change size when the review row appears. The
+constants in `board-size.ts` are re-measured in phase 9 and named as before.
+
+### 18.2 The rename
+
+Everything a person sees says Simply Chess. In the code, that is `productName`,
+the window title, the manifest's names, the PGN `Event` tag, `LOCAL_FOLDER`
+(`Simply Chess Data`, in its three files and their test), the identifier
+`com.nick.simply-chess`, the package name `simply-chess`, the icon script's comment,
+the header, the README and CLAUDE.md, and the storage key prefix `simply-chess.`. The
+keys change because one name for one thing is the rule (section 3) and nobody has data
+under the old keys yet; after version 1.1.0 they do not change again. The repository
+folder, the git history and the plan's phase notes keep the old name as history.
+
+### 18.3 Stopping a game
+
+Under the file buttons, while a game is going, the trainer's `PlayActions` without the
+length-cap buttons:
+
+- **Stop and review** (the primary button; "Review the game" once the game has ended
+  by itself) scans the game and shows the report (18.5). While it scans it reads
+  "Scanning 12 of 40..." and the board is locked.
+- **Stop and discard** ends the game with nothing kept: no scan, no report, and the
+  remembered game is forgotten; a fresh game starts. No confirmation, for the
+  trainer's reason: New game already ends a game the same way.
+- Both are disabled while the engine thinks.
+
+A game that has ended by itself (checkmate, a draw) shows the trainer's notice under
+the outcome, "Review it to see what it cost.", and the same two buttons.
+
+### 18.4 The review
+
+After the report is built the screen is a viewer, as the trainer's is:
+
+- Every move in the list is a button; the one the board is standing on is marked in
+  `--mark`; clicking a move shows the position after it; the left and right arrow keys
+  step (never when a text field has focus); the list scrolls to keep the marked move
+  in view, scrolling itself and nothing above it (the phase 6 rule).
+- The board is locked. The bar shows the evaluation of the position being looked at;
+  every position of a reviewed game has one, because the scan filled them.
+- Standing on the position a slip was played from, the move that was played is the
+  last-move highlight and the engine's better move is a blue arrow, so both are on the
+  board at once (the trainer's `preferredShapes`).
+- Row two of the buttons: **Keep playing** (only for a game that was stopped rather
+  than ended: puts the report away and hands the board back at the final position,
+  not at the position being looked at), **Play from here** (a new game from the
+  position being looked at, with the same side and level; disabled with the trainer's
+  reasons in its tooltip when the position is the engine's move or the start), and
+  the two stepping arrows.
+- New game, Load game and Play from here end the review. Undo and Redo are disabled
+  during it, as the trainer's are.
+
+### 18.5 The report
+
+The trainer's `Report` with "The repertoire" removed. Under the heading "The report":
+
+- **Your moves**: the hint count when hints were used ("You used 2 hints."); then
+  either "Nothing the engine calls an inaccuracy or worse. Well played." or the list of
+  slips, each a button that puts the board on the position it was played from, worded
+  by the trainer's `describeSlip` (the move, the tag, what the position was and became
+  in words, and the engine's better move). Slips are tagged by the trainer's
+  `SLIP_THRESHOLDS`: a blunder loses two pawns or more, a mistake one, an inaccuracy
+  half, in the user's own terms.
+- **The final position**: the verdict in the trainer's words (`verdictInWords`, the
+  bands of its section 5: under 0.4 level, to 1 slightly better, to 2.5 clearly better,
+  beyond winning), the trainer's horizontal `EvalBar` of the final evaluation, and the
+  outcome sentence when the game ended by itself.
+- **Copy game** under it: the whole game to the clipboard as PGN with the report's
+  comments (18.6), through the trainer's `toClipboard` with its fallback, saying
+  "Copied" for a moment or why it could not.
+
+The scan is the trainer's `scanGame` at the analysis profile, handed every evaluation
+the bar already made so the report cannot disagree with the numbers the user watched.
+It keeps the engine's move at each position, which is what "the better move" is.
+
+**S18. Words in the report, a number on the bar.** Nick ruled both (Q4, Q19). The two
+are not in conflict: the bar is watched during play and a number is quicker to read
+in the corner of the eye; the report is read afterwards and "clearly better for
+White" is what a club player can act on. The trainer's bands make the words.
+
+### 18.6 The file and the clipboard
+
+Section 9.1's file gains the trainer's report comments once a game has been reviewed:
+`{Played with 2 hints.}` before the first move when hints were used, a comment after
+each slip in the trainer's `slipComment` wording, and the closing comment carrying the
+verdict as well as the outcome, as `gameToPgn` in the trainer writes them. A game saved
+before it is reviewed is written as section 9.1 shows. Copy game and Save game write
+the same text. Load game ignores the comments, as it always did (S8).
+
+### 18.7 Tests and acceptance, added
+
+To S15: (12) Stop and review builds a report whose slips match a scripted game with a
+known blunder; (13) Stop and discard forgets the game; (14) the review viewer marks
+the clicked move and the arrow keys step, with the board locked; (15) Keep playing
+returns to the final position with the report gone; (16) Play from here starts a new
+game from the viewed position with the old game gone; (17) Copy game and Save game
+produce the same text for a reviewed game, with the comments; (18) the header's size
+toggle and the selector row's select work and are remembered; (19) the hint count
+reaches the report and the file.
+
+To section 17: the screen is 18.1's at both sizes and both themes at the three
+viewports with S16 holding; a game can be stopped, reviewed, walked, kept playing,
+and played from a viewed position; the report names a scripted blunder; the name is
+Simply Chess everywhere a person sees it. The version is 1.1.0 when this section is
+green.
