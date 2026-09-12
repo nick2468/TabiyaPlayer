@@ -542,7 +542,7 @@ did it that way too.
 | 0 - the scaffold | **Complete** 2026-09-11, gate passed the same day. 4 tests green, build clean. |
 | 1 - the engine and the model | **Complete** 2026-09-11, gate passed the same day. 90 tests green in 1.8 s. |
 | 2 - the board, the session and a playable game | **Complete** 2026-09-12, gate passed the same day. 111 tests green; a game plays in the pane. |
-| 3 - the sidebar and what is remembered | **Complete** 2026-09-12, awaiting review. 155 tests green, 2 skipped; the settings and the game survive a reload; the large board is 808, 624 and 728 at the three viewports. |
+| 3 - the sidebar and what is remembered | **Complete** 2026-09-12, awaiting review. 162 tests green, 2 skipped; the settings and the game survive a reload; the large board is whatever fits and draws whole squares, which is 808, 624 and 728 at the three viewports at a display scale of 1, and 800, 624 and 720 at 1.5. |
 | 4 - the bar, the hint and the promotion picker | Not started |
 | 5 - save game and load game | Not started |
 | 6 - scenes, the probe and the layout pass | Not started |
@@ -1134,6 +1134,21 @@ pixel number is written in a `.ts` or `.tsx` outside `board-size.ts`; one appear
 `Board.tsx` comment, describing the fault it fixes. `app.css` keeps its own 900 for
 the tall-window block, which is a different question and was left alone.
 
-**Left.** The 808 question above. And `Board.tsx` now has both a `ResizeObserver` and
-a size effect; the observer covers a host resized by CSS rather than by the prop, so
-it was kept, but the orchestrator may want to decide whether it still earns its place.
+**Left.** `Board.tsx` now has both a `ResizeObserver` and a size effect; the observer
+covers a host resized by CSS rather than by the prop, so it was kept, but the
+orchestrator may want to decide whether it still earns its place.
+
+**Nick's ruling on fault 3 (2026-09-12), and what it changed.** Asked about the 808
+against 805.33 conflict, Nick said: "The double size doesn't need to be taken
+literally, you can make the fix." So the fit rule now steps down in eights until the
+squares come out whole in DEVICE pixels as well as CSS pixels, and `useBoardPixels`
+passes `devicePixelRatio` in and re-measures when it changes, which it does when a
+window is dragged between two monitors at different scales.
+
+The large board is therefore scale-dependent, and one rule still covers every case:
+808, 624 and 728 at the three viewports at 100% and 200%; 800, 624 and 720 at 150%;
+800, 608 and 704 at 125%. The small board is 416 at every scale, because 416 is a
+multiple of 32. Spec S2 and the 4.2 table were updated to say so, and S2 records that
+this supersedes Q3's "832 px on Windows"; 832 is now the ceiling rather than a
+promise. `fitBoardSize` takes `devicePixelRatio` as a fifth argument with a default of
+1, so it stays pure and the tests name the scale they are about.

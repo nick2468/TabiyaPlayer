@@ -8,9 +8,10 @@ wherever they already do the job, so that a shared library can follow later.
 
 Current state: phase 3 (the sidebar and what is remembered) built 2026-09-12 and
 awaiting review. The sidebar carries difficulty, Play as and board size, all
-remembered with the game in progress, and the large board fits the screen it is on.
-One question is open for Nick: at a display scale of 1.5 the large board cannot be a
-multiple of 8 AND end where the bar ends, and the plan's phase 3 notes say why.
+remembered with the game in progress, and the large board is whatever fits the screen
+it is on and draws whole squares. Nick ruled on 2026-09-12 that the large board need
+not be literally double, so the fit rule steps down until the squares land on whole
+device pixels; spec S2 carries the corrected rule and its numbers per display scale.
 
 ## Documents
 

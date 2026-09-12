@@ -131,7 +131,7 @@ All in CSS pixels. The numbers come from the trainer and the reasons travel with
 
 | Thing | Small | Large | Why |
 |---|---|---|---|
-| Board | 416 | 832 | 416 divides by eight, so chessground's squares fill the box and the bar ends where the board does (the trainer's `board-size.ts`). 832 is double. |
+| Board | 416 | up to 832 | 416 divides by eight, so chessground's squares fill the box and the bar ends where the board does (the trainer's `board-size.ts`). 832 is double, and is a ceiling rather than a promise: the large board is whatever fits and draws whole squares at the display scale in use (S2). |
 | Bar width | 24 | 24 | The trainer's bar is 16 px and carries no number. This one carries "+0.4" at 10 px, which needs 24. |
 | Gap, bar to board | 20 | 20 | 24 + 20 = 44, so the button row's left margin (44 px, the trainer's number) still starts under the board's left edge. |
 | Gap, board column to sidebar | 24 | 24 | The trainer's `.play-body` gap. |
@@ -141,18 +141,34 @@ All in CSS pixels. The numbers come from the trainer and the reasons travel with
 The page is therefore about 1230 px wide with the large board, and the Windows window
 opens at 1280 by 1000 (section 11.1).
 
-**S2. The large board is the largest multiple of 8 that fits, up to 832.** Landscape
-iPad screens are 768 or 820 px tall in CSS pixels, so 832 cannot fit there. The size
-is worked out from the viewport: the smaller of 832, the width left beside the bar,
-the padding and the sidebar, and the height left under the header and above the
-button row and the status line. It is rounded down to a multiple of 8, for the reason
-416 is one, and never below 416. The same code runs on both platforms and needs no
-platform check. The board is re-measured when the window or the orientation changes.
-(Corrected at gate 2. The first text said the Windows window "is big enough and the
-answer is 832". It is not: measured in phase 2, the header and the padding take
+**S2. The large board is the largest board that fits and draws whole squares, up to
+832.** Landscape iPad screens are 768 or 820 px tall in CSS pixels, so 832 cannot fit
+there. The size is worked out from the viewport: the smaller of 832, the width left
+beside the bar, the padding and the sidebar, and the height left under the header and
+above the button row and the status line. It is then stepped down in eights until the
+squares come out whole, and never below 416. The same code runs on both platforms and
+needs no platform check. The board is re-measured when the window, the orientation or
+the display scale changes.
+
+Whole squares is TWO conditions. A multiple of 8 in CSS pixels, and a whole number of
+DEVICE pixels per square. The second was missed until phase 3 drew a large board on a
+screen at 150%: chessground floors each square to whole device pixels, so 808 wanted
+squares of 151.5, got 151, and drew a 805.33 board inside an 808 box. The bar is
+stretched to the box, so it ended 2.67 px below the board, which is what S16 forbids
+and exactly the overrun 416 was chosen to avoid in the first place. 416 never showed
+it because 416 is a multiple of 32, so every scale this app meets divides it whole.
+
+**The numbers therefore depend on the display scale**, and one rule still covers every
+case. At 100% and 200%: 808 in the 1280 by 1000 window, 624 on a landscape iPad, 728
+upright. At 150%: 800, 624 and 720. At 125%: 800, 608 and 704.
+
+(Corrected twice. Gate 2 struck the first text, which said the Windows window "is big
+enough and the answer is 832": measured in phase 2, the header and the padding take
 80.67 px above the board and the buttons, the status line and the padding 109.33 px
-below it, so a 1000 px window leaves 810 and the large board is 808 there. A window
-1040 px tall or more gets 832. That is the honest rule, and it is one rule.)
+below it, so a 1000 px window leaves 810. Nick then ruled on 2026-09-12, on the
+device-pixel finding above, that "the double size doesn't need to be taken literally",
+which supersedes Q3's "832 px on Windows": the point of the number was always a board
+the bar ends level with, and 832 remains the ceiling rather than a promise.)
 
 ### 4.3 The narrow layout
 

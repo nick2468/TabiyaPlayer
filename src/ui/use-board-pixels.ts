@@ -12,6 +12,11 @@ import { BOARD_SIZE, BOARD_SIZE_LARGE, NARROW_BELOW, fitBoardSize } from './boar
  * iPad turned on its side fires both, and older Safari fires the orientation
  * one first with the old size still reported.
  *
+ * The display scale is measured with the size, because the board's squares have
+ * to land on whole device pixels and the scale decides which sizes do. It can
+ * change under a running window: dragging one between two monitors at different
+ * scales fires `resize`, and so does a zoom.
+ *
  * The arithmetic itself is `fitBoardSize`, which is pure and tested without a
  * window. This hook is only the measuring.
  */
@@ -19,15 +24,22 @@ export function useBoardPixels(size: BoardSizeName): number {
   const [viewport, setViewport] = useState(() => ({
     width: window.innerWidth,
     height: window.innerHeight,
+    pixelRatio: window.devicePixelRatio,
   }))
 
   useEffect(() => {
     const measure = () =>
       setViewport((old) =>
-        old.width === window.innerWidth && old.height === window.innerHeight
+        old.width === window.innerWidth &&
+        old.height === window.innerHeight &&
+        old.pixelRatio === window.devicePixelRatio
           ? // The same object, so a resize that changed nothing costs no render.
             old
-          : { width: window.innerWidth, height: window.innerHeight },
+          : {
+              width: window.innerWidth,
+              height: window.innerHeight,
+              pixelRatio: window.devicePixelRatio,
+            },
       )
     // The window can have changed between the first render and this effect.
     measure()
@@ -44,5 +56,6 @@ export function useBoardPixels(size: BoardSizeName): number {
     viewport.width,
     viewport.height,
     viewport.width < NARROW_BELOW,
+    viewport.pixelRatio,
   )
 }
