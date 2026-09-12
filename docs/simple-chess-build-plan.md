@@ -1,7 +1,7 @@
 # Simple Chess - build plan
 
 Version 1. Written 2026-09-11. Status: **Active**. Phases 0 and 1 passed review
-2026-09-11, phases 2 to 5 on 2026-09-12; phase 6 is next.
+2026-09-11, phases 2 to 6 on 2026-09-12; phase 7 is next.
 
 Read [the specification](simple-chess-spec.md) first. It says what the app does. This
 document says what gets built, in what order, and how we know each part is finished.
@@ -552,7 +552,7 @@ did it that way too.
 | 3 - the sidebar and what is remembered | **Complete** 2026-09-12, gate passed the same day. 162 tests green; the settings and the game survive a reload; the large board is whatever fits and draws whole squares (808, 624 and 728 at scale 1; 800, 624 and 720 at 1.5). |
 | 4 - the bar, the hint and the promotion picker | **Complete** 2026-09-12, gate passed the same day. 183 tests green; the bar carries the engine's number, Hint draws and says a move, a pawn on the last rank asks which piece. |
 | 5 - save game and load game | **Complete** 2026-09-12, gate passed the same day. 222 tests green. A game saves as the PGN of spec 9.1 and loads back with its moves, side and level; undo goes back through a game that arrived whole and fetches the numbers as it goes. |
-| 6 - scenes, the probe and the layout pass | **Built** 2026-09-12, awaiting review. 243 tests green and 2 skipped in 8.0 s. The five scenes open from the address bar and none survives the build; the probe holds S16's two numbers in all twelve rows; the move list no longer scrolls the board off the screen. |
+| 6 - scenes, the probe and the layout pass | **Complete** 2026-09-12, gate passed the same day. 243 tests green. The five scenes open from the address bar and none survives the build; the probe holds S16's two numbers in all twelve rows; the move list no longer scrolls the board off the screen. |
 | 7 - the iPad Home Screen app | Not started |
 | 8 - the Windows app and the installer | Not started |
 
@@ -1851,3 +1851,45 @@ Nothing in this repo runs it until phase 8. Everything else this phase is new.
   synthetic. Chessground ignores synthetic events unless `trustAllEvents` is on,
   which it is in development builds only, so this works in the pane and does not
   weaken the shipped build.
+
+### Gate 6 findings (orchestrator, 2026-09-12)
+
+- **Verified from the repo.** `npx vitest run`: 28 files, 243 passed, 2 skipped, 7.8
+  seconds. `tsc -b` clean, `npx oxlint` silent, `npm run build` clean at 317.1 kB.
+  The built assets contain no `midgame`, `Qxf7`, `axb8` or `scene`.
+  `scripts/packaged-eval.mjs` is byte-identical to the trainer's below its origin
+  line. No key string under `src/dev`; the only import of `src/dev` from the app is
+  `Shell`'s one hook. No forbidden words outside identical copies; no browser global
+  in the pure folders; `localStorage` only in `src/storage`; no pixel number or colour
+  in code. `../London` and `../Conquest` untouched.
+- **Mutation-checked.** Dropping the scene's theme write turns "applies the settings
+  the address carries" red. Restored from git. The builder's six are taken on its
+  account.
+- **Driven in the pane at 1180 by 820**, the viewport where the fault lived:
+  `?scene=midgame&size=large&theme=light` opened in light with Large ticked, twenty
+  rows in the list, the list scrolled to 232 and `main` at 0, the board at y 80.67
+  and 624 tall with the bar and `cg-board` ending on 704.67 together, `scrollWidth`
+  1180 against 1180, the display scale 1.5 (624 divides at 1.5, so no step down). The
+  probe was fetched from the dev server and evaluated, as `testing.md` says to.
+  `?scene=hint` opened with a blue arrow (`bluea1a2`) and "The engine suggests Ra2."
+  from the real engine; `?scene=mate` opened on "You won by checkmate" with Redo and
+  Hint greyed, Undo live, and the list ending `4. Qxf7#`. Storage cleared.
+- **The layout fault was real, and the fix is the right shape.** `scrollIntoView`
+  scrolls every scrollable ancestor; above 900 by 700 the shell's `main` is one, and
+  on an iPad in landscape the sidebar is taller than it. The board's top rank was off
+  the screen from the moment the app opened at that size, through five phases of
+  green tests, because jsdom has no layout. The arithmetic is now a pure function
+  with a test, the list scrolls itself, and the probe is the instrument for the rest.
+  That is the whole reason section 15 exists, and it earned its place here.
+- **The builder's two departures are right.** `Shell` rather than `App` calls the
+  hook, because `renderApp` mounts `Shell` and the ordering argument holds there
+  too; the hook returns a boolean rather than the request so no live reference to
+  the scene table can reach the shipped bundle. Both reasons are recorded.
+- **Small moves accepted:** `oneOf` under `readOneOf`, one `remember*` writer per
+  setting with the key never leaving its module, `THEMES` beside `SIDES` and
+  `BOARD_SIZES`, the address reset in the one test file that touches it.
+- **Left, cosmetic:** `dom-setup.ts` still stubs `scrollIntoView`, which nothing
+  calls any more. It is an identical copy of the trainer's; the stub is harmless and
+  the copy rule says leave it. Noted so nobody wonders.
+
+- [x] **Review gate 6 passed** (2026-09-12)
