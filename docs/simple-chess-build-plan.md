@@ -1,8 +1,8 @@
 # Simple Chess - build plan
 
 Version 1. Written 2026-09-11. Status: **Active**. Phases 0 and 1 passed review
-2026-09-11, phases 2 to 6 on 2026-09-12. Phase 7 is built and awaiting review, with
-box 7.8 left for Nick; phase 8 is next.
+2026-09-11, phases 2 to 7 on 2026-09-12, with box 7.8 left for Nick; phase 8 is
+next and last.
 
 Read [the specification](simple-chess-spec.md) first. It says what the app does. This
 document says what gets built, in what order, and how we know each part is finished.
@@ -558,7 +558,7 @@ did it that way too.
 | 4 - the bar, the hint and the promotion picker | **Complete** 2026-09-12, gate passed the same day. 183 tests green; the bar carries the engine's number, Hint draws and says a move, a pawn on the last rank asks which piece. |
 | 5 - save game and load game | **Complete** 2026-09-12, gate passed the same day. 222 tests green. A game saves as the PGN of spec 9.1 and loads back with its moves, side and level; undo goes back through a game that arrived whole and fetches the numbers as it goes. |
 | 6 - scenes, the probe and the layout pass | **Complete** 2026-09-12, gate passed the same day. 243 tests green. The five scenes open from the address bar and none survives the build; the probe holds S16's two numbers in all twelve rows; the move list no longer scrolls the board off the screen. |
-| 7 - the iPad Home Screen app | **Built** 2026-09-12, awaiting review; box 7.8 is Nick's. 250 tests green and 2 skipped in 8.2 s. The built app has an icon and a manifest, opens with the server stopped and answers a move, and offers a new version in a bar that says it costs nothing. |
+| 7 - the iPad Home Screen app | **Complete** 2026-09-12, gate passed the same day; box 7.8 is Nick's. 250 tests green. The built app has an icon and a manifest, opens with the server stopped and answers a move, and offers a new version in a bar that says it costs nothing. |
 | 8 - the Windows app and the installer | Not started |
 
 ## Phase notes
@@ -2067,3 +2067,46 @@ reference lines. The `.update-bar` rules are Conquest's with this app's colour n
   of them are new and untracked, so it fails; the other half are tracked and it takes
   the phase's own work with them. Both happened here and both were put back by hand
   before the bar was re-run. Each mutation is now undone by the reverse edit.
+
+### Gate 7 findings (orchestrator, 2026-09-12)
+
+- **Verified from the repo.** `npx vitest run`: 30 files, 250 passed, 2 skipped, 8.3
+  seconds. `tsc -b` clean, `npx oxlint` silent, `npm run build` clean with `sw.js`
+  (2,207 bytes) and the manifest (456 bytes); the precache list names both engine
+  files; the manifest carries the name, `standalone`, `en-AU`, the two colours and the
+  three icons. `useUpdate.ts` is Conquest's line for line with the comments stripped.
+  No forbidden words outside identical copies; no browser global in the pure folders;
+  `__TAURI_INTERNALS__` read in one place; no colour in a `.ts` or `.tsx` under
+  `src/`. `../London` untouched.
+- **Mutation-checked.** Dropping the `!isDesktop() &&` in front of the banner turns
+  "shows no bar and registers nothing" red. Restored from git. The builder's four are
+  taken on its account.
+- **The offline proof, repeated by the orchestrator.** Built, served on 5186, opened
+  twice (the second load is what activates a `prompt` worker): one registration,
+  `activated`, scope `/`, one Workbox cache. 1.e4 by two real clicks on the production
+  board, the engine answered e5. The server was stopped. The page reloaded on
+  `1. e4 e5` at +0.4 with a fetch of an unstored path failing; 2.d4 by two clicks and
+  the engine answered d6, its script delivered from `cache-storage` with a transfer
+  size of 0. The worker was then unregistered, the cache deleted and storage cleared,
+  and the tab closed.
+- **The engine-in-precache rule is the one that matters here**, and the builder
+  showed it red: without `maximumFileSizeToCacheInBytes` Vite says in one line that
+  the WASM "won't be precached" and the offline app would hang on its first move. The
+  proof plays a move for exactly that reason.
+- **The builder's departures are right.** The virtual module faked once in the dom
+  project rather than in nine test files; the rounded icon as a clip over the one
+  committed drawing; `lang: 'en-AU'` in the manifest; the four page paddings named so
+  the bar shares three of them; `button.primary` copied from the trainer beside
+  `button:disabled`.
+- **A file appeared under `../Conquest` during this gate**,
+  `src/engine/players/zz-table-probe.test.ts`, written at 14:19 today, five minutes
+  after this phase's commit. Its header names a Conquest plan task and a scratchpad
+  path belonging to a session rooted in `C:\Users\nick2\code`, not this one. It is
+  another session's throwaway and not this builder's; nothing under Conquest was
+  touched from here. Noted so the next gate's "same two untracked files" line is
+  not misread.
+- **Box 7.8 is Nick's**, and every step in `docs/simple-chess-deploy.md` says so at
+  the top: the GitHub push, the Cloudflare Pages project with its `NODE_VERSION`
+  variable, the DNS record, the Home Screen add, and the aeroplane-mode move.
+
+- [x] **Review gate 7 passed** (2026-09-12)
