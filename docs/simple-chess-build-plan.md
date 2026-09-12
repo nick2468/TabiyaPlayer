@@ -687,7 +687,7 @@ did it that way too.
 | 6 - scenes, the probe and the layout pass | **Complete** 2026-09-12, gate passed the same day. 243 tests green. The five scenes open from the address bar and none survives the build; the probe holds S16's two numbers in all twelve rows; the move list no longer scrolls the board off the screen. |
 | 7 - the iPad Home Screen app | **Complete** 2026-09-12, gate passed the same day; box 7.8 is Nick's. 250 tests green. The built app has an icon and a manifest, opens with the server stopped and answers a move, and offers a new version in a bar that says it costs nothing. |
 | 8 - the Windows app and the installer | **Complete** 2026-09-12, gate passed the same day; box 8.6 is Nick's. 257 tests green. The window opens at 1280 by 1000 with the engine in it, the installer is 6.6 MB and installs for the current user, and the uninstaller's four cases are proved against a scratch folder. Version 1.0.0. |
-| 9 - Simply Chess, and the trainer's layout | **Complete** 2026-09-13, awaiting its gate. 260 tests green in 7.9 s. The app is Simply Chess everywhere a person sees it; the screen is the trainer's Play screen, measured at three viewports, both sizes and both themes with S16 holding in all twelve rows; the window is 1400 by 980 and the chrome constants are 167, 120 and 607. |
+| 9 - Simply Chess, and the trainer's layout | **Complete** 2026-09-13, gate passed the same day. 260 tests green in 7.9 s. The app is Simply Chess everywhere a person sees it; the screen is the trainer's Play screen, measured at three viewports, both sizes and both themes with S16 holding in all twelve rows; the window is 1400 by 980 and the chrome constants are 167, 120 and 607. |
 | 10 - stop, review, the report | Not started |
 | 11 - the review viewer, Keep playing, Play from here | Not started |
 | 12 - version 1.1.0 | Not started |
@@ -2627,3 +2627,48 @@ file.
   together.
 - **Nothing under `../London` or `../Conquest` was read for anything but copying, and
   neither was written.**
+
+### Gate 9 findings (orchestrator, 2026-09-13)
+
+- **Verified from the repo.** `npx vitest run`: 32 files, 260 passed, nothing skipped.
+  `tsc -b` clean, `npx oxlint` silent, `npm run build` clean with the precache at 21
+  entries. The built assets carry no scene text and one `course-switch`. `git grep -i
+  'simple chess'` over `src/`, `src-tauri/`, `public/`, `tools/`, `scripts/`,
+  `index.html`, `vite.config.ts`, `package.json`, `README.md` and `CLAUDE.md` finds
+  **nothing**: the old name is only in the spec's history sections and the brief. The
+  product name, the identifier, the package and lib names, the four storage keys and
+  the folder in its three files all say Simply. The window is 1400 by 980.
+- **Mutation-checked.** Putting `CHROME_ABOVE` back to version 1's 81 turns six fit
+  tests red, naming the window and the landscape iPad. Restored from git. The
+  builder's own are taken on its account.
+- **Driven in the pane** at 1280 by 980 (the pane caps its width at 1280, so 1400 was
+  read from the arithmetic, as the chip allows). The large board came out 672 at the
+  pane's display scale of 1.5, which is 1280 less the 607 beside it, stepped down to a
+  multiple of 16; the bar, `.board` and `cg-board` all 672 and all ending on 836;
+  `scrollWidth` 1280 against 1280. The selector row is centred at y 80.67, the head
+  row at 124 reading "Playing White against 4. Club" and "Your move", the move list
+  167 wide at the board's height, the side panel 301 wide holding Play as and the two
+  file buttons. The `hint` scene in the light theme put "The engine suggests axb5."
+  in the panel under the buttons with the blue arrow on the board, the toggles reading
+  "Large" and "Dark". Looked at both: the screen is spec 18.1's diagram. Storage
+  cleared.
+- **The board is smaller than version 1's and that is the rule working.** Two rows of
+  chrome arrived, so the fit rule took the height out of the board rather than out of
+  the page: 688 in the window at scales 1 and 1.5, 528 in landscape. The chip's own
+  decision rule says so.
+- **The builder's departures are accepted.** One commit rather than two, with the
+  rename's green bar recorded in the notes rather than in the history; the trainer
+  does not in fact centre its course row, so the copy is its rule plus one line, said
+  in the comment; the move list's height as a custom property rather than an inline
+  style, which is what lets the narrow layout's ten-row rule win. All three are better
+  than what the chip asked for, and each says why.
+- **Left for the orchestrator, answered here.** The spec's sections 1 to 17 still say
+  Simple Chess in their prose (the 4.1 diagram, 9.1's example file, 11.1, 11.3, 12.1,
+  17 and Q1). They stay: the front matter says the earlier sections are version 1's
+  history, section 18 wins, and rewriting them would erase the record of what was
+  built under which name. Phase 12's docs sweep leaves them alone.
+- **The identifier changed with the product name**, so an installer of this version
+  installs beside Simple Chess 1.0.0 rather than upgrading it. Nothing is at risk:
+  box 8.6 is open and 1.0.0 has never been installed. Phase 12 says so again.
+
+- [x] **Review gate 9 passed** (2026-09-13)
