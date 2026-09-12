@@ -15,7 +15,7 @@ describe('the header', () => {
   it('names the app and shows its version', () => {
     renderApp()
     const heading = screen.getByRole('heading', { level: 1 })
-    expect(heading.textContent).toContain('Simple Chess')
+    expect(heading.textContent).toContain('Simply Chess')
     expect(heading.textContent).toContain(`v${__APP_VERSION__}`)
   })
 
@@ -24,10 +24,10 @@ describe('the header', () => {
 
     await user.click(screen.getByRole('button', { name: 'Switch to the light theme' }))
     expect(document.documentElement.dataset.theme).toBe('light')
-    expect(window.localStorage.getItem('simple-chess.theme')).toBe('light')
+    expect(window.localStorage.getItem('simply-chess.theme')).toBe('light')
 
     await user.click(screen.getByRole('button', { name: 'Switch to the dark theme' }))
     expect(document.documentElement.dataset.theme).toBe('dark')
-    expect(window.localStorage.getItem('simple-chess.theme')).toBe('dark')
+    expect(window.localStorage.getItem('simply-chess.theme')).toBe('dark')
   })
 })

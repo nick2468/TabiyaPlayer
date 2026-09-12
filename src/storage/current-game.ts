@@ -17,7 +17,7 @@ import { SIDES, read, remove, write } from './prefs'
  * right shape, and chess says whether it is a game.
  */
 
-const KEY = 'simple-chess.game'
+const KEY = 'simply-chess.game'
 
 /** The one version there has been. A record saying anything else is discarded. */
 const VERSION = 1

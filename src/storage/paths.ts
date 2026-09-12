@@ -29,8 +29,8 @@ export function isDesktop(): boolean {
  * uninstall removes. `local-folder.test.ts` reads all three files and holds
  * them together, so a rename that reaches two of them fails the suite.
  *
- * NOT `Simple Chess`, which is the install folder and goes on every uninstall.
+ * NOT `Simply Chess`, which is the install folder and goes on every uninstall.
  * The trainer's reason (its `paths.ts`) is this one, and it cost it a lost
  * progress file to learn.
  */
-export const LOCAL_FOLDER = 'Simple Chess Data'
+export const LOCAL_FOLDER = 'Simply Chess Data'

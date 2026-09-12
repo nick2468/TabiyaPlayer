@@ -62,8 +62,9 @@ describe('a scene in the address', () => {
     await screen.findByTestId('board')
 
     await vi.waitFor(() => expect(document.documentElement.dataset.theme).toBe('light'))
-    const large = screen.getByLabelText('Large') as HTMLInputElement
-    expect(large.checked).toBe(true)
+    // The toggle reads the size it would switch TO, so on the large board it
+    // offers the small one (spec 18.1).
+    expect(screen.getByRole('button', { name: 'Switch to the small board' })).toBeTruthy()
     // `fresh` is a fresh install: no game came back with it.
     expect(movesOnScreen()).toEqual([])
   })

@@ -40,9 +40,9 @@ export default defineConfig({
       includeAssets: ['apple-touch-icon.png', 'favicon-32.png', 'icon.svg'],
 
       manifest: {
-        name: 'Simple Chess',
-        short_name: 'Simple Chess',
-        description: 'A simple chess game against Stockfish',
+        name: 'Simply Chess',
+        short_name: 'Simply Chess',
+        description: 'A no-frills chess game against Stockfish',
         start_url: '/',
         scope: '/',
         display: 'standalone',

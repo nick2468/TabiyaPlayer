@@ -1,9 +1,9 @@
 {
-  "name": "simple-chess",
+  "name": "simply-chess",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "A simple chess game against Stockfish",
+  "description": "A no-frills chess game against Stockfish",
   "scripts": {
     "dev": "npm run engine && vite --port 5185 --strictPort",
     "build": "npm run engine && tsc -b && vite build",

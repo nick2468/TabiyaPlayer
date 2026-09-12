@@ -1,4 +1,4 @@
-# Simple Chess
+# Simply Chess
 
 A no-frills chess game against Stockfish, on one screen. It runs as an installed
 Windows app (Tauri 2 over WebView2, like the Repertoire Trainer in `../London`) and as
@@ -6,16 +6,29 @@ an iPad Home Screen app (a PWA on Cloudflare Pages, like Conquest in `../Conques
 from one React, TypeScript and Vite code base. The code is copied from those two apps
 wherever they already do the job, so that a shared library can follow later.
 
-Current state: all eight phases are built. Phase 8 (the Windows app and the installer)
-landed 2026-09-12 and awaits review: `src-tauri/` is the trainer's with the names
-changed, the window is 1280 by 1000 and keeps its browser profile in
-`%LOCALAPPDATA%\Simple Chess Data`, the NSIS installer installs for the current user,
+Current state: version 1.0.0 is built and gated, and version 2 is under way (spec
+section 18, which wins over sections 1 to 17). Phase 9 landed 2026-09-13 and awaits
+review: the app is called **Simply Chess** everywhere a person sees it, including the
+data folder, the identifier, the package name and the storage keys, and the screen is
+the trainer's Play screen - the difficulty in a selector row under the header, the
+board size toggle beside Light/Dark, a head row with the opening line and the status,
+the move list in its own 167 px column at board height, and a side panel with Play as
+and the file buttons. The window opens at 1400 by 980 and the fit rule's chrome
+constants were re-measured for it (167 above, 120 below, 607 beside). The version
+stays 1.0.0 until phase 12. Phases 10 and 11 bring Stop and review, the report and the
+review viewer.
+
+Phase 8 (the Windows app and the installer) landed 2026-09-12 and passed gate 8:
+`src-tauri/` is the trainer's with the names changed, the window keeps its browser
+profile in
+`%LOCALAPPDATA%\Simply Chess Data`, the NSIS installer installs for the current user,
 and the uninstaller removes that one folder only when the box is ticked, proved by
 `node scripts/check-uninstall-hook.mjs`. The version is 1.0.0 in three files.
-`docs/acceptance.md` walks spec 17 item by item. Two boxes are Nick's and are the only
-things left: 8.6 (run the installer, play a move, save and load, reopen, uninstall) and
-7.8 (publish, add to the Home Screen, play a move in aeroplane mode). Phases 0 to 7
-passed their gates. Phase 7 made it a Home Screen app: an icon, a manifest, the engine
+`docs/acceptance.md` walks spec 17 item by item. Two boxes are Nick's and are still
+open: 8.6 (run the installer, play a move, save and load, reopen, uninstall) and
+7.8 (publish, add to the Home Screen, play a move in aeroplane mode). Both were
+written against version 1 and hold; the installer he runs will be phase 12's. Phases
+0 to 7 passed their gates. Phase 7 made it a Home Screen app: an icon, a manifest, the engine
 in the precache, and a new version offered in a bar that says loading it loses nothing;
 `docs/simple-chess-deploy.md` has Nick's steps for it. Phase 6 put every screen of spec 15 on the address bar in a
 development build (`?scene=midgame&size=large&theme=light`), kept all of it out of
@@ -36,8 +49,9 @@ scale).
 ## Documents
 
 - [docs/simple-chess-spec.md](docs/simple-chess-spec.md) - what the app does and how
-  it is built. Authoritative. Section 2 records Nick's rulings Q1 to Q14; numbered
-  decisions S1 upward carry their reasons.
+  it is built. Authoritative. Section 2 records Nick's rulings Q1 to Q14 and section
+  18 his Q15 to Q22; **section 18 wins wherever it and sections 1 to 17 differ.**
+  Numbered decisions S1 upward carry their reasons.
 - [docs/simple-chess-build-plan.md](docs/simple-chess-build-plan.md) - the phases,
   their boxes, and the rules for the builder. Tick a box when the item lands with
   green tests and works on screen.
@@ -99,8 +113,10 @@ scale).
   `loadPgn` (a file as a game); `outcomeOf` (every outcome sentence); `evalShare`
   and `evalText` (the bar); `levelName` (naming a level); `levelOrNull` in
   `play/level.ts` (a level arriving from a setting, a record or a file); `asMessage`
-  in `ui/message.ts` (something thrown, as a sentence); `Notice` (every message
-  under the board); the `read`, `write`, `oneOf`, `readOneOf`, `useRemembered` and
+  in `ui/message.ts` (something thrown, as a sentence); `Notice` in `ui/Notice.tsx`
+  (every message under the board); `openingLine` in `ui/opening-line.ts` (the head
+  row's one sentence); `levelTitle` in `ui/DifficultyRow.tsx` (the two sentences
+  about a level, which are now a hover and nowhere else); the `read`, `write`, `oneOf`, `readOneOf`, `useRemembered` and
   `remember*` helpers in `prefs.ts` (every setting; `oneOf` answers "is this one of
   these words" for storage and for the address bar alike, and each key string stays
   in the module that owns it); `scrollToShow` in `ui/keep-in-view.ts` (the only
@@ -109,7 +125,9 @@ scale).
   custom properties on `.app` (the page's safe-area padding, which the update bar
   reuses); `LOCAL_FOLDER` in `storage/paths.ts` (the Windows data folder, whose name
   is also in `src-tauri/src/lib.rs` and `installer-hooks.nsh` because neither can
-  import it, with `storage/local-folder.test.ts` holding the three together).
+  import it, with `storage/local-folder.test.ts` holding the three together); the
+  chrome constants in `ui/board-size.ts` (the only pixel numbers in a `.ts` or
+  `.tsx`).
   Never fork a second copy, and give any new repeated snippet a single home the
   moment it appears twice.
 - Copied files are byte-identical to their origin plus one `Origin:` line; adapted

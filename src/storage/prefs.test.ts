@@ -54,39 +54,39 @@ afterEach(() => {
 describe('reading and writing', () => {
   it('reads back what it wrote, and forgets what it removed', () => {
     stubStorage()
-    write('simple-chess.side', 'black')
-    expect(read('simple-chess.side')).toBe('black')
-    remove('simple-chess.side')
-    expect(read('simple-chess.side')).toBeNull()
+    write('simply-chess.side', 'black')
+    expect(read('simply-chess.side')).toBe('black')
+    remove('simply-chess.side')
+    expect(read('simply-chess.side')).toBeNull()
   })
 
   it('carries on when storage refuses', () => {
     refusingStorage()
-    expect(() => write('simple-chess.side', 'black')).not.toThrow()
-    expect(() => remove('simple-chess.side')).not.toThrow()
-    expect(read('simple-chess.side')).toBeNull()
+    expect(() => write('simply-chess.side', 'black')).not.toThrow()
+    expect(() => remove('simply-chess.side')).not.toThrow()
+    expect(read('simply-chess.side')).toBeNull()
   })
 
   it('carries on when there is no storage at all', () => {
-    expect(read('simple-chess.side')).toBeNull()
-    expect(() => write('simple-chess.side', 'black')).not.toThrow()
+    expect(read('simply-chess.side')).toBeNull()
+    expect(() => write('simply-chess.side', 'black')).not.toThrow()
   })
 })
 
 describe('readOneOf', () => {
   it('takes a stored word that is one of the allowed ones', () => {
-    stubStorage({ 'simple-chess.side': 'black' })
-    expect(readOneOf('simple-chess.side', SIDES, 'white')).toBe('black')
+    stubStorage({ 'simply-chess.side': 'black' })
+    expect(readOneOf('simply-chess.side', SIDES, 'white')).toBe('black')
   })
 
   it('falls back when the stored word is not one of them', () => {
-    stubStorage({ 'simple-chess.board-size': 'enormous' })
-    expect(readOneOf('simple-chess.board-size', BOARD_SIZES, 'small')).toBe('small')
+    stubStorage({ 'simply-chess.board-size': 'enormous' })
+    expect(readOneOf('simply-chess.board-size', BOARD_SIZES, 'small')).toBe('small')
   })
 
   it('falls back when nothing is stored', () => {
     stubStorage()
-    expect(readOneOf('simple-chess.board-size', BOARD_SIZES, 'small')).toBe('small')
+    expect(readOneOf('simply-chess.board-size', BOARD_SIZES, 'small')).toBe('small')
   })
 })
 

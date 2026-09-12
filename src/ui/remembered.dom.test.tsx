@@ -17,7 +17,7 @@ vi.mock('./Board', async () => await import('../test/board-stub'))
  * from a fresh install unless it writes storage before rendering.
  */
 
-const GAME_KEY = 'simple-chess.game'
+const GAME_KEY = 'simply-chess.game'
 
 type User = ReturnType<typeof renderApp>['user']
 
@@ -30,6 +30,14 @@ function restart(): User {
 const levels = () => screen.getByLabelText('Difficulty') as HTMLSelectElement
 const radio = (name: string) => screen.getByLabelText(name) as HTMLInputElement
 
+/**
+ * The header's board size toggle (spec S15 item 18). It reads the size it would
+ * switch TO, so the name it answers to is also what it says about the size in
+ * use: offering the large board means the small one is on screen.
+ */
+const sizeToggle = (to: 'large' | 'small') =>
+  screen.getByRole('button', { name: `Switch to the ${to} board` })
+
 describe('the settings', () => {
   it('remembers the level, the side and the board size across a restart', async () => {
     const { user } = renderApp()
@@ -37,13 +45,15 @@ describe('the settings', () => {
 
     await user.selectOptions(levels(), '6')
     await user.click(radio('Black'))
-    await user.click(radio('Large'))
+    await user.click(sizeToggle('large'))
+    // The toggle flips its own label as well as the size.
+    expect(sizeToggle('small')).toBeTruthy()
 
     restart()
     await screen.findByTestId('board')
     expect(levels().value).toBe('6')
     expect(radio('Black').checked).toBe(true)
-    expect(radio('Large').checked).toBe(true)
+    expect(sizeToggle('small')).toBeTruthy()
   })
 
   it('starts at Club, White and Small on a fresh install', async () => {
@@ -51,7 +61,15 @@ describe('the settings', () => {
     await screen.findByTestId('board')
     expect(levels().value).toBe('4')
     expect(radio('White').checked).toBe(true)
-    expect(radio('Small').checked).toBe(true)
+    expect(sizeToggle('large')).toBeTruthy()
+  })
+
+  /** The other half of S15 item 18: the select is in the selector row. */
+  it('puts the difficulty select in the selector row under the header', async () => {
+    renderApp()
+    await screen.findByTestId('board')
+    expect(levels().closest('.course-switch')).not.toBeNull()
+    expect(levels().closest('.play-side')).toBeNull()
   })
 
   /**

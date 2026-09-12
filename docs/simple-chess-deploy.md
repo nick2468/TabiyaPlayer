@@ -1,4 +1,4 @@
-# Simple Chess - putting it on the iPad
+# Simply Chess - putting it on the iPad
 
 Origin: Conquest `docs/conquest-deploy.md`, adapted: this app's project, repository
 and domain, an offline proof that plays a move against the engine, and an update
@@ -143,7 +143,7 @@ on this machine with no certificate.
    Chrome on iPadOS cannot add a Home Screen app.
 2. Press the Share button.
 3. Choose **Add to Home Screen**.
-4. The name will already read Simple Chess. Press **Add**.
+4. The name will already read Simply Chess. Press **Add**.
 
 The icon is a white knight on the dark ground. Opening it runs the game full screen,
 with no address bar and no browser buttons.
@@ -154,10 +154,10 @@ with no address bar and no browser buttons.
 
 This is plan box 7.8, and it is the one that finishes phase 7.
 
-1. Open Simple Chess from the Home Screen once, with Wi-Fi on, and play one move.
+1. Open Simply Chess from the Home Screen once, with Wi-Fi on, and play one move.
    This is the visit that lets the service worker store the app and the engine.
 2. Turn on **Aeroplane Mode**.
-3. Close Simple Chess completely. Swipe up and flick the app away.
+3. Close Simply Chess completely. Swipe up and flick the app away.
 4. Open it again from the Home Screen.
 
 It should open on the game you left, **and the engine should answer a move.** Play
@@ -190,7 +190,7 @@ So when a new version is waiting, the app says so in a bar across the bottom:
 the next time the app is opened.
 
 The bar appears the visit AFTER a push has been published, because that is when the
-worker finds the new files. To go looking for one: close Simple Chess completely,
+worker finds the new files. To go looking for one: close Simply Chess completely,
 swipe up and flick it away, then open it again.
 
 If a version is stubborn, open the site in Safari, then Settings, Safari, Advanced,

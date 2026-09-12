@@ -108,9 +108,9 @@ describe('a file from somewhere else', () => {
     expect(refused(fromPosition)).toBe('That file starts from a position this app cannot load')
   })
 
-  it('reads a level out of another Simple Chess file, whichever side wrote it', () => {
+  it('reads a level out of another Simply Chess file, whichever side wrote it', () => {
     const theirs = [
-      '[Event "Simple Chess"]',
+      '[Event "Simply Chess"]',
       '[White "Stockfish level 6"]',
       '[Black "You"]',
       '',
@@ -122,7 +122,7 @@ describe('a file from somewhere else', () => {
 
   it('refuses a level that is not one this app plays at', () => {
     const wild = [
-      '[Event "Simple Chess"]',
+      '[Event "Simply Chess"]',
       '[White "You"]',
       '[Black "Stockfish level 12"]',
       '',
@@ -152,7 +152,7 @@ describe('a file that is no good', () => {
   })
 
   it('refuses a file with tags and no moves', () => {
-    expect(refused('[Event "Simple Chess"]\n[White "You"]\n')).toBe(
+    expect(refused('[Event "Simply Chess"]\n[White "You"]\n')).toBe(
       'That file has no moves in it',
     )
   })

@@ -1,14 +1,14 @@
 # Origin: London src-tauri/Cargo.toml, adapted: the package name, the lib name and the description.
 [package]
-name = "simple-chess"
+name = "simply-chess"
 version = "1.0.0"
-description = "A simple chess game against Stockfish"
+description = "A no-frills chess game against Stockfish"
 authors = ["Nick"]
 edition = "2021"
 rust-version = "1.77.2"
 
 [lib]
-name = "simple_chess_lib"
+name = "simply_chess_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]

@@ -55,6 +55,48 @@
   gap: 4px;
 }
 
+/* Origin: London src/ui/catalog.css .course-switch and its label and select
+   rules, adapted: centred, and without the two idle rules for a state this app
+   does not have.
+
+   A row of its own between the header above and the view below (spec 18.1).
+   The header leaves 8px above it, matching the 8px above its own rule. Below
+   it, 12px: the trainer halved the old 24 because the gap read as the row
+   having drifted away from what it belongs to. The label and the select are
+   centred on each other rather than sharing a baseline, because the two boxes
+   are different heights.
+
+   `justify-content` is this app's: the trainer's row sits at the left of a
+   screen with a nav above it, and the spec puts this one in the middle of its
+   own row. */
+.course-switch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+.course-switch label {
+  line-height: 1;
+}
+
+/* Origin: London src/ui/play.css .play select, adapted: not indented, because
+   the select is no longer under a radio. It was `.sidebar select` until phase
+   9 moved the difficulty out of the panel; one select, one rule. */
+.course-switch select {
+  background: var(--control);
+  color: var(--text);
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  padding: 5px 8px;
+  font: inherit;
+  margin: 0;
+  max-width: 220px;
+}
+
 .nav-link {
   background: none;
   border: none;

@@ -11,7 +11,7 @@ import { levelOrNull } from '../play'
  * user has to make again every time they come back.
  *
  * In `localStorage`, and never in a file. On Windows that storage lives in the
- * WebView2 profile under `Simple Chess Data`, which survives an upgrade and
+ * WebView2 profile under `Simply Chess Data`, which survives an upgrade and
  * goes on a ticked uninstall, and that is the right life for a preference. A
  * file would have to be versioned, migrated and backed up; losing one of these
  * costs a click (spec S9).
@@ -26,9 +26,9 @@ import { levelOrNull } from '../play'
  * state that drift apart the moment somebody presses a radio.
  */
 
-const LEVEL_KEY = 'simple-chess.level'
-const SIDE_KEY = 'simple-chess.side'
-const BOARD_SIZE_KEY = 'simple-chess.board-size'
+const LEVEL_KEY = 'simply-chess.level'
+const SIDE_KEY = 'simply-chess.side'
+const BOARD_SIZE_KEY = 'simply-chess.board-size'
 
 /** What a fresh install plays at: Club (spec 6.2). */
 export const DEFAULT_LEVEL = 4

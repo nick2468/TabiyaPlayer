@@ -20,7 +20,7 @@ export type Theme = 'dark' | 'light'
 /** The two words, in one place, so nothing writes the pair out twice. */
 export const THEMES: readonly Theme[] = ['dark', 'light']
 
-const KEY = 'simple-chess.theme'
+const KEY = 'simply-chess.theme'
 
 /**
  * The one writer, shared by the toggle below and by the dev scenes, which put

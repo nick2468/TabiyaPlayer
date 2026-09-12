@@ -1,8 +1,10 @@
-# Simple Chess
+# Simply Chess
 
-A no-frills chess game against the Stockfish engine. One screen: the board, an
-evaluation bar, four buttons, and a sidebar with the difficulty, the colour you play,
-the board size, and Save and Load.
+A no-frills chess game against the Stockfish engine. One screen, laid out as the
+trainer's Play screen: the difficulty in a row under the header, the board size and
+the theme beside each other at the right of it, then the opening line and the status,
+then the board with its evaluation bar and four buttons, the move list in its own
+column, and a side panel with the colour you play and Save and Load.
 
 It runs as an installed Windows app and as an iPad Home Screen app, from one code
 base. The code comes from the Repertoire Trainer (`../London`) and Conquest
@@ -14,8 +16,11 @@ the phases and their progress.
 
 ## Status
 
-Built, all eight phases. The game plays, saves and loads, remembers itself, is a Home
-Screen app that works with no internet, and installs on Windows as version 1.0.0.
+Version 1.0.0 is built, all eight phases: the game plays, saves and loads, remembers
+itself, is a Home Screen app that works with no internet, and installs on Windows.
+Version 2 is under way (specification section 18): phase 9 has renamed the app Simply
+Chess and laid the screen out as the trainer's Play screen. The version stays 1.0.0
+until phase 12.
 [docs/acceptance.md](docs/acceptance.md) walks the specification's acceptance list item
 by item and says who checked what.
 
@@ -59,11 +64,11 @@ engine and all. Publishing it is Nick's job and needs his accounts:
 npx tauri build
 ```
 
-That writes `src-tauri/target/release/bundle/nsis/Simple Chess_1.0.0_x64-setup.exe`.
+That writes `src-tauri/target/release/bundle/nsis/Simply Chess_1.0.0_x64-setup.exe`.
 It installs for the current user, with no administrator prompt, into
-`%LOCALAPPDATA%\Simple Chess`. It is unsigned, so SmartScreen warns the first time:
+`%LOCALAPPDATA%\Simply Chess`. It is unsigned, so SmartScreen warns the first time:
 More info, then Run anyway. The window keeps its settings and the game in progress in
-`%LOCALAPPDATA%\Simple Chess Data`, and the uninstaller removes that folder only if you
+`%LOCALAPPDATA%\Simply Chess Data`, and the uninstaller removes that folder only if you
 tick the box.
 
 `npx tauri dev` runs the same window against the dev server, and

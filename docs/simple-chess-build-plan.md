@@ -3,7 +3,7 @@
 Version 2, 2026-09-13. Status: **Active again.** Version 1 (phases 0 to 8) is built and
 every gate passed by 2026-09-12; its boxes 7.8 and 8.6 are Nick's. Version 2 (phases 9
 to 12, spec section 18) makes the app Simply Chess, a sibling of the trainer's Play
-screen. Phase 9 is next.
+screen. Phase 9 landed 2026-09-13 and awaits its gate; phase 10 is next.
 
 Read [the specification](simple-chess-spec.md) first. It says what the app does. This
 document says what gets built, in what order, and how we know each part is finished.
@@ -552,29 +552,29 @@ switch row), `catalog.css` (`.course-switch`), `Play.tsx` (`PlayHead`, `openingL
 `MoveList`'s column), `play.css` (`.play-head`, `.play-opening`, `.move-list`,
 `.play-side`).
 
-- [ ] 9.1 The rename (spec 18.2): every name a person sees, the folder in its three
+- [x] 9.1 The rename (spec 18.2): every name a person sees, the folder in its three
       files and its test, the identifier, the package name, the storage keys, the
       manifest, the icon script's comment, the README and CLAUDE.md. The scenes and
       the deploy document follow. `git grep -i 'simple chess'` finds only history.
-- [ ] 9.2 The header: the board size toggle beside the theme toggle, one button that
+- [x] 9.2 The header: the board size toggle beside the theme toggle, one button that
       reads the OTHER size, in the `theme-toggle` style; the Board fieldset leaves the
       side panel.
-- [ ] 9.3 The selector row: the trainer's `.course-switch` with "Difficulty" and the
+- [x] 9.3 The selector row: the trainer's `.course-switch` with "Difficulty" and the
       select; the two description sentences into the select's `title`.
-- [ ] 9.4 The head row: the trainer's `.play-head` without its heading; the opening
+- [x] 9.4 The head row: the trainer's `.play-head` without its heading; the opening
       line "Playing White against 4. Club" from the running game; the status line
       beside it.
-- [ ] 9.5 The move list as its own column, 167 px, board height, between the board
+- [x] 9.5 The move list as its own column, 167 px, board height, between the board
       column and the side panel; the side panel as `.play-side` with Play as and the
       file buttons.
-- [ ] 9.6 The window 1400 by 980, minimum 960 by 720; the fit rule's chrome constants
+- [x] 9.6 The window 1400 by 980, minimum 960 by 720; the fit rule's chrome constants
       re-measured (above: header, selector row, head row; beside: bar, gap, list column,
       side panel minimum, gaps; below: both button rows), named, and the fit tests'
       expected numbers updated with the arithmetic shown.
-- [ ] 9.7 The narrow layout: three columns stacked; the two rows wrap.
-- [ ] 9.8 The scenes and the probe follow the new selectors; the twelve-row layout pass
+- [x] 9.7 The narrow layout: three columns stacked; the two rows wrap.
+- [x] 9.8 The scenes and the probe follow the new selectors; the twelve-row layout pass
       again, both sizes, both themes, three viewports; S16 holds.
-- [ ] 9.9 Reuse review and commit. Version stays 1.0.0 until phase 12.
+- [x] 9.9 Reuse review and commit. Version stays 1.0.0 until phase 12.
 
 ---
 
@@ -687,7 +687,7 @@ did it that way too.
 | 6 - scenes, the probe and the layout pass | **Complete** 2026-09-12, gate passed the same day. 243 tests green. The five scenes open from the address bar and none survives the build; the probe holds S16's two numbers in all twelve rows; the move list no longer scrolls the board off the screen. |
 | 7 - the iPad Home Screen app | **Complete** 2026-09-12, gate passed the same day; box 7.8 is Nick's. 250 tests green. The built app has an icon and a manifest, opens with the server stopped and answers a move, and offers a new version in a bar that says it costs nothing. |
 | 8 - the Windows app and the installer | **Complete** 2026-09-12, gate passed the same day; box 8.6 is Nick's. 257 tests green. The window opens at 1280 by 1000 with the engine in it, the installer is 6.6 MB and installs for the current user, and the uninstaller's four cases are proved against a scratch folder. Version 1.0.0. |
-| 9 - Simply Chess, and the trainer's layout | Not started |
+| 9 - Simply Chess, and the trainer's layout | **Complete** 2026-09-13, awaiting its gate. 260 tests green in 7.9 s. The app is Simply Chess everywhere a person sees it; the screen is the trainer's Play screen, measured at three viewports, both sizes and both themes with S16 holding in all twelve rows; the window is 1400 by 980 and the chrome constants are 167, 120 and 607. |
 | 10 - stop, review, the report | Not started |
 | 11 - the review viewer, Keep playing, Play from here | Not started |
 | 12 - version 1.1.0 | Not started |
@@ -2466,3 +2466,164 @@ included.
 - [x] **Review gate 8 passed** (2026-09-12)
 
 The build is complete as far as a session can take it. Open: 7.8 and 8.6, Nick's.
+
+### Phase 9 - builder notes (2026-09-13)
+
+The session was compacted before this phase. Everything the chip named was read fresh
+before anything was touched: `CLAUDE.md`, spec 18 in full and then 4.2, S2, 5.6, 10,
+11.1, 12.1 and 12.3, the plan's rules and phase 9 and the gate 8 findings,
+`docs/testing.md`, and then `../London/src/ui/App.tsx`, `catalog.css`, `Play.tsx` and
+`play.css`.
+
+**Measured.**
+
+- `npx vitest run`: 32 files, **260 tests passed, none skipped**, 7.9 seconds warm.
+  Three tests are new: the opening line, the difficulty select's place in the selector
+  row, and the size toggle inside the remembered-settings test. `tsc -b` clean,
+  `npx oxlint` silent, `npm run build` clean (main chunk 319.92 kB, precache 21
+  entries). `grep -c midgame dist/assets/*.js` is 0 in every chunk and
+  `grep -c course-switch` is 1, so the scenes are still dropped from a build and the
+  new row is still in it.
+- **The layout pass, twelve rows**, `?scene=midgame`, the probe read from the file in
+  the pane. The bar, `.board` and `cg-board` share one bottom in every row, and
+  `scrollWidth` never exceeds `innerWidth`, which is S16.
+
+  | Viewport | Size | Theme | Board | Bar/board/cg bottom | List | Side | scrollWidth / innerWidth |
+  |---|---|---|---|---|---|---|---|
+  | 1400 x 980 | large | dark | 688 | 855 | 167 x 688 | 405 | 1400 / 1400 |
+  | 1400 x 980 | large | light | 688 | 855 | 167 x 688 | 405 | 1400 / 1400 |
+  | 1400 x 980 | small | dark | 416 | 583 | 167 x 416 | 448.5 | 1400 / 1400 |
+  | 1400 x 980 | small | light | 416 | 583 | 167 x 416 | 448.5 | 1400 / 1400 |
+  | 1180 x 820 | large | dark | 528 | 695 | 167 x 528 | 345 | 1180 / 1180 |
+  | 1180 x 820 | large | light | 528 | 695 | 167 x 528 | 345 | 1180 / 1180 |
+  | 1180 x 820 | small | dark | 416 | 583 | 167 x 416 | 448.5 | 1180 / 1180 |
+  | 1180 x 820 | small | light | 416 | 583 | 167 x 416 | 448.5 | 1180 / 1180 |
+  | 820 x 1180 | large | dark | 728 | 895 | 757 x 232 | 772 | 805 / 820 |
+  | 820 x 1180 | large | light | 728 | 895 | 757 x 232 | 772 | 805 / 820 |
+  | 820 x 1180 | small | dark | 416 | 583 | 772 x 232 | 772 | 820 / 820 |
+  | 820 x 1180 | small | light | 416 | 583 | 772 x 232 | 772 | 820 / 820 |
+
+  The last four rows are the narrow layout: the three columns stack, the list is the
+  page's width at exactly ten rows (232 px), and the side panel takes the width under
+  it. The pane reports a display scale of 1 after a navigation (a standing hazard in
+  `CLAUDE.md`), so these are the scale-1 numbers; `board-size.test.ts` carries 1.25,
+  1.5 and 2 by arithmetic.
+- **The chrome constants, re-measured at 1400 by 980 with the small board**, from the
+  probe rather than from the stylesheet, then rounded up:
+  - `CHROME_ABOVE` **167** = 81 (the page padding and the header, which is the
+    selector row's y) + 34 (the row) + 12 (its margin) + 24 (the head row) + 16 (its
+    margin). The board's y was exactly 167 at a display scale of 1 and 164 at 1.5,
+    where a row of text is a third of a pixel shorter. The larger is the one that has
+    to fit: taking 164 would have let phase 11's review row push the page 3 px past
+    the bottom of the window.
+  - `CHROME_BELOW` **120** = 12 (the column's gap) + 38 (row one) + 46 (row two: 38
+    plus its 12 gap less its -4 margin) + 24 (the page padding). Row two does not
+    exist yet and is counted anyway, so the board will not change size when it
+    arrives.
+  - `CHROME_BESIDE_WIDE` **607** = 48 (padding both sides) + 24 (the bar) + 20 (its
+    gap) + 24 (the gap to the list) + 167 (the list) + 24 (the gap to the panel) +
+    300 (the panel's minimum). Measured: the panel's x is 699 at 1400 with the small
+    board, which is 68 + 416 + 24 + 167 + 24 exactly.
+  - `CHROME_BESIDE_NARROW` **92**, unchanged: 48 + 24 + 20.
+  - What they give: 688 in the window at scales 1 and 1.5 and 672 at 1.25; 528 in
+    landscape; 728 upright; and the full 832 on a 1600 by 1200 screen. The large
+    board is smaller than version 1's by about the height the two new rows take,
+    which is the fit rule doing its job rather than a fault (the chip's own decision
+    rule).
+- **167 for the list column** is not a number the trainer has: it is what the
+  trainer's own row measures. `2em + 3.6em + 3.6em` is 147.2 at a 16 px body font,
+  two 6 px gaps make 159.2, and 4 px of padding each side make 167.2.
+- **Looked at.** `?scene=midgame` at 1400 by 980 in both themes: the header with
+  Large and Light at the right, the centred Difficulty row, "Playing White against 4.
+  Club" with "Your move" beside it, the board with its bar, the four buttons under
+  it, the move list ending level with the board, and the panel with PLAY AS, Save
+  game and Load game. `?scene=mate`: "You won by checkmate" in the head row and Hint
+  greyed. `?scene=hint`: the blue arrow on the board and "The engine suggests axb5."
+  in the panel under the file buttons, with its blue left border. At 820 by 1180 the
+  three columns stack in order. Nothing is cut off and nothing scrolls sideways.
+- **Against the spec 18.1 diagram, nothing differs.** The only things on the diagram
+  that are not on the screen are the ones this phase does not build: the second
+  button row, Stop and review, Stop and discard, and the report (phases 10 and 11).
+
+**Decided (code shape).**
+
+- **`StatusLine.tsx` went and `Notice.tsx` took its place.** The status wording moved
+  into `PlayHead`, which left the file holding one component that was not the one it
+  was named after. One component, one file, named after it.
+- **`Sidebar.tsx` is `SidePanel.tsx`.** It is no longer a bar of everything: two of
+  its four things left this phase. The class is the trainer's `.play-side`, so the
+  component now reads as what the stylesheet calls it. `.sidebar-files` keeps its
+  name, as the chip says: it is the row of two buttons and nothing else.
+- **`openingLine` is its own module, `ui/opening-line.ts`.** It began as a second
+  export from `PlayHead.tsx` and oxlint said so: a file that exports a component and
+  a function breaks fast refresh. The trainer keeps its version private inside
+  `Play.tsx` and does not test it; this one is a sentence worth a test of its own.
+- **The move list's height travels as a custom property, not as an inline `height`.**
+  The chip asks for `style={{ height: pixels }}`, which would have outranked the
+  narrow layout's `height: var(--list-rows)` and left a 728 px list on an upright
+  iPad. `--board-pixels` on the element lets the stylesheet decide which of the two
+  rules wins, which is where that decision belongs.
+- **The two sentences about a level are `levelTitle` in `DifficultyRow.tsx`**, and
+  that is the only place either is written. They were two paragraphs under the select.
+- **The description in `package.json`, `Cargo.toml`, `tauri.conf.json` and the
+  manifest is now "A no-frills chess game against Stockfish".** It was "A simple chess
+  game against Stockfish", which names the old product in a sentence a person reads in
+  the installer. "No-frills" is spec section 1's own word for the app.
+- **`Cargo.lock`'s package line was rewritten by cargo**, not by hand: `cargo metadata
+  --offline`, with `%USERPROFILE%\.cargo\bin` on the path, changed the one `name =`
+  line and then exited 101 trying to download `android_system_properties`, which
+  Windows does not need. That one line is the only change in the file.
+
+**Departures from the chip.**
+
+- **One commit, not two.** The chip prefers the rename and the layout apart, and after
+  the fact they could not be separated without a red commit between them: the header's
+  name and the header's new size toggle are three lines of the same file, and
+  `tauri.conf.json` carries both the identifier and the window size. The rename WAS
+  green on its own before the layout was started (257 tests, the same suite as gate
+  8), and that is recorded here rather than in the history. The lesson for phase 10:
+  commit the mechanical half the moment it is green.
+- **The trainer does not centre its course row.** The chip says it does, citing the
+  trainer's phase 17. `London/src/ui/catalog.css` has no `justify-content` on
+  `.course-switch` today, so the copy is the trainer's rule plus one line and the
+  origin comment says which line is this app's. Spec 18.1 asks for centred, and
+  centred is what it is.
+- **Section 18 supersedes more of the spec than 11.1 alone.** The chip asks for a
+  bracketed note on 11.1's window numbers; section 10's storage keys needed the same
+  and got one. Nothing else in sections 1 to 17 was touched: the spec's own front
+  matter says the earlier sections keep the old name as history, so
+  `git grep -i 'simple chess'` still matches there - Q1 (which now carries a
+  "superseded by Q15" note), the 4.1 diagram, 9.1's example file, 11.1, 11.3, 12.1
+  and 17 - and in `SimpleChess-brief.txt`, which is history by definition. Whether
+  those live sentences should be rewritten is the orchestrator's call, not this
+  session's.
+
+**Asked of Nick.** Nothing. Everything a person sees was settled by spec 18: the two
+toggles' words and their order, the row's label and its centring, the opening line's
+wording, the list's width, the panel's minimum and the window's four numbers.
+
+**Reuse review.** The four the chip predicted, all found and all closed: the level's
+two sentences now have one home in `levelTitle`; the second select style is gone (the
+`.sidebar select` rule was deleted and `.course-switch select` is the one rule); the
+board's pixels are worked out once in `Screen` by `useBoardPixels` and handed to both
+the board and the list; and no `.sidebar` rule is left behind. Every class in the two
+stylesheets is used by a component, checked by counting them. `openingLine` is the one
+place the head row's sentence is written and `PlayHead` the one place spec 5.6's
+status words are. No em dashes under `src/`, and no forbidden word in a new or adapted
+file.
+
+**Left.**
+
+- **The identifier changed with the name**, from `com.nick.simple-chess` to
+  `com.nick.simply-chess`, and so did the product name. NSIS keys an install on the
+  product name, so a 1.0.0 install would not be upgraded by the next installer: it
+  would sit beside it. Nothing is at risk today, because box 8.6 is still open and
+  nobody has installed 1.0.0. If that changes before phase 12, phase 12 has to say so.
+- **`%LOCALAPPDATA%\Simple Chess Data` is still on this machine**, left by phase 8's
+  drive, and was not touched: Nick's files are not this session's. The new folder,
+  `Simply Chess Data`, is made by the next packaged run in phase 12.
+- **`.claude/launch.json`'s two configurations are now `simply-chess-dev` and
+  `simply-chess-preview`.** `docs/testing.md` names the second one, so both moved
+  together.
+- **Nothing under `../London` or `../Conquest` was read for anything but copying, and
+  neither was written.**

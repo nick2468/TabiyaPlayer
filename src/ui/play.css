@@ -1,20 +1,43 @@
-/* Origin: London src/ui/play.css, adapted: cut to the board column and the
-   move list; the bar is 24px and its gap 20px (spec 4.2); .sidebar is new;
-   .notice is London src/ui/study.css and .notice.bad London src/ui/progress.css. */
+/* Origin: London src/ui/play.css, adapted: cut to the head row, the board
+   column, the move list and the side panel; the bar is 24px and its gap 20px
+   (spec 4.2); .notice is London src/ui/study.css and .notice.bad London
+   src/ui/progress.css. */
 
-/* Under the buttons, starting where they do (spec 4.1). */
+/* Origin: London src/ui/play.css .play-head, .play-opening and .play-status,
+   adapted: no heading, so nothing pushes the two lines apart.
+
+   The head row over the board (spec 18.1): what is being played on the left,
+   where it is up to beside it. The status line was under the buttons until
+   phase 9. */
+.play-head {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.play-opening {
+  margin: 0;
+  color: var(--text-soft);
+}
+
 .play-status {
-  margin: 0 0 0 var(--board-inset);
+  margin: 0;
   color: var(--text-dim);
 }
 
-/* Two columns: the board with its bar and controls, and the sidebar. They
-   wrap on a narrow window rather than squeezing either. */
+/* Three columns: the board with its bar and controls, the move list, and the
+   side panel. They wrap on a narrow window rather than squeezing any of them. */
 .play-body {
   display: flex;
   gap: 24px;
   align-items: flex-start;
   flex-wrap: wrap;
+  /* Ten rows of the move list, which is the least it is ever shown at and
+     exactly what it shows in the narrow layout. One number, because a list that
+     showed ten rows in one layout and six in the other would read as two
+     lists. */
+  --list-rows: calc(10 * 1.45em);
 }
 
 .play-column {
@@ -42,39 +65,36 @@
   margin-left: var(--board-inset);
 }
 
-/* The settings and the move list, beside the board column and as tall as it,
-   so the list grows when the board does (spec 4.1). 280px holds
-   "8. Unpleasant" in the select and two buttons side by side (spec 4.2). */
-.sidebar {
-  width: 280px;
-  flex: none;
+/* Origin: London src/ui/play.css .play-side, identical.
+
+   The last column: Play as, the two file buttons, and the hint sentence when
+   there is one (spec 18.1). It takes what the board and the move list leave,
+   down to 300px and up to a comfortable reading width. */
+.play-side {
+  flex: 1;
+  min-width: 300px;
+  max-width: 52ch;
   display: flex;
   flex-direction: column;
-  align-self: stretch;
   gap: 12px;
-  /* Ten rows of the move list, which is the least it is ever shown at. The
-     narrow layout below fixes the list at exactly this; beside the board it is
-     a floor and the list grows past it. One number, because a list that showed
-     ten rows in one layout and six in the other would read as two lists. */
-  --list-rows: calc(10 * 1.45em);
 }
 
 /* Origin: London src/ui/play.css lines 11 to 48, adapted: the `.play` prefix is
-   `.sidebar`, the fieldsets space themselves by the column's own gap, and the
-   select is not indented. */
+   `.play-side`, the fieldsets space themselves by the column's own gap, and the
+   select rule moved to the selector row in app.css. */
 
-.sidebar fieldset {
+.play-side fieldset {
   border: 1px solid var(--line);
   border-radius: 6px;
   padding: 12px 16px;
   /* The trainer's 16px bottom margin is gone: its fieldsets were siblings in a
-     plain block, and here the sidebar is a flex column with a 12px gap. Both
+     plain block, and here the panel is a flex column with a 12px gap. Both
      would make 28, which reads as the settings drifting apart. */
   margin: 0;
   max-width: 62ch;
 }
 
-.sidebar legend {
+.play-side legend {
   color: var(--text-faint);
   font-size: 0.85rem;
   text-transform: uppercase;
@@ -82,7 +102,7 @@
   padding: 0 6px;
 }
 
-.sidebar fieldset label {
+.play-side fieldset label {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -90,22 +110,10 @@
   cursor: pointer;
 }
 
-.sidebar input[type='radio'] {
+.play-side input[type='radio'] {
   accent-color: var(--accent);
 }
 
-.sidebar select {
-  background: var(--control);
-  color: var(--text);
-  border: 1px solid var(--line-strong);
-  border-radius: 4px;
-  padding: 5px 8px;
-  font: inherit;
-  /* The trainer indents this under the radio above it. Here the select is the
-     fieldset's only control, so it starts at the fieldset's own edge. */
-  margin: 6px 0 0;
-  max-width: 100%;
-}
 
 /* Origin: London src/ui/study.css .hint, identical. */
 .hint {
@@ -120,35 +128,31 @@
   gap: 8px;
 }
 
-/* Fills what the sidebar has left and scrolls inside itself.
+/* Its own column between the board and the side panel, as tall as the board
+   and scrolling inside itself (spec 18.1). The trainer's list is the same
+   shape; what is this app's is where the height comes from, because this board
+   is whatever fits the screen (spec S2) rather than one fixed number.
 
-   `contain: size` is what makes it scroll rather than grow. Without it the
-   rows count towards the sidebar's own height, and a long game stretched the
-   sidebar, and the page with it, past the board: measured at 928px beside a
-   501px board column. Contained, the list is sized by the sidebar alone and
-   `flex: 1` gives it everything the sidebar has left.
+   167px is what the row inside it actually measures: 2em + 3.6em + 3.6em of
+   columns is 147.2 at the 16px body font, two 6px gaps make 159.2, and the 4px
+   of padding each side make 167.2. Wider would be empty space between the
+   board and the panel; narrower would clip a move.
 
-   The floor is what the settings left it. With the small board the three
-   fieldsets and the two file buttons come to 507px beside a 501px column, so
-   `flex: 1` had nothing to give and the list was measured at ZERO: the moves
-   disappeared the moment the sidebar arrived. The floor lets the sidebar run
-   past the board column instead, which is what a page that may scroll down is
-   for (spec 4.3). */
+   The `contain: size` and the `flex: 1` of phase 3 are gone with the sidebar
+   that needed them. The list no longer shares a column with the settings, so
+   there is nothing for it to grow into and nothing to contain it against: it
+   is given the board's height and that is all. */
 .move-list {
-  contain: size;
   list-style: none;
   margin: 0;
+  width: 167px;
+  height: var(--board-pixels);
   /* The trainer's four pixels each side, which it needed for a highlighted
      move's bleed. Nothing is highlighted here; kept so the list reads the
      same as the trainer's. */
   padding: 0 4px;
-  flex: 1;
-  /* This replaces the `min-height: 0` phase 2 wrote here. That zero was the
-     usual guard for a flex item, whose min-height is otherwise `auto` and so
-     refuses to shrink below its content; but `contain: size` already makes the
-     content size zero, so the guard bought nothing. Declared twice, the later
-     one won and the floor above was never in effect. */
-  min-height: var(--list-rows);
+  box-sizing: border-box;
+  flex: none;
   overflow-y: auto;
   font-variant-numeric: tabular-nums;
   /* Firefox and Chromium 121 and up. */
@@ -252,10 +256,13 @@
   color: var(--piece-white);
 }
 
-/* Origin: London src/ui/play.css .hint-said and .hint-said.engine, adapted: it
-   starts under the board rather than under the bar, like the status line. */
+/* Origin: London src/ui/play.css .hint-said and .hint-said.engine, adapted: no
+   margin, because it is an item in a flex column with a gap of its own.
+
+   In the side panel from phase 9, under the file buttons (spec 18.1). It sat
+   under the board until then and carried the board's inset with it. */
 .hint-said {
-  margin: 0 0 16px var(--board-inset);
+  margin: 0;
   border-left: 3px solid var(--accent);
   padding: 4px 0 4px 12px;
   max-width: 52ch;
@@ -325,29 +332,33 @@
   color: var(--notice-bad-text);
 }
 
-/* The narrow layout: an iPad held upright, or a narrow window (spec 4.3). The
-   sidebar goes under the board column and takes the full width. Nothing is
-   hidden; it only moves.
+/* The narrow layout: an iPad held upright, or a narrow window (spec 18.1). The
+   three columns stack in order, board, move list, side panel, and each takes
+   the full width. Nothing is hidden; it only moves.
 
    The 899 here is NARROW_BELOW's 900 in board-size.ts, one pixel down. THE TWO
-   MUST MOVE TOGETHER: the fit rule gives the board the sidebar's width in this
-   layout, and a board sized for it while the sidebar is still beside the board
+   MUST MOVE TOGETHER: the fit rule gives the board the other columns' width in
+   this layout, and a board sized for it while they are still beside the board
    is a page that scrolls sideways. */
 @media (max-width: 899px) {
   .play-body {
     flex-direction: column;
   }
 
-  .sidebar {
-    width: 100%;
-    align-self: auto;
+  /* The full width, as the list above it takes: `flex: 1` says nothing about
+     width once the body is a column, and a 300px panel under a 772px board
+     reads as a column that failed to move rather than one that did. */
+  .play-side {
+    align-self: stretch;
+    max-width: none;
   }
 
-  /* Exactly the ten rows, not a floor: there is no board column beside the list
-     here to take its height from, and a list that grew with the game would run
-     the page on for as long as the game lasted. */
+  /* Exactly the ten rows: there is no board beside the list here to take its
+     height from, and a list that grew with the game would run the page on for
+     as long as the game lasted. The width goes with it, because a column of
+     moves 167px wide in a full-width page reads as something unfinished. */
   .move-list {
+    width: 100%;
     height: var(--list-rows);
-    flex: none;
   }
 }

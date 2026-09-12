@@ -6,6 +6,7 @@ import { recallGame } from '../storage/current-game'
 import { openPgn, savePgn } from '../storage/files'
 import { isDesktop } from '../storage/paths'
 import { useBoardSize, useLevel, useSide } from '../storage/prefs'
+import { DifficultyRow } from './DifficultyRow'
 import { asMessage } from './message'
 import { PlayProvider, usePlay } from './play-context'
 import { Screen, type ScreenNotice } from './Screen'
@@ -14,17 +15,19 @@ import { UpdateWatch } from './UpdateWatch'
 import './app.css'
 
 /**
- * Origin: London src/ui/App.tsx, adapted: the header and the theme toggle, the App and Shell split, one screen, and the settings read here.
- * The app shell: the header, and the one screen under it (spec section 4).
+ * Origin: London src/ui/App.tsx, adapted: the header and its two toggles, the selector row chooses a difficulty, the App and Shell split, one screen, and the settings read here.
+ * The app shell: the header, the selector row, and the one screen under them
+ * (spec 18.1).
  *
- * The header holds the name with the version beside it, and the theme toggle,
- * and nothing else. There is no nav to a second screen, because there is no
- * second screen (spec S1).
+ * The header holds the name with the version beside it and the two toggles,
+ * the board size and the theme. The selector row under it holds the
+ * difficulty, where the trainer holds its course. There is no nav to a second
+ * screen, because there is no second screen (spec S1).
  *
  * The three settings are read here, once, and handed down (spec 10). This is
- * also the one place that knows what each one does to the running game, so the
- * sidebar can stay a sidebar: the level reaches the engine at once, the side
- * waits for the next new game, and the board size touches nothing but pixels.
+ * also the one place that knows what each one does to the running game, so no
+ * control has to know: the level reaches the engine at once, the side waits for
+ * the next new game, and the board size touches nothing but pixels.
  */
 
 export function App() {
@@ -57,6 +60,8 @@ export function Shell() {
   const { boardSize, setBoardSize } = useBoardSize()
   const [notice, setNotice] = useState<ScreenNotice | null>(null)
   const switchTo = theme === 'dark' ? 'Switch to the light theme' : 'Switch to the dark theme'
+  const switchSize =
+    boardSize === 'small' ? 'Switch to the large board' : 'Switch to the small board'
 
   // A notice says one thing about something that has just happened, so it goes
   // by itself rather than waiting to be dismissed. Cleared on the way out as
@@ -178,9 +183,22 @@ export function Shell() {
     <div className="app">
       <header className="app-header">
         <h1>
-          Simple Chess <span className="app-version">v{__APP_VERSION__}</span>
+          Simply Chess <span className="app-version">v{__APP_VERSION__}</span>
         </h1>
         <nav className="app-nav">
+          {/* Each toggle reads the size or the theme it would switch TO, which
+              is the trainer's rule for its own. The size one goes first so the
+              theme toggle keeps the end of the row it has always had (spec
+              18.1). */}
+          <button
+            type="button"
+            className="nav-link theme-toggle"
+            onClick={() => setBoardSize(boardSize === 'small' ? 'large' : 'small')}
+            title={switchSize}
+            aria-label={switchSize}
+          >
+            {boardSize === 'small' ? 'Large' : 'Small'}
+          </button>
           <button
             type="button"
             className="nav-link theme-toggle"
@@ -192,6 +210,8 @@ export function Shell() {
           </button>
         </nav>
       </header>
+
+      <DifficultyRow level={level} onLevel={chooseLevel} />
 
       <main>
         <Screen

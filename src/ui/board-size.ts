@@ -17,15 +17,16 @@ export const BOARD_SIZE = 416
 
 /**
  * The large board, twice the small one, so it divides by eight for the same
- * reason. It is what `fitBoardSize` asks for and rarely what it gets: 832 needs
- * a viewport about 1040 px tall, and neither an iPad nor the 1000 px Windows
- * window has one (spec S2).
+ * reason. It is what `fitBoardSize` asks for and rarely what it gets: with the
+ * layout of spec 18.1 above and below it, 832 needs a viewport about 1115 px
+ * tall, and neither an iPad nor the 980 px Windows window has one (spec S2).
  */
 export const BOARD_SIZE_LARGE = 832
 
 /**
- * Below this width the sidebar goes under the board column (spec 4.3), so the
- * board has the page's whole width rather than the width beside the sidebar.
+ * Below this width the move list and the side panel go under the board column
+ * (spec 18.1), so the board has the page's whole width rather than the width
+ * beside them.
  *
  * The same number is the media query in `play.css`. THE TWO MUST MOVE
  * TOGETHER: a board sized for the narrow layout inside the wide one overflows
@@ -40,17 +41,29 @@ export const NARROW_BELOW = 900
  * then rounded UP, so the rule never claims a pixel it does not have. A board
  * one pixel too big for its column is a page that scrolls sideways.
  *
- * Above: the page's top padding and the header, measured 80.67.
- * Below: the gap under the board, the button row, the gap under it, the status
- * line and the page's bottom padding, measured 109.33.
- * Beside, wide: the page padding both sides, the bar, the gap after it, the gap
- * to the sidebar, and the sidebar (24 + 24 + 24 + 20 + 24 + 280).
- * Beside, narrow: the padding both sides, the bar and its gap. The sidebar is
- * under the board there and takes none of the width.
+ * Re-measured in phase 9 for the layout of spec 18.1, in the pane at 1400 by
+ * 980 with the small board, from the probe's own numbers.
+ *
+ * Above, 167: the page's top padding and the header take 81 (the selector row's
+ * y), the selector row 34 and its margin 12, the head row 24 and its margin 16.
+ * The board's y was measured at exactly 167 at a display scale of 1 and at 164
+ * at 1.5, where a row of text is a third of a pixel shorter; the larger of the
+ * two is the one that has to fit.
+ * Below, 120: the column's gap under the board 12, the button row 38, the
+ * second button row with its own gap and its -4 margin 46, and the page's
+ * bottom padding 24. The second row only exists while a report is showing (spec
+ * 18.1) and is counted anyway, so the board does not change size when it
+ * appears.
+ * Beside, wide, 607: the page padding both sides 48, the bar 24, the gap after
+ * it 20, the gap to the move list 24, the list column 167, the gap to the side
+ * panel 24, and the panel's own minimum 300. The panel takes what is left
+ * beyond that minimum, so the board is never sized against its maximum.
+ * Beside, narrow, 92: the padding both sides, the bar and its gap. The list and
+ * the panel are under the board there and take none of the width.
  */
-const CHROME_ABOVE = 81
-const CHROME_BELOW = 110
-const CHROME_BESIDE_WIDE = 396
+const CHROME_ABOVE = 167
+const CHROME_BELOW = 120
+const CHROME_BESIDE_WIDE = 607
 const CHROME_BESIDE_NARROW = 92
 
 /**
@@ -58,8 +71,8 @@ const CHROME_BESIDE_NARROW = 92
  * (spec S2, as corrected at gate 2 and again by Nick on 2026-09-12).
  *
  * The answer is the largest size that is no bigger than the size asked for, the
- * width left beside the bar and the sidebar, or the height left under the
- * header and above the buttons, AND that draws whole squares.
+ * width left beside the bar, the move list and the side panel, or the height
+ * left under the head row and above the buttons, AND that draws whole squares.
  *
  * Whole squares is two conditions, not one. A multiple of 8 in CSS pixels, and
  * a whole number of DEVICE pixels per square. The second is the one this app
@@ -71,8 +84,9 @@ const CHROME_BESIDE_NARROW = 92
  *
  * So the rule steps down in eights until the squares come out whole. At a scale
  * of 1 every multiple of 8 does and nothing is given up. At 1.5 the answer is a
- * multiple of 16, so a 1280 by 1000 window gets 800 rather than 808; at 1.25 it
- * is a multiple of 32 and gets 800 too. Nick ruled that the large board does not
+ * multiple of 16, and at 1.25 a multiple of 32: the 1400 by 980 window has room
+ * for 688, which is already a multiple of 16 and so costs nothing at 1.5, and
+ * gives up 16 pixels at 1.25 to reach 672. Nick ruled that the large board does not
  * have to be literally double, which is what makes this the honest rule rather
  * than a compromise: the point was always a board the bar ends level with.
  *

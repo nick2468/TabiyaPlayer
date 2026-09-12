@@ -30,7 +30,7 @@ describe('gameToPgn', () => {
   it('writes the file the specification shows', () => {
     expect(gameToPgn(game)).toBe(
       [
-        '[Event "Simple Chess"]',
+        '[Event "Simply Chess"]',
         '[Site "-"]',
         '[Date "2026.09.11"]',
         '[Round "-"]',
@@ -120,11 +120,11 @@ describe('the date', () => {
 
 describe('the file name', () => {
   it('stamps the clock to the minute, padded', () => {
-    expect(saveFileName('2026-09-11T14:32:00')).toBe('simple-chess-2026-09-11-1432.pgn')
-    expect(saveFileName('2026-01-02T03:04:00')).toBe('simple-chess-2026-01-02-0304.pgn')
+    expect(saveFileName('2026-09-11T14:32:00')).toBe('simply-chess-2026-09-11-1432.pgn')
+    expect(saveFileName('2026-01-02T03:04:00')).toBe('simply-chess-2026-01-02-0304.pgn')
   })
 
   it('loses the stamp rather than printing nonsense', () => {
-    expect(saveFileName('not a date')).toBe('simple-chess.pgn')
+    expect(saveFileName('not a date')).toBe('simply-chess.pgn')
   })
 })

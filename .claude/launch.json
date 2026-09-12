@@ -3,14 +3,14 @@
   "configurations": [
     {
       "//": "The --prefix flag makes npm run the script in THIS folder whatever directory invoked it. Port 5185 with --strictPort, because 5173 is dc.web, 5175 is the trainer, and 5180 and 5181 are Conquest.",
-      "name": "simple-chess-dev",
+      "name": "simply-chess-dev",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["--prefix", "C:/Users/nick2/Code/SimpleChess", "run", "dev"],
       "port": 5185
     },
     {
       "//": "Serves the BUILT files, with the service worker. `npm run dev` never has one, so this is the only way to test that the game opens with no internet. The service worker arrives in phase 7.",
-      "name": "simple-chess-preview",
+      "name": "simply-chess-preview",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["--prefix", "C:/Users/nick2/Code/SimpleChess", "run", "preview"],
       "port": 5186

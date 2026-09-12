@@ -500,6 +500,9 @@ still runs the app.
 | `simple-chess.board-size` | `small`, `large` | `small` |
 | `simple-chess.game` | the current game as JSON | none |
 
+(**The prefix is `simply-chess.` from phase 9**, with the rename of 18.2. Nobody had
+data under the old keys, so nothing is migrated and nothing is read twice.)
+
 The current game is `{ "version": 1, "sans": [...], "side": "white", "level": 4 }`,
 written after every move, undo, redo and load, and removed by New game when the fresh
 game has no moves yet. On start the app replays the stored moves; a stored game that
@@ -532,6 +535,13 @@ changes.
   resizable. 1280 fits the large board with the sidebar (section 4.2). 1000 is the
   most a 1080-line display leaves under its taskbar and title bar; at that height the
   large board fits at 808 by the rule in S2, and a taller window gets the full 832.
+
+  (**Superseded by 18.1 in phase 9.** The title is "Simply Chess" and the window
+  opens at **1400 by 980**, the trainer's size, minimum 960 by 720 unchanged. 1400
+  fits the large board with the move list column and the side panel; 980 is the
+  trainer's height. The chrome above and below the board grew with the selector row,
+  the head row and the counted review row, so the large board there is 688 at a
+  display scale of 1 or 1.5 and 672 at 1.25, measured in phase 9.)
 - Declared in `tauri.conf.json` with `"create": false` and built in `lib.rs` from that
   same declaration, so that the WebView2 profile can be pointed at
   `%LOCALAPPDATA%\Simple Chess Data\WebView2`. The trainer's `lib.rs` says why: the

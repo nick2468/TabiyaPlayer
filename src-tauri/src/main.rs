@@ -3,5 +3,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    simple_chess_lib::run()
+    simply_chess_lib::run()
 }

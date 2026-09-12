@@ -117,8 +117,9 @@ build time, so `npm run build` drops every scene: `grep -c midgame dist/assets/*
 is 0, and a phase that touches this says so in its notes.
 
 **The probe** is `scripts/probes/layout.js`, one expression returning the boxes of
-`.board`, `cg-board`, `.live-eval`, `.play-controls`, `.sidebar` and `.move-list`
-beside `scrollWidth`, `innerWidth` and the display scale. Evaluate it in the pane by
+`.board`, `cg-board`, `.live-eval`, `.play-controls`, `.play-head`,
+`.course-switch`, `.play-side` and `.move-list` beside `scrollWidth`, `innerWidth`
+and the display scale. Evaluate it in the pane by
 fetching it from the dev server, so the file is what runs rather than a copy of it:
 
 ```js
@@ -140,7 +141,7 @@ the board on purpose, so nothing in a test can play a move in it. It can still b
 Start the built executable with WebView2's debugging port on:
 
 ```bash
-WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS="--remote-debugging-port=9333" ./src-tauri/target/release/simple-chess.exe &
+WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS="--remote-debugging-port=9333" ./src-tauri/target/release/simply-chess.exe &
 ```
 
 Then `node scripts/packaged-eval.mjs "<expression>"` evaluates anything in that window,
@@ -165,7 +166,7 @@ Two more things no test can answer, both from phase 7.
 
 **Whether the app works with no internet** is a question about a service worker, and
 a development build has none by choice (`devOptions: { enabled: false }`). So it is
-proved against the built files: `npm run build`, then the `simple-chess-preview`
+proved against the built files: `npm run build`, then the `simply-chess-preview`
 launch configuration on port 5186, open it and **play one move** (that visit is what
 lets the worker store everything), then stop the server and reload.
 

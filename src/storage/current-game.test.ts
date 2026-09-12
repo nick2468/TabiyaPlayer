@@ -10,7 +10,7 @@ import { forgetGame, recallGame, rememberGame, type RememberedGame } from './cur
  * answer, which is the whole point: null, and the app starts a fresh game.
  */
 
-const KEY = 'simple-chess.game'
+const KEY = 'simply-chess.game'
 
 interface Store {
   getItem(key: string): string | null

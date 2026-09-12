@@ -5,23 +5,25 @@ import type { Shape } from '../model/types'
 import { shownEvaluation, type Hint, type PlayedMove } from '../play'
 import { Board } from './Board'
 import { EvalBar } from './EvalBar'
+import { MoveList } from './MoveList'
+import { Notice } from './Notice'
 import { PlayControls } from './PlayControls'
+import { PlayHead } from './PlayHead'
 import { PromotionPicker, type PromotionPiece } from './PromotionPicker'
-import { Sidebar, type FileProps, type SettingsProps } from './Sidebar'
-import { Notice, StatusLine } from './StatusLine'
+import { SidePanel, type FileProps, type SettingsProps } from './SidePanel'
 import { usePlay } from './play-context'
 import { useBoardPixels } from './use-board-pixels'
 import './play.css'
 
 /**
- * The one screen (spec 4.1): the board column, with the bar, the board, the
- * buttons, the status line and the hint sentence, and beside it the sidebar.
+ * The one screen (spec 18.1): the head row, and under it three columns - the
+ * board with its bar and buttons, the move list, and the side panel.
  *
  * Built from the provider's state and the settings handed down from `Shell`,
  * and nothing else. Until the first game exists there is nothing to show,
  * except an engine that would not start.
  */
-/** A message under the status line, until its few seconds are up. */
+/** A message under the buttons, until its few seconds are up. */
 export interface ScreenNotice {
   text: string
   /** The warning colour, for something that did not work. */
@@ -71,63 +73,73 @@ export function Screen({
   }
 
   return (
-    <div className="play-body">
-      <div className="play-column">
-        {/* The bar and the board in one box, so the bar is stretched to the
-            board's own height rather than given a height of its own. */}
-        <div className="play-board">
-          <EvalBar
-            evaluation={shownEvaluation(fen, session.moves, game.evaluations)}
-            userColour={session.userColour}
-          />
-          <Board
-            fen={fen}
-            orientation={session.userColour}
-            turnColor={sideToMove(fen)}
-            movableColor={canMove ? session.userColour : undefined}
-            dests={canMove ? legalDests(fen) : undefined}
-            lastMove={squaresOf(session.moves.at(-1) ?? null)}
-            shapes={hintShapes(game.hint, fen)}
-            onMove={(from, to) => {
-              // A promotion is not played here: it is held until the picker is
-              // answered, so the engine is never asked about a move the user
-              // has not finished making.
-              if (isPromotion(fen, from, to)) setPending({ from, to })
-              else void game.play(from, to)
-            }}
-            size={pixels}
-          />
-          {pending && (
-            <PromotionPicker
-              colour={session.userColour}
-              squareSize={pixels / 8}
-              onChoose={choose}
-              onCancel={() => setPending(null)}
+    <>
+      {/* The level of the RUNNING game, not the setting: the two differ for a
+          move after the select is changed (spec S6), and the line says what is
+          being played. */}
+      <PlayHead session={session} level={game.level ?? settings.level} thinking={thinking} />
+
+      <div className="play-body">
+        <div className="play-column">
+          {/* The bar and the board in one box, so the bar is stretched to the
+              board's own height rather than given a height of its own. */}
+          <div className="play-board">
+            <EvalBar
+              evaluation={shownEvaluation(fen, session.moves, game.evaluations)}
+              userColour={session.userColour}
             />
-          )}
+            <Board
+              fen={fen}
+              orientation={session.userColour}
+              turnColor={sideToMove(fen)}
+              movableColor={canMove ? session.userColour : undefined}
+              dests={canMove ? legalDests(fen) : undefined}
+              lastMove={squaresOf(session.moves.at(-1) ?? null)}
+              shapes={hintShapes(game.hint, fen)}
+              onMove={(from, to) => {
+                // A promotion is not played here: it is held until the picker is
+                // answered, so the engine is never asked about a move the user
+                // has not finished making.
+                if (isPromotion(fen, from, to)) setPending({ from, to })
+                else void game.play(from, to)
+              }}
+              size={pixels}
+            />
+            {pending && (
+              <PromotionPicker
+                colour={session.userColour}
+                squareSize={pixels / 8}
+                onChoose={choose}
+                onCancel={() => setPending(null)}
+              />
+            )}
+          </div>
+
+          <PlayControls
+            session={session}
+            thinking={thinking}
+            canHint={game.canHint}
+            onNew={onNewGame}
+            onUndo={game.undo}
+            onRedo={game.redo}
+            onHint={() => void game.askHint()}
+          />
+
+          {/* Under the buttons, where something that has just happened belongs.
+              Where the game is up to is in the head row instead (spec 18.1). */}
+          {game.engineError && <Notice message={game.engineError} bad />}
+
+          {notice && <Notice message={notice.text} bad={notice.bad} />}
         </div>
 
-        <PlayControls
-          session={session}
-          thinking={thinking}
-          canHint={game.canHint}
-          onNew={onNewGame}
-          onUndo={game.undo}
-          onRedo={game.redo}
-          onHint={() => void game.askHint()}
-        />
+        <MoveList moves={session.moves} pixels={pixels} />
 
-        <StatusLine session={session} thinking={thinking} engineError={game.engineError} />
-
-        {notice && <Notice message={notice.text} bad={notice.bad} />}
-
-        {game.hint && <p className="hint-said engine">{game.hint.text}</p>}
+        <aside className="play-side">
+          <SidePanel side={settings.side} onSide={settings.onSide} {...files} />
+          {game.hint && <p className="hint-said engine">{game.hint.text}</p>}
+        </aside>
       </div>
-
-      <aside className="sidebar">
-        <Sidebar {...settings} {...files} moves={session.moves} />
-      </aside>
-    </div>
+    </>
   )
 }
 
