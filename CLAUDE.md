@@ -6,12 +6,15 @@ an iPad Home Screen app (a PWA on Cloudflare Pages, like Conquest in `../Conques
 from one React, TypeScript and Vite code base. The code is copied from those two apps
 wherever they already do the job, so that a shared library can follow later.
 
-Current state: phase 3 (the sidebar and what is remembered) built 2026-09-12 and
-awaiting review. The sidebar carries difficulty, Play as and board size, all
-remembered with the game in progress, and the large board is whatever fits the screen
-it is on and draws whole squares. Nick ruled on 2026-09-12 that the large board need
-not be literally double, so the fit rule steps down until the squares land on whole
-device pixels; spec S2 carries the corrected rule and its numbers per display scale.
+Current state: phase 4 (the bar, the hint and the promotion picker) built 2026-09-12
+and awaiting review. The bar carries the engine's number and follows every move,
+holding its last value while the engine thinks; Hint draws a blue arrow and says the
+move; a pawn reaching the last rank asks which piece. Phases 0 to 3 passed their
+gates: the sidebar's three settings and the game in progress are all remembered, and
+the large board is whatever fits the screen it is on and draws whole squares (Nick
+ruled on 2026-09-12 that it need not be literally double, so the fit rule steps down
+until the squares land on whole device pixels; spec S2 carries the corrected rule and
+its numbers per display scale).
 
 ## Documents
 

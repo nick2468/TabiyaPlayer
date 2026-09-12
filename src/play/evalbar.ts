@@ -74,6 +74,35 @@ export function evalBarLayout(pawns: number, userColour: Colour): EvalBarLayout 
   return { whiteShare: evalShare(pawns), whiteAtBottom: userColour === 'white' }
 }
 
+/** Where the number goes on the bar, and which share it lands on. */
+export interface NumberPlacement {
+  /** The end of the bar it sits at. */
+  edge: 'top' | 'bottom'
+  /** True when it is drawn on White's share, and so in Black's colour. */
+  onWhite: boolean
+}
+
+/**
+ * Where to print the number (spec S7): inside the larger share, at that
+ * share's outer end.
+ *
+ * The larger share is the one with room for the number, and its outer end is
+ * the end of the bar rather than the line between the two colours, so the
+ * digits never sit across the join. Which end that is depends on the
+ * orientation as well as the score, because the user's colour is at the bottom
+ * whichever colour they play: White ahead reads at the bottom for a user
+ * playing White and at the top for a user playing Black.
+ *
+ * Here rather than in the component, because it is four cases and every one of
+ * them is easy to get backwards.
+ */
+export function numberPlacement(layout: EvalBarLayout): NumberPlacement {
+  const onWhite = layout.whiteShare >= 50
+  const whiteEnd = layout.whiteAtBottom ? 'bottom' : 'top'
+  const blackEnd = layout.whiteAtBottom ? 'top' : 'bottom'
+  return { edge: onWhite ? whiteEnd : blackEnd, onWhite }
+}
+
 /**
  * The evaluation to show for a position, which may not be its own.
  *

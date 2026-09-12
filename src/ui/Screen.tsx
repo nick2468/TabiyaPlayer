@@ -1,8 +1,12 @@
+import { useState } from 'react'
 import { squaresForSan } from '../model/moves'
-import { legalDests, sideToMove } from '../model/position'
-import type { PlayedMove } from '../play'
+import { isPromotion, legalDests, sideToMove } from '../model/position'
+import type { Shape } from '../model/types'
+import { shownEvaluation, type Hint, type PlayedMove } from '../play'
 import { Board } from './Board'
+import { EvalBar } from './EvalBar'
 import { PlayControls } from './PlayControls'
+import { PromotionPicker, type PromotionPiece } from './PromotionPicker'
 import { Sidebar, type SettingsProps } from './Sidebar'
 import { EngineError, StatusLine } from './StatusLine'
 import { usePlay } from './play-context'
@@ -11,7 +15,7 @@ import './play.css'
 
 /**
  * The one screen (spec 4.1): the board column, with the bar, the board, the
- * buttons and the status line, and beside it the sidebar.
+ * buttons, the status line and the hint sentence, and beside it the sidebar.
  *
  * Built from the provider's state and the settings handed down from `Shell`,
  * and nothing else. Until the first game exists there is nothing to show,
@@ -30,12 +34,30 @@ export function Screen({
   // conditionally and how big the board is drawn does not depend on there
   // being a game to draw on it.
   const pixels = useBoardPixels(settings.boardSize)
+  // A pawn move onto the last rank, waiting for the piece to promote to. Held
+  // here rather than in the provider because nothing about the game has
+  // happened yet: this is a question on the screen, and the answer to it is
+  // what makes it a move (spec 5.3).
+  const [pending, setPending] = useState<{ from: string; to: string } | null>(null)
 
   if (!session) return game.engineError ? <EngineError message={game.engineError} /> : null
 
   const fen = session.fen
-  // Locked while the engine thinks and once the game is over (spec 5.2).
-  const canMove = !thinking && !session.isFinished()
+  // Locked while the engine thinks, once the game is over (spec 5.2), and while
+  // the picker is open: that pawn is mid-move and a second move would strand it.
+  //
+  // The lock is also what puts a cancelled pawn back. The board draws the move
+  // before it reports it, and locking changes two of the props it is given, so
+  // the position is re-applied and the pawn returns to the square it came from.
+  // See the note on the board's own effect.
+  const canMove = !thinking && !session.isFinished() && pending === null
+
+  const choose = (piece: PromotionPiece) => {
+    if (!pending) return
+    const move = pending
+    setPending(null)
+    void game.play(move.from, move.to, piece)
+  }
 
   return (
     <div className="play-body">
@@ -43,8 +65,10 @@ export function Screen({
         {/* The bar and the board in one box, so the bar is stretched to the
             board's own height rather than given a height of its own. */}
         <div className="play-board">
-          {/* The bar's box, empty until phase 4 gives it an evaluation. */}
-          <div className="live-eval" aria-hidden="true" />
+          <EvalBar
+            evaluation={shownEvaluation(fen, session.moves, game.evaluations)}
+            userColour={session.userColour}
+          />
           <Board
             fen={fen}
             orientation={session.userColour}
@@ -52,23 +76,39 @@ export function Screen({
             movableColor={canMove ? session.userColour : undefined}
             dests={canMove ? legalDests(fen) : undefined}
             lastMove={squaresOf(session.moves.at(-1) ?? null)}
-            onMove={(from, to) => void game.play(from, to)}
+            shapes={hintShapes(game.hint, fen)}
+            onMove={(from, to) => {
+              // A promotion is not played here: it is held until the picker is
+              // answered, so the engine is never asked about a move the user
+              // has not finished making.
+              if (isPromotion(fen, from, to)) setPending({ from, to })
+              else void game.play(from, to)
+            }}
             size={pixels}
           />
+          {pending && (
+            <PromotionPicker
+              colour={session.userColour}
+              squareSize={pixels / 8}
+              onChoose={choose}
+              onCancel={() => setPending(null)}
+            />
+          )}
         </div>
 
         <PlayControls
           session={session}
           thinking={thinking}
-          // Phase 4 wires Hint; until then it stays disabled.
-          canHint={false}
+          canHint={game.canHint}
           onNew={onNewGame}
           onUndo={game.undo}
           onRedo={game.redo}
-          onHint={() => undefined}
+          onHint={() => void game.askHint()}
         />
 
         <StatusLine session={session} thinking={thinking} engineError={game.engineError} />
+
+        {game.hint && <p className="hint-said engine">{game.hint.text}</p>}
       </div>
 
       <aside className="sidebar">
@@ -86,4 +126,15 @@ function squaresOf(move: PlayedMove | null): [string, string] | undefined {
   if (!move) return undefined
   const squares = squaresForSan(move.fen, move.san)
   return squares ? [squares.from, squares.to] : undefined
+}
+
+/**
+ * Origin: London src/ui/Play.tsx hintShapes, adapted: the engine is the only source, so the arrow is always blue.
+ * The hint as an arrow on the board.
+ */
+function hintShapes(hint: Hint | null, fen: string): Shape[] {
+  if (!hint) return []
+  const squares = squaresForSan(fen, hint.san)
+  if (!squares) return []
+  return [{ orig: squares.from, dest: squares.to, brush: 'blue' }]
 }

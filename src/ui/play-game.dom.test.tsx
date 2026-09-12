@@ -4,6 +4,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { board, movesOnScreen, renderApp } from '../test/dom'
 import { fakeEngine } from '../test/fake-engine'
+import { heldEngine } from '../test/held-engine'
 import { scriptedEngine } from '../test/scripted-engine'
 import type { SearchResult } from '../engine'
 import { Shell } from './App'
@@ -140,17 +141,7 @@ describe('a game on screen', () => {
   it('says who is thinking and then Your move', async () => {
     // The reply waits until the test lets it go, so the status line can be
     // read while the engine is still thinking.
-    let release: () => void = () => undefined
-    const held = new Promise<void>((resolve) => {
-      release = resolve
-    })
-    const plain = fakeEngine()
-    const slow = fakeEngine({
-      search: async (fen: string, movetime: number): Promise<SearchResult> => {
-        await held
-        return plain.search(fen, movetime)
-      },
-    })
+    const { engine: slow, release } = heldEngine()
     const { user } = renderApp(() => slow)
     await startGame()
     await vi.waitFor(() => expect(status()).toBe('Your move'))

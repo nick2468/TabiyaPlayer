@@ -1,8 +1,18 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
-import { StockfishEngine, strengthProfile, type Engine } from '../engine'
+import { StockfishEngine, splitMove, strengthProfile, type Engine } from '../engine'
 import { sanForMove } from '../model/moves'
+import { positionKey, sideToMove } from '../model/position'
 import type { Colour } from '../model/types'
-import { PlaySession, type Evaluation, type Hint } from '../play'
+import {
+  ANALYSIS_MOVETIME,
+  HINT_MOVETIME,
+  PlaySession,
+  atAnalysisProfile,
+  engineHint,
+  evaluationOf,
+  type Evaluation,
+  type Hint,
+} from '../play'
 import { forgetGame, rememberGame } from '../storage/current-game'
 
 /**
@@ -34,16 +44,19 @@ export interface PlayGame {
   side: Colour | null
   thinking: boolean
   engineError: string | null
-  /** The bar's evaluations by position. Empty until phase 4 fills it. */
+  /** The bar's evaluations by position (spec section 7). */
   evaluations: Map<string, Evaluation>
-  /** The move being suggested, until something moves the board. Phase 4. */
+  /** The move being suggested, until something moves the board. */
   hint: Hint | null
   /** A game exists and has not ended. */
   inProgress: boolean
+  /** Whether Hint has anything to answer right now (spec section 8). */
+  canHint: boolean
   start: (options: StartOptions) => Promise<void>
   play: (from: string, to: string, promotion?: string) => Promise<void>
   undo: () => void
   redo: () => void
+  askHint: () => Promise<void>
   /** Changes the level from the engine's next move on (spec S6). */
   setLevel: (level: number) => Promise<void>
 }
@@ -85,6 +98,11 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
   const engineRef = useRef<Engine | null>(null)
   const sessionRef = useRef<PlaySession | null>(null)
   const setupRef = useRef<StartOptions | null>(null)
+  // The same map as the state above, read at the moment a search answers
+  // rather than at the moment the callback was built. Two evaluations in flight
+  // from one move would otherwise each start from the map their own render saw,
+  // and the second would write the first one out again.
+  const evaluationsRef = useRef<Map<string, Evaluation>>(new Map())
 
   // The worker goes when the app goes, and not before.
   //
@@ -142,11 +160,39 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
     return engineRef.current
   }, [createEngine])
 
+  /**
+   * Origin: London src/ui/play-context.tsx evaluate, adapted: the map holds an Evaluation, sideToMove is the model's, and there is no best move to keep.
+   * Evaluates a position for the bar, at the analysis profile (spec 6.3).
+   *
+   * A position already known is not searched again, which is what makes undo
+   * and redo free: every position they land on has been here before.
+   *
+   * The trainer also keeps the engine's move from this search, for a report
+   * that names a better move than the one played. There is no report here, so
+   * there is nothing to keep.
+   */
+  const evaluate = useCallback(async (running: Engine, fen: string, playing: number) => {
+    const key = positionKey(fen)
+    if (evaluationsRef.current.has(key)) return
+    const result = await atAnalysisProfile(running, playing, () =>
+      running.search(fen, ANALYSIS_MOVETIME),
+    )
+    const best = result.candidates[0]
+    if (!best) return
+    // The engine's score is from the side to move and the bar's number is from
+    // White's, so the side is read here, where it is still known.
+    const next = new Map(evaluationsRef.current)
+    next.set(key, evaluationOf(best.score, sideToMove(fen)))
+    evaluationsRef.current = next
+    setEvaluations(next)
+  }, [])
+
   const start = useCallback(
     async (options: StartOptions) => {
       setEngineError(null)
       setThinking(true)
       setHint(null)
+      evaluationsRef.current = new Map()
       setEvaluations(new Map())
       try {
         const profile = strengthProfile(options.level)
@@ -171,19 +217,26 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
         if (!fresh.userToMove && !fresh.isFinished()) await fresh.playEngine()
         rememberNow()
         refresh()
+        // The bar starts on the position the user is actually looking at, which
+        // is after the engine's opening move when they play Black. A game
+        // reopened from storage is evaluated at its final position only; the
+        // rest of its positions are behind it and nothing draws them.
+        await evaluate(running, fresh.fen, options.level)
+        refresh()
       } catch (error) {
         setEngineError(asMessage(error))
       } finally {
         setThinking(false)
       }
     },
-    [engine, refresh, rememberNow],
+    [engine, evaluate, refresh, rememberNow],
   )
 
   const play = useCallback(
     async (from: string, to: string, promotion?: string) => {
       const running = sessionRef.current
-      if (!running || thinking || running.isFinished()) return
+      const setup = setupRef.current
+      if (!running || !setup || thinking || running.isFinished()) return
       const san = sanForMove(running.fen, from, to, promotion)
       if (!san || !running.playUser(san)) return
       // A hint is about the position it was asked in, so it goes with it.
@@ -192,20 +245,24 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
       refresh()
       setThinking(true)
       try {
-        // Phase 4 brings the bar up to date here, before the engine is asked
-        // to move, so it answers the move just played rather than the reply.
+        // The bar is brought up to date before the engine is asked to move, so
+        // it answers the move that was just played rather than the reply.
+        const live = engineRef.current
+        if (live) await evaluate(live, running.fen, setup.level)
+        refresh()
         if (running.isFinished()) return
         await running.playEngine()
         rememberNow()
         refresh()
-        // Phase 4 evaluates the reply here.
+        if (live) await evaluate(live, running.fen, setup.level)
+        refresh()
       } catch (error) {
         setEngineError(asMessage(error))
       } finally {
         setThinking(false)
       }
     },
-    [refresh, rememberNow, thinking],
+    [evaluate, refresh, rememberNow, thinking],
   )
 
   /**
@@ -231,6 +288,47 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
       refresh()
     }
   }, [refresh, rememberNow, thinking])
+
+  /**
+   * Origin: London src/ui/play-context.tsx askHint, adapted: the engine half only, and the SAN comes from sanForMove.
+   * What to play here (spec section 8).
+   *
+   * The trainer answers from its authored lines first and only searches once
+   * they run out. This app has none, so every hint is a search, and it goes
+   * through the same one-at-a-time queue as everything else with the
+   * playing profile restored in a `finally`, exactly as `evaluate` does. A hint
+   * that left the engine at level 8 would quietly change the game it was meant
+   * to help with.
+   *
+   * Longer than an evaluation, because somebody is waiting on this one.
+   */
+  const askHint = useCallback(async () => {
+    const running = sessionRef.current
+    const setup = setupRef.current
+    if (!running || !setup || thinking) return
+    if (!running.userToMove || running.isFinished()) return
+
+    setThinking(true)
+    try {
+      const live = await engine()
+      const result = await atAnalysisProfile(live, setup.level, () =>
+        live.search(running.fen, HINT_MOVETIME),
+      )
+      const best = result.candidates[0]?.move ?? result.bestMove
+      if (!best) return
+      // The engine speaks coordinates and the sentence names a move, so the
+      // two squares go through the one place that turns them into SAN.
+      const { from, to, promotion } = splitMove(best)
+      const san = sanForMove(running.fen, from, to, promotion)
+      if (!san) return
+      setHint(engineHint(san))
+      refresh()
+    } catch (error) {
+      setEngineError(asMessage(error))
+    } finally {
+      setThinking(false)
+    }
+  }, [engine, refresh, thinking])
 
   /**
    * A new level, heard by the engine's next move (spec S6).
@@ -283,10 +381,15 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
     evaluations,
     hint,
     inProgress: session !== null && !session.isFinished(),
+    // Only on the user's own move, in a game that is still going, with nothing
+    // in flight: a hint about a position the engine is about to change is an
+    // arrow pointing at the wrong board (spec section 8).
+    canHint: session !== null && !thinking && session.userToMove && !session.isFinished(),
     start,
     play,
     undo,
     redo,
+    askHint,
     setLevel,
   }
 }

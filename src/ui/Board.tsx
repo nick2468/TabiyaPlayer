@@ -95,6 +95,17 @@ export function Board({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // Chessground moves the piece itself and tells the app afterwards, so a move
+  // the app declines would leave a piece where the game never put it. This is
+  // what puts it back, and it is worth knowing that it does: `set` re-applies
+  // the fen every time it runs, so any prop here changing redraws the position.
+  //
+  // The one move the app declines is a pawn reaching the last rank, which waits
+  // for the promotion picker (spec 5.3). Opening the picker locks the board, so
+  // `movableColor` and `dests` both change and the pawn goes back to where it
+  // came from. Measured in the browser: the pawn is on the last rank when
+  // chessground reports the move and back on its own square by the time the
+  // picker is on screen.
   useEffect(() => {
     // Dev-only handle on the board API, so a browser check can read the state
     // chessground actually holds (turn, movable colour, dests) rather than guess.

@@ -651,11 +651,12 @@ SimpleChess/
       types.ts                    London, cut to Colour, Brush, Shape and colourName
     play/
       session.ts                  London, adapted: no book, setProfile, promotion
-      evalbar.ts                  London, adapted: the evaluation map holds score and pawns
+      evalbar.ts                  London, adapted: an evaluation is { pawns, text }, and the number has a place
       outcome.ts                  London, identical
+      analysis.ts                 London's analysis profile and movetimes, plus atAnalysisProfile
       game-pgn.ts                 London, adapted: seven tags, one closing comment
       load-pgn.ts                 new: main line, side and level from a parsed file
-      hint.ts                     London, cut to the engine hint
+      hint.ts                     London, cut to the engine hint and its one sentence
       index.ts
     storage/
       prefs.ts                    London's shape, this app's keys
@@ -668,13 +669,14 @@ SimpleChess/
       board.css                   London, identical
       board-size.ts               London, plus the large size and the fit rule
       use-board-pixels.ts         new: measures the viewport and the display scale for the fit rule
-      theme.ts                    London, identical but for the key
+      theme.ts                    London, adapted: the key, and the storage goes through prefs.ts
       play-context.tsx            London, adapted: no book, no report, no record
       Screen.tsx                  the board column and the sidebar
       PlayControls.tsx            London's PlayControls, row one only
       MoveList.tsx                London's MoveList, record only
       EvalBar.tsx                 London's LiveEvalBar, with the number
-      PromotionPicker.tsx         new
+      PromotionPicker.tsx         new: the four pieces, drawn by the board's own stylesheet
+      chessground-piece.d.ts      new: the <piece> element, for TypeScript
       Sidebar.tsx                 new: the settings, the file buttons
       UpdateBanner.tsx, useUpdate.ts, updates.ts   Conquest, adapted wording
       app.css, play.css           London, cut to what this screen uses
@@ -682,8 +684,10 @@ SimpleChess/
       scenes.ts                   the dev-only scene setup (section 15)
     test/
       fake-engine.ts, dom-setup.ts   London, identical
-      board-stub.tsx, dom.tsx        London, adapted (the stub reports its orientation)
+      board-stub.tsx, dom.tsx        London, adapted (the stub reports its orientation; dom.tsx can seed a game)
       scripted-engine.ts             new: an engine that plays a script, for a mate in a test
+      by-profile.ts                  new: a fake that answers moves and analysis differently
+      held-engine.ts                 new: a fake whose move waits, for reading the screen mid-move
   src-tauri/                      London, names changed, capabilities cut
   .claude/launch.json             simple-chess-dev on 5185, simple-chess-preview on 5186
 ```

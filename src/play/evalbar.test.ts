@@ -5,6 +5,7 @@ import {
   evalShare,
   evalText,
   evaluationOf,
+  numberPlacement,
   shownEvaluation,
   type Evaluation,
 } from './evalbar'
@@ -114,5 +115,34 @@ describe('what the bar shows while the engine thinks', () => {
 
   it('shows nothing at all when nothing has been evaluated', () => {
     expect(shownEvaluation(afterE4, moves, new Map())).toBeUndefined()
+  })
+})
+
+describe('where the number goes', () => {
+  /**
+   * Four cases, because two things decide it: which share is larger, and
+   * which way up the bar is. The number belongs in the larger share, at the
+   * end of the bar rather than at the join, so it is never printed across the
+   * line between the two colours.
+   */
+  it('sits at the bottom for a user playing White who is ahead', () => {
+    expect(numberPlacement(evalBarLayout(1, 'white'))).toEqual({ edge: 'bottom', onWhite: true })
+  })
+
+  it('sits at the top for a user playing White who is behind', () => {
+    expect(numberPlacement(evalBarLayout(-1, 'white'))).toEqual({ edge: 'top', onWhite: false })
+  })
+
+  it('sits at the top for a user playing Black when White is ahead', () => {
+    expect(numberPlacement(evalBarLayout(1, 'black'))).toEqual({ edge: 'top', onWhite: true })
+  })
+
+  it('sits at the bottom for a user playing Black who is ahead', () => {
+    expect(numberPlacement(evalBarLayout(-1, 'black'))).toEqual({ edge: 'bottom', onWhite: false })
+  })
+
+  /** A level position is half White's, so the number goes on White's share. */
+  it('counts an even position as part of the white share', () => {
+    expect(numberPlacement(evalBarLayout(0, 'white'))).toEqual({ edge: 'bottom', onWhite: true })
   })
 })

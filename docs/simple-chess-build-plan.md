@@ -325,40 +325,40 @@ Read first: `../London/src/ui/Play.tsx` (`LiveEvalBar`, `hintShapes`),
 `analysisProfile`), `src/play/evalbar.test.ts`, `src/model/position.ts`
 (`isPromotion`), chessground's `movable.events.after` and `set({ fen })`.
 
-- [ ] 4.1 The provider's `evaluate`, copied: analysis profile, 150 ms, restore in
+- [x] 4.1 The provider's `evaluate`, copied: analysis profile, 150 ms, restore in
       `finally`, the map keyed by `positionKey`, a known position not searched
       again. The map value is `{ pawns, score }` (phase 1.5). `play` calls it before
       and after the engine's reply, as the trainer does.
-- [ ] 4.2 `src/ui/EvalBar.tsx`: the trainer's `LiveEvalBar` with the number (spec
+- [x] 4.2 `src/ui/EvalBar.tsx`: the trainer's `LiveEvalBar` with the number (spec
       S7). The number is a `<span class="live-eval-number">` placed at the outer end
       of the larger share: `top: 2px` when the larger share is at the top, else
       `bottom: 2px`; colour the other piece colour; 10 px bold, tabular figures. The
       accessible name is "Evaluation: +0.4", or "Evaluation: the engine has not
       looked yet" before the first value. CSS in `play.css`.
-- [ ] 4.3 `src/play/hint.ts`: `engineHint(san)` returning `{ san, text: "The engine
+- [x] 4.3 `src/play/hint.ts`: `engineHint(san)` returning `{ san, text: "The engine
       suggests Nf3.", source: 'engine' }`. The provider's `askHint`: the trainer's
       engine half only (500 ms at the analysis profile, restore in `finally`), clears
       on the next move, undo, redo, New game and Load game. The arrow is the
       trainer's `hintShapes` in blue. The sentence renders under the status line in
       the trainer's `.hint-said.engine` style.
-- [ ] 4.4 `src/ui/PromotionPicker.tsx` (spec 5.3). The board's `onMove` checks
+- [x] 4.4 `src/ui/PromotionPicker.tsx` (spec 5.3). The board's `onMove` checks
       `isPromotion`; when true it does NOT play, it stores the pending move and shows
       the picker over the board: four buttons, each a `piece` element of the
       chessground piece set (`cburnett`) in the promoting colour, laid over the
       destination file. Choosing calls `play(from, to, piece)`. Clicking outside, or
       Escape, cancels: the board is re-set to the session's `fen` so the pawn goes
       back. `sanForMove` already takes the promotion letter.
-- [ ] 4.5 DOM tests: the promotion is not played until chosen and cancel puts the
+- [x] 4.5 DOM tests: the promotion is not played until chosen and cancel puts the
       pawn back (spec S15 item 2; the stub gets one button per legal move including
       promotions, so the test clicks `move e8=Q`-style buttons through the same
       `onMove` seam with the promotion letter passed); Hint draws `bluee2e4`-style
       shapes and says the sentence, is disabled while thinking and when the game is
       over; New game clears the hint (item 10, complete).
-- [ ] 4.6 Drive in the pane: a game where the bar visibly moves, one hint, one
+- [x] 4.6 Drive in the pane: a game where the bar visibly moves, one hint, one
       promotion each way (chosen and cancelled), and a mate in the bar's number
       (`M1` or similar). Screenshots of the bar at both sizes and both themes, and
       the picker open. Record the probe: bar, board and `cg-board` heights equal.
-- [ ] 4.7 Reuse review and commit.
+- [x] 4.7 Reuse review and commit.
 
 **Done when:** the bar reads right after every move and the picker works both ways.
 
@@ -543,7 +543,7 @@ did it that way too.
 | 1 - the engine and the model | **Complete** 2026-09-11, gate passed the same day. 90 tests green in 1.8 s. |
 | 2 - the board, the session and a playable game | **Complete** 2026-09-12, gate passed the same day. 111 tests green; a game plays in the pane. |
 | 3 - the sidebar and what is remembered | **Complete** 2026-09-12, gate passed the same day. 162 tests green; the settings and the game survive a reload; the large board is whatever fits and draws whole squares (808, 624 and 728 at scale 1; 800, 624 and 720 at 1.5). |
-| 4 - the bar, the hint and the promotion picker | Not started |
+| 4 - the bar, the hint and the promotion picker | **Built** 2026-09-12, awaiting review. 183 tests green and 2 skipped in 4.1 s; the bar carries the engine's number and follows every move, Hint draws and says one, and a pawn on the last rank asks which piece. |
 | 5 - save game and load game | Not started |
 | 6 - scenes, the probe and the layout pass | Not started |
 | 7 - the iPad Home Screen app | Not started |
@@ -1196,3 +1196,178 @@ promise. `fitBoardSize` takes `devicePixelRatio` as a fifth argument with a defa
   playing level uses (level 3 is 150 ms but is not level 8).
 
 - [x] **Review gate 3 passed** (2026-09-12)
+
+### Phase 4 - builder notes (2026-09-12)
+
+The session was compacted before this phase. Every document the chip named was read
+fresh before anything was touched.
+
+**Measured.**
+
+- `npx vitest run`: 20 files, 183 tests passed and 2 skipped, 4.1 seconds warm. By
+  project: `string` 14 files, 148 passed, 2 skipped (the two Tauri version tests);
+  `dom` 6 files, 33 passed. `tsc -b` clean, `npx oxlint` silent, `npm run build`
+  clean (JavaScript 306.38 kB, 97.66 kB gzipped; CSS 23.13 kB, 6.50 kB gzipped).
+- **Red first, five times.** Each new rule was shown failing before it was trusted.
+  Taking the `isPromotion` check out of the board's `onMove` turns all three
+  promotion tests red ("expected [] to deeply equal [ 'Queen', 'Rook', 'Bishop',
+  'Knight' ]"). Fixing `numberPlacement`'s larger share to White turns two placement
+  tests red. Loosening `canHint` to "there is a session" turns the two disabled
+  cases red. Evaluating from White's side rather than the side to move turns the
+  bar's sign test red ("expected 'Evaluation: +0.4' to be 'Evaluation: -0.4'").
+  Taking the profile split out of the fake engine turns SIX tests red across three
+  files, the checkmate test among them, which is gate 3's finding 2 proved rather
+  than assumed. Replacing `atAnalysisProfile`'s `finally` with a plain call turns
+  the restore test red.
+- **The bar, live, with the real engine.** The opening position reads +0.5 and the
+  white share is 57.9324%, which is `evalShare` of exactly 0.48 pawns: the share and
+  the number are the same evaluation, not two roundings of it. After 1.e4 e6 it is
+  +0.4 at 56.7911%. After 3.Qxf7+ Kxf7 it is -5.8 at 2.03656%, which inverts to
+  -5.839 pawns, and the number has moved to the TOP of the bar and to the class
+  `on-black`. So the sign, the end and the colour all follow the position.
+- **A mate reads as a mate.** Seeded at 1.e4 e5 2.Bc4 Nc6 3.Qh5 Nf6, the bar says
+  "Evaluation: M1", prints `M1`, and draws White's share at 100%.
+- **The bar holds its value while the engine thinks**, caught as a sequence rather
+  than a claim. A `MutationObserver` on the board column recorded, in order:
+  "Your move | -6.3 | hint=false"; "Black is thinking... | -6.3 | hint=true";
+  "Black is thinking... | -7.8"; "Black is thinking... | -7.5"; "Your move | -7.5 |
+  hint=false". That is the whole of spec 5.2's order in one trace: the bar keeps the
+  old number while the engine starts, is brought up to date for the move just played
+  BEFORE the reply lands, and updates again after it.
+- **Hint.** Pressed on the user's move it answered "The engine suggests exd5." with
+  one auto-shape, `bluee4d5`. The sentence sits at x 68, the same left edge as the
+  status line and the board. Playing a move took both away: no sentence, no shapes.
+- **The picker.** Four buttons named Queen, Rook, Bishop and Knight, holding
+  `white queen`, `white rook`, `white bishop` and `white knight`. The box is 210 by
+  54 over a 416 board, which is four 52px squares and the border. Cancelled with
+  Escape the game still had its 8 moves and the board was unlocked again; opened a
+  second time and answered with Rook it played `axb8=R`, and the engine replied
+  `Rxb8`.
+- **1280 by 1000, all four combinations**, bar, `.board` and `cg-board` ending on the
+  same pixel every time, both differences 0, `scrollWidth` 1280 against 1280:
+  small dark 416, small light 416, large dark 808, large light 808 (the pane reports
+  a display scale of 1 after a navigation, and 808 is right for 1). Earlier in the
+  same drive, before a reload, the scale was 1.5 and Large gave 800 with squares of
+  exactly 150 device pixels, which is gate 3's number. The number's colour is
+  rgb(236, 233, 226) on the black share and rgb(42, 44, 48) on the white one, the
+  two piece colours, and it is the same in both themes, which is what spec 4.5 asks.
+- **820 by 1180 upright**, after a dispatched `resize`: board 728, both differences
+  0, the sidebar under the column at x 24, and the hint sentence 464 wide running 68
+  to 532. `scrollWidth` 805 against `innerWidth` 820, so no sideways scroll. The
+  sentence does not lengthen the page at the large board either: `scrollHeight` was
+  1000 against a 1000px viewport before the hint and 1000 after it.
+- `git -C ../London status` and `git -C ../Conquest status` show the same two
+  untracked files gate 3 saw, both dated before today.
+- **The pane's storage was cleared, the viewport reset and the dev server stopped.**
+
+**Two faults the pane found, both fixed.**
+
+1. **The picker was 22px left of the board's middle.** It is positioned inside
+   `.play-board`, and that box is the bar, the gap and the board, so its centre is
+   half the 44px inset to the left of the board's. Measured at [-22, 0] from the
+   board's centre. It now offsets by `calc(50% + var(--board-inset) / 2)`, which
+   measured [0, 0]. The inset already had one home and this is a second reader of it
+   rather than a second number.
+2. **The four pieces did not draw at all: the picker was an empty box.** The
+   background images were loaded and the `cg-wrap` ancestor was right; the elements
+   were 0 by 0. `piece` is not an HTML element, so it is `display: inline` until told
+   otherwise, and width and height do nothing to an inline box. Chessground never
+   meets this because on a board every piece is absolutely positioned, which makes a
+   box of it. One `display: block` in the override.
+
+**A finding that changed the chip's design, with the measurement.**
+
+The chip asks for a `revision` prop on the board, bumped on cancel, because
+chessground has already drawn the pawn on the last rank by the time it reports the
+move and the fen prop has not changed. That is all true, and the prop still does
+nothing, because the pawn is already back before the user has chosen.
+
+Driven in the pane with `__cg.move` followed by the move seam, which is exactly what
+a real drag does: chessground held `a7: null, b8: white pawn`; by the time the picker
+was on screen it held `a7: white pawn, b8: black knight` again. Opening the picker
+locks the board, `movableColor` and `dests` both change, and chessground's `set`
+re-applies the fen whenever it runs. The lock is required by spec 5.2 and 5.3 and
+happens on every promotion, so the redraw is entailed rather than lucky.
+
+So `revision` is gone, and the comment that replaces it is the real fix: the board's
+`set` effect and the screen's `canMove` both now say that locking is what puts the
+pawn back, which was the subtle thing worth writing down. Kept, it would have been
+exactly the dead code gate 2 ruled against, and a prop that can never fire is a prop
+no test can hold: a mutation removing it from the board's dependency list changed
+nothing.
+
+**A consequence a person can see, for the orchestrator.** Because of the above, the
+pawn returns to its own square while the picker is open, rather than sitting on the
+last rank as it does on lichess. Spec 5.3 does not say which, and it follows from the
+lock the spec does require, so it was not treated as a choice. If Nick wants the pawn
+to stay, the picker would have to stop locking the board and something else would
+have to put the pawn back, which is when `revision` comes back.
+
+**Decided (code shape).**
+
+- **`sanForMove` names the hint's move, not a second `Chess`.** The chip writes
+  `new Chess(fen).move(splitMove(best)).san`, which would be a second place turning a
+  UCI move into SAN and a chess.js import in `src/ui`. `splitMove` and `sanForMove`
+  are both already the single home for their half (CLAUDE.md), so the hint uses them.
+- **`atAnalysisProfile` in `analysis.ts`.** The reuse review found the shape the chip
+  predicted: "set the analysis profile, search, restore in a `finally`" in both
+  `evaluate` and `askHint`. It is four lines, and the failure it guards is silent
+  (an opponent left at level 8 for the rest of the game), so it has one home with a
+  test that throws inside it and checks the level came back.
+- **`engineByProfile` in `src/test/`.** Gate 3's finding 2 needed the scripted engine
+  to ignore the bar's searches. Two more fakes wanted the same split: a held engine,
+  so a test can read the screen mid-move without holding the evaluation that move
+  waits on, and a suggesting engine, so a hint can be pinned to a move that would be
+  illegal for the side replying. Three copies of one idea, so it has one home, and
+  the home is the seam the shipped code uses: `isAnalysisProfile`.
+- **`heldEngine` replaced the inline held promise** in the status test, which now had
+  to let evaluations through.
+- **The picker's own box carries `cg-wrap`** (rather than a wrapper around it), and
+  `play.css` puts the geometry back with `.promotion.cg-wrap piece`, both classes so
+  it outranks the rule it corrects whatever order the stylesheets land in.
+- **Cancel listens on the document, for `pointerdown` and Escape.** Spec 5.3 says
+  clicking anywhere else cancels, and anywhere else means the page rather than the
+  board: a user changing their mind reaches for the nearest empty space.
+  `pointerdown` rather than `click`, so the press that dismisses the picker does not
+  also press whatever is under it.
+- **`chessground-piece.d.ts`** declares the `<piece>` element for TypeScript.
+  Chessground makes these itself and ships no JSX type for them.
+- **`seedGame` writes through `rememberGame`**, so a test cannot seed a record shape
+  the app would not have written.
+
+**Copies.**
+
+- **New, from the trainer:** `src/play/analysis.ts` (`SCAN_MOVETIME` as
+  `ANALYSIS_MOVETIME`, `HINT_MOVETIME` and `analysisProfile`, their text kept),
+  `src/ui/EvalBar.tsx` (`LiveEvalBar` with the number added), and `hintShapes` and
+  `engineHint`, both cut to the engine case.
+- **`Board.tsx` is unchanged from phase 3** and still differs from the trainer's by
+  the size effect and its comments only.
+- **`board-stub.tsx` is unchanged from phase 3**, the orientation attribute only.
+- No new or adapted file says "trainee", "student", "repertoire", "course" or
+  "book". Two comments explaining what the trainer's hint says were reworded to
+  "authored lines" for that reason. No em dashes under `src/`.
+
+**Asked of Nick.** Nothing. Everything a person can see this phase is either in the
+spec or follows from it; the one consequence that is neither is written up above for
+the orchestrator rather than guessed at.
+
+**Reuse review.** `analysisProfile()` is now set in exactly one place,
+`atAnalysisProfile`, so no caller can set it and forget to put the level back.
+`sideToMove` is still the only thing that reads a side out of a FEN: the only
+`fen.split` in the app is in `position.ts`. `localStorage` is touched only in
+`src/storage` and in tests, `theme.ts` having moved to the helpers this phase. No
+pixel number is written in a `.ts` or `.tsx` outside `board-size.ts`; one appears in
+a `Board.tsx` comment describing the fault it fixes. No colour is written anywhere
+but `index.css`: the bar's number reaches its two piece colours through classes. A
+stylesheet sweep for a declaration repeated in one rule finds nothing.
+
+**Left.**
+
+- Save game and Load game stay disabled, and the hint has nothing to clear on Load
+  yet. Spec section 8 says the hint goes on Load game; phase 5 adds the call beside
+  the load it belongs to.
+- A reopened game is evaluated at its final position only, as the chip says. The
+  positions behind it have no number, so undoing into them shows the last number
+  known rather than their own, which is `shownEvaluation` working as written. Phase 5
+  brings the full scan for loaded files and could cover this too if it is worth it.

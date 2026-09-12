@@ -1,7 +1,9 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import type { Colour } from '../model/types'
 import { Shell } from '../ui/App'
 import { PlayProvider, type CreateEngine } from '../ui/play-context'
+import { rememberGame } from '../storage/current-game'
 import { fakeEngine } from './fake-engine'
 
 /**
@@ -24,6 +26,21 @@ export function renderApp(createEngine: CreateEngine = () => fakeEngine()) {
     </PlayProvider>,
   )
   return { user }
+}
+
+/**
+ * Puts a game in storage, so the next `renderApp` opens on that position.
+ *
+ * The app reopens on the game it was closed on (spec 10), and that is the one
+ * way a test can start from a position rather than from the first move. A
+ * promotion is eight moves in; playing them through the board would make the
+ * test about those eight moves instead of about the picker.
+ *
+ * It writes the real record through the real writer, so a test cannot seed a
+ * shape the app would not have written itself.
+ */
+export function seedGame(sans: string[], side: Colour = 'white', level = 4): void {
+  rememberGame({ version: 1, sans, side, level })
 }
 
 /** The moves in the Play screen's move list, in order. */
