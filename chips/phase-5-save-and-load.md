@@ -38,10 +38,9 @@ it and never change it.
    later. `scanGame` is NOT copied.
 2. **The hint goes on Load game.** `start` already clears it, and Load goes through
    `start`, so nothing new is needed; say in the notes that you checked.
-3. **Nick reported the bar as solid black on his machine** after phase 4, which the
-   pane could not reproduce (58 percent white with the number at the start position,
-   in both themes). If you learn anything about it while driving, record it; do not
-   change the bar's code for it without a reproduction.
+3. **Nick briefly saw the bar as solid black after phase 4** and then saw it right;
+   it was a page served from before phase 4. Nothing to do, but if the bar ever
+   shows no number and no white share, a stale page is the first suspect.
 
 ## Settled decisions you build on
 

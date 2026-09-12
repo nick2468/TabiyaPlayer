@@ -1414,7 +1414,7 @@ stylesheet sweep for a declaration repeated in one rule finds nothing.
   solid black box with no number is exactly the phase 2 and 3 placeholder, and my
   dev server started on 5185 during this gate, which `--strictPort` would have
   refused if Nick's own had been running there. So a page served from before commit
-  `6762176` is the first suspect. Awaiting his answer on the address, the browser
-  and whether a number shows; taken into the phase 5 chip as a watch item.
+  `6762176` is the first suspect. **Closed the same sitting:** Nick looked again
+  and reported it fine. A stale page, as suspected. Nothing to carry forward.
 
 - [x] **Review gate 4 passed** (2026-09-12)
