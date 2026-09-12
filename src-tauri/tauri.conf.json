@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Simple Chess",
+  "version": "0.1.0",
+  "identifier": "com.nick.simple-chess",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:5185",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "create": false,
+        "title": "Simple Chess",
+        "width": 1280,
+        "height": 1000,
+        "minWidth": 960,
+        "minHeight": 720,
+        "resizable": true,
+        "center": true,
+        "label": "main"
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "plugins": {
+    "fs": {
+      "requireLiteralLeadingDot": false
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "nsis"
+    ],
+    "icon": [
+      "icons/icon.ico"
+    ],
+    "shortDescription": "A simple chess game against Stockfish",
+    "longDescription": "Play chess against Stockfish on one screen, at eight levels, with the engine's evaluation on a bar, a hint when you want one, and the game in progress remembered.",
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser",
+        "installerHooks": "installer-hooks.nsh"
+      }
+    }
+  }
+}

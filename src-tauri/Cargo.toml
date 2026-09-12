@@ -1,0 +1,30 @@
+# Origin: London src-tauri/Cargo.toml, adapted: the package name, the lib name and the description.
+[package]
+name = "simple-chess"
+version = "0.1.0"
+description = "A simple chess game against Stockfish"
+authors = ["Nick"]
+edition = "2021"
+rust-version = "1.77.2"
+
+[lib]
+name = "simple_chess_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+# generate_context! expands to code that names these at the crate root.
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tauri = { version = "2", features = [] }
+tauri-plugin-fs = "2"
+tauri-plugin-dialog = "2"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true

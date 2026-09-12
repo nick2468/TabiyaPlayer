@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 
 /**
- * Origin: London src/version.test.ts, identical but for the node types line and the two Tauri tests, skipped until phase 8.
+ * Origin: London src/version.test.ts, identical but for the node types line (the trainer's file needs it too).
  * One version number, in four places.
  *
  * `package.json` is the source: Vite reads it at build time and substitutes it
@@ -29,14 +29,12 @@ describe('the version', () => {
     expect(declared).toMatch(/^\d+\.\d+\.\d+$/)
   })
 
-  // Phase 8 adds the file and unskips this.
-  it.skip('is the same in tauri.conf.json, which the installer reads', () => {
+  it('is the same in tauri.conf.json, which the installer reads', () => {
     const config = JSON.parse(read('src-tauri/tauri.conf.json')) as { version: string }
     expect(config.version).toBe(declared)
   })
 
-  // Phase 8 adds the file and unskips this.
-  it.skip('is the same in Cargo.toml, which the executable carries', () => {
+  it('is the same in Cargo.toml, which the executable carries', () => {
     // The first version line in the file is the package's own.
     const found = read('src-tauri/Cargo.toml').match(/^version = "(.+)"$/m)
     expect(found?.[1]).toBe(declared)

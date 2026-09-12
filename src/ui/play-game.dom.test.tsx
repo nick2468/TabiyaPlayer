@@ -176,6 +176,26 @@ describe('a game on screen', () => {
     // Locked: the stub offers no moves once the game is over.
     expect(screen.queryAllByRole('button', { name: /^move / })).toEqual([])
   })
+
+  it('New game clears the outcome and unlocks the board', async () => {
+    // S15 item 10's third half. The outcome belongs to the game, so a New game
+    // that carried the old moves into the fresh session would carry the
+    // checkmate with them and leave the board locked with nothing to press.
+    const { user } = renderApp(() => scriptedEngine(['e7e5', 'b8c6', 'g8f6']))
+    await startGame()
+
+    for (const [index, san] of ['e4', 'Qh5', 'Bc4'].entries()) {
+      await user.click(await screen.findByRole('button', { name: `move ${san}` }))
+      await vi.waitFor(() => expect(movesOnScreen()).toHaveLength((index + 1) * 2))
+    }
+    await user.click(await screen.findByRole('button', { name: 'move Qxf7#' }))
+    await vi.waitFor(() => expect(status()).toBe('You won by checkmate'))
+
+    await user.click(screen.getByRole('button', { name: 'New game' }))
+    await vi.waitFor(() => expect(status()).toBe('Your move'))
+    expect(movesOnScreen()).toEqual([])
+    expect(await screen.findByRole('button', { name: 'move e4' })).toBeTruthy()
+  })
 })
 
 describe('the engine and the provider', () => {

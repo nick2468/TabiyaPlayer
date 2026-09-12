@@ -125,6 +125,19 @@ describe('Hint', () => {
     expect(board().shapes).toEqual(['blueg1f3'])
   })
 
+  it('goes when a new game starts', async () => {
+    // S15 item 10: New game clears the hint. The hint is about a position, and
+    // New game leaves that position behind.
+    const { user } = renderApp(() => suggesting('g1f3'))
+    await screen.findByTestId('board')
+    await user.click(hintButton())
+    await vi.waitFor(() => expect(hintSaid()).toBe('The engine suggests Nf3.'))
+
+    await user.click(screen.getByRole('button', { name: 'New game' }))
+    await vi.waitFor(() => expect(hintSaid()).toBe(''))
+    expect(board().shapes).toEqual([])
+  })
+
   it('goes when a move is played', async () => {
     const { user } = renderApp(() => suggesting('g1f3'))
     await screen.findByTestId('board')
