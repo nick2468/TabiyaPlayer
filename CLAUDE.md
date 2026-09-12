@@ -6,15 +6,18 @@ an iPad Home Screen app (a PWA on Cloudflare Pages, like Conquest in `../Conques
 from one React, TypeScript and Vite code base. The code is copied from those two apps
 wherever they already do the job, so that a shared library can follow later.
 
-Current state: phase 4 (the bar, the hint and the promotion picker) built 2026-09-12
-and awaiting review. The bar carries the engine's number and follows every move,
-holding its last value while the engine thinks; Hint draws a blue arrow and says the
-move; a pawn reaching the last rank asks which piece. Phases 0 to 3 passed their
-gates: the sidebar's three settings and the game in progress are all remembered, and
-the large board is whatever fits the screen it is on and draws whole squares (Nick
-ruled on 2026-09-12 that it need not be literally double, so the fit rule steps down
-until the squares land on whole device pixels; spec S2 carries the corrected rule and
-its numbers per display scale).
+Current state: phase 5 (save game and load game) built 2026-09-12 and awaiting
+review. A game leaves the app as the PGN file of spec 9.1 and comes back with its
+moves, side and level; a file from elsewhere loads its main line; a bad one is
+refused and the game on the board is untouched. Undo and redo now fetch the number
+for a position they land on when it has none, and go back through a game that
+arrived whole. Phases 0 to 4 passed their gates: the bar carries the engine's number
+and Hint draws and says a move, a pawn on the last rank asks which piece, the
+settings and the game in progress are remembered, and the large board is whatever
+fits the screen it is on and draws whole squares (Nick ruled on 2026-09-12 that it
+need not be literally double, so the fit rule steps down until the squares land on
+whole device pixels; spec S2 carries the corrected rule and its numbers per display
+scale).
 
 ## Documents
 
@@ -69,9 +72,13 @@ its numbers per display scale).
 - One implementation per algorithm. The shared homes are the copied ones and must
   stay single: `legalDests` and `sideToMove` (`position.ts`); `squaresForSan`,
   `sanForMove`, `isPromotion` (board moves to chess moves); `Movetext` and `pgnTag`
-  (writing PGN); `parsePgn` (reading it); `outcomeOf` (every outcome sentence);
-  `evalShare` and `evalText` (the bar); `levelName` (naming a level); the `read`,
-  `write`, `readOneOf` and `useRemembered` helpers in `prefs.ts` (every setting).
+  (writing PGN); `parsePgn` (reading it); `gameToPgn` (a game as a file) and
+  `loadPgn` (a file as a game); `outcomeOf` (every outcome sentence); `evalShare`
+  and `evalText` (the bar); `levelName` (naming a level); `levelOrNull` in
+  `play/level.ts` (a level arriving from a setting, a record or a file); `asMessage`
+  in `ui/message.ts` (something thrown, as a sentence); `Notice` (every message
+  under the board); the `read`, `write`, `readOneOf` and `useRemembered` helpers in
+  `prefs.ts` (every setting).
   Never fork a second copy, and give any new repeated snippet a single home the
   moment it appears twice.
 - Copied files are byte-identical to their origin plus one `Origin:` line; adapted

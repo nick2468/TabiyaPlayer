@@ -237,14 +237,22 @@ repertoires never need anything else. A game player does. Nick ruled it (Q10).
 
 ### 5.4 Undo and redo
 
-Copied from the trainer's `PlaySession`, unchanged in meaning:
+Copied from the trainer's `PlaySession`, unchanged in meaning apart from the floor:
 
 - Undo takes the game back to the last position where it was the user's move. In the
   ordinary case that is the engine's reply and the user's move before it. When the
   game has just ended on the user's own move, it is that one move.
 - Redo puts back what undo took off, up to the user's next turn.
-- Neither asks the engine anything: every position they land on has already been
-  evaluated, so the bar follows for free.
+- Undo goes back through every move, including the moves a game arrived with. A
+  game from storage or from a file is the game, not a floor under it, which is the
+  one way this differs from the trainer: there the moves a session is given are an
+  authored line an exercise is set up on. (Corrected in phase 5. The floor was
+  copied in phase 2 and made Undo do nothing at all on a reopened game, which
+  contradicts 9.2's "undo along it".)
+- Neither waits for the engine. A position played through has already been
+  evaluated, so the bar follows for free; a position from a game that arrived
+  whole has not, and undo and redo fetch its number behind them without a
+  thinking state (9.2, ruled at gate 4).
 - A new move after an undo clears the redo stack.
 - Both are disabled while the engine thinks, and when there is nothing to do.
 - Undo clears any outcome and works it out again, so a game undone out of a
@@ -654,19 +662,21 @@ SimpleChess/
       pgn.ts                      London, identical (the parser and the writer)
       types.ts                    London, cut to Colour, Brush, Shape and colourName
     play/
-      session.ts                  London, adapted: no book, setProfile, promotion
+      session.ts                  London, adapted: no book, setProfile, promotion, and replayed moves are not a floor
       evalbar.ts                  London, adapted: an evaluation is { pawns, text }, and the number has a place
       outcome.ts                  London, identical
       analysis.ts                 London's analysis profile and movetimes, plus atAnalysisProfile
-      game-pgn.ts                 London, adapted: seven tags, one closing comment
+      game-pgn.ts                 London, adapted: seven tags, one closing comment, and saveFileName is new
       load-pgn.ts                 new: main line, side and level from a parsed file
+      level.ts                    a level arriving from a setting, a record or a file
+      replay.ts                   London's canReplayMoves, cut to the check
       hint.ts                     London, cut to the engine hint and its one sentence
       index.ts
     storage/
       prefs.ts                    London's shape, this app's keys
       current-game.ts             new: the remembered game
       files.ts                    London's backup.ts pattern: save and open a .pgn
-      paths.ts                    London, cut to isDesktop and LOCAL_FOLDER
+      paths.ts                    London, cut to isDesktop; LOCAL_FOLDER arrives with the window in phase 8
     ui/
       App.tsx                     the shell: header, theme, the one screen
       Board.tsx                   London, adapted: a size effect (phase 3; the board changes size while mounted)
@@ -682,6 +692,8 @@ SimpleChess/
       PromotionPicker.tsx         new: the four pieces, drawn by the board's own stylesheet
       chessground-piece.d.ts      new: the <piece> element, for TypeScript
       Sidebar.tsx                 new: the settings, the file buttons
+      StatusLine.tsx              London's PlayHead, cut to the line and the Notice under it
+      message.ts                  new: something thrown, as a sentence for the screen
       UpdateBanner.tsx, useUpdate.ts, updates.ts   Conquest, adapted wording
       app.css, play.css           London, cut to what this screen uses
     dev/
@@ -692,6 +704,7 @@ SimpleChess/
       scripted-engine.ts             new: an engine that plays a script, for a mate in a test
       by-profile.ts                  new: a fake that answers moves and analysis differently
       held-engine.ts                 new: a fake whose move waits, for reading the screen mid-move
+      played-moves.ts                London's game-pgn.test.ts playedMoves: SANs as the session played them
   src-tauri/                      London, names changed, capabilities cut
   .claude/launch.json             simple-chess-dev on 5185, simple-chess-preview on 5186
 ```

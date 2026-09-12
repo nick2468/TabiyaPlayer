@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
-import { STRENGTH_LEVELS } from '../engine'
 import type { Colour } from '../model/types'
+import { levelOrNull } from '../play'
 
 /**
  * Origin: London src/ui/prefs.ts, adapted: this app's keys and three hooks; read, write, readOneOf and useRemembered keep the trainer's text, remove is new, and the show half is gone.
@@ -70,19 +70,6 @@ export function remove(key: string): void {
 export function readOneOf<T extends string>(key: string, allowed: readonly T[], fallback: T): T {
   const saved = read(key)
   return allowed.includes(saved as T) ? (saved as T) : fallback
-}
-
-/**
- * A level, or null when what came back is not one.
- *
- * One home for the check, because two things read a level back: the setting
- * here, and the remembered game, which carries its own (spec 10). The scale is
- * the engine's `STRENGTH_LEVELS` rather than a written-out 1 to 8, so the two
- * cannot drift from the levels that actually exist.
- */
-export function levelOrNull(value: unknown): number | null {
-  const level = typeof value === 'number' ? value : typeof value === 'string' ? Number(value) : NaN
-  return Number.isInteger(level) && STRENGTH_LEVELS.includes(level) ? level : null
 }
 
 /**

@@ -28,6 +28,14 @@ export interface SettingsProps {
 /** The two board sizes, said the way they are said on screen. */
 const SIZE_NAMES: Record<BoardSizeName, string> = { small: 'Small', large: 'Large' }
 
+/** The two file buttons, and whether the engine is busy (spec 9.3). */
+export interface FileProps {
+  onSave: () => void
+  onLoad: () => void
+  /** Both are disabled while the engine thinks. */
+  thinking: boolean
+}
+
 export function Sidebar({
   level,
   onLevel,
@@ -35,8 +43,11 @@ export function Sidebar({
   onSide,
   boardSize,
   onBoardSize,
+  onSave,
+  onLoad,
+  thinking,
   moves,
-}: SettingsProps & { moves: PlayedMove[] }) {
+}: SettingsProps & FileProps & { moves: PlayedMove[] }) {
   return (
     <>
       <fieldset>
@@ -91,13 +102,15 @@ export function Sidebar({
         ))}
       </fieldset>
 
-      {/* Both are wired in phase 5, which brings PGN files (spec 9). They are
-          here now because the sidebar's shape is what this phase is checking. */}
+      {/* A game leaves the app as a PGN file and comes back the same way (spec
+          9). Both are greyed while the engine thinks: a game written out
+          mid-move would be missing the reply, and a game loaded over one would
+          have the old reply landing on it. */}
       <div className="sidebar-files">
-        <button type="button" disabled>
+        <button type="button" onClick={onSave} disabled={thinking}>
           Save game
         </button>
-        <button type="button" disabled>
+        <button type="button" onClick={onLoad} disabled={thinking}>
           Load game
         </button>
       </div>

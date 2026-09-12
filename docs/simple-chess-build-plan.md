@@ -374,41 +374,42 @@ Read first: `../London/src/play/game-pgn.ts` and its test, `src/model/pgn.ts`
 `src/storage/paths.ts` (`isDesktop`), `src/play/session.ts` (the constructor's
 `startMoves` replay).
 
-- [ ] 5.1 `src/play/game-pgn.ts` adapted per spec 9.1: `gameToPgn({ moves, side,
+- [x] 5.1 `src/play/game-pgn.ts` adapted per spec 9.1: `gameToPgn({ moves, side,
       level, outcome, at })`; the seven tags; one closing comment; the result token.
       `pgnDate` and `pgnResult` identical. `saveFileName(at)` giving
       `simple-chess-YYYY-MM-DD-HHMM.pgn`. String tests on the exact text.
-- [ ] 5.2 `src/play/load-pgn.ts`: `loadPgn(text)` returning `{ sans, side, level? }`
+- [x] 5.2 `src/play/load-pgn.ts`: `loadPgn(text)` returning `{ sans, side, level? }`
       or `{ error }`. Uses `parsePgn`, takes `games[0].moves` main line SANs, replays
       them with chess.js, reads `White`/`Black` for "You" and "Stockfish level N".
       Tests: the round trip (spec S15 item 5); a foreign PGN with variations and
       comments loads its main line as White (item 6); an illegal file gives an
       error; a file with no games gives an error.
-- [ ] 5.3 `src/storage/paths.ts`: `isDesktop` and `LOCAL_FOLDER = 'Simple Chess
-      Data'` only, with the trainer's comment on why the folder is not the install
-      folder. `src/storage/files.ts`: `savePgn(text, name)` and `openPgn()` in the
+- [x] 5.3 `src/storage/paths.ts`: `isDesktop` only. (`LOCAL_FOLDER` waits for
+      phase 8, which is the first thing that needs it; the phase 5 chip ruled it
+      out of this phase and gate 2 ruled that unused code goes.)
+      `src/storage/files.ts`: `savePgn(text, name)` and `openPgn()` in the
       trainer's `backup.ts` shape: Tauri dialogs and fs on the desktop, a blob
       download and a hidden file input in the browser. `openPgn` in the browser
       resolves when the input changes; cancel resolves null.
-- [ ] 5.4 Loading goes through `start` with `startMoves`, the same path the
+- [x] 5.4 Loading goes through `start` with `startMoves`, the same path the
       remembered game uses, so the side and level become the settings and the engine
       moves if it is to move. No `scanGame` (ruled at gate 4): undo and redo evaluate
       the position they land on when it has no number yet, at 150 ms each, which
       covers loaded and reopened games alike without holding the engine's queue.
       Errors go to a notice under the status line and leave the current game alone.
       (The box first asked for the trainer's full scan; spec 9.2 is amended.)
-- [ ] 5.5 Wire the two buttons: disabled while thinking; Save says nothing on
+- [x] 5.5 Wire the two buttons: disabled while thinking; Save says nothing on
       success on the desktop beyond the dialog closing, and "Saved to your downloads
       folder" in the status line in the browser, for three seconds, the trainer's
       `CopyGame` timing.
-- [ ] 5.6 DOM tests: Save produces the spec 9.1 text for a played game (intercept
+- [x] 5.6 DOM tests: Save produces the spec 9.1 text for a played game (intercept
       the blob path through an injected `savePgn`); Load through an injected
       `openPgn` restores moves, side and level; a bad file leaves the game untouched
       and says why.
-- [ ] 5.7 Drive in the pane: save a game (the browser path), open the file in an
+- [x] 5.7 Drive in the pane: save a game (the browser path), open the file in an
       editor and check the text against spec 9.1, load it back. The desktop path is
       driven in phase 8.
-- [ ] 5.8 Reuse review and commit.
+- [x] 5.8 Reuse review and commit.
 
 **Done when:** save, load and the foreign-file case all pass and the file reads as the
 spec shows.
@@ -546,7 +547,7 @@ did it that way too.
 | 2 - the board, the session and a playable game | **Complete** 2026-09-12, gate passed the same day. 111 tests green; a game plays in the pane. |
 | 3 - the sidebar and what is remembered | **Complete** 2026-09-12, gate passed the same day. 162 tests green; the settings and the game survive a reload; the large board is whatever fits and draws whole squares (808, 624 and 728 at scale 1; 800, 624 and 720 at 1.5). |
 | 4 - the bar, the hint and the promotion picker | **Complete** 2026-09-12, gate passed the same day. 183 tests green; the bar carries the engine's number, Hint draws and says a move, a pawn on the last rank asks which piece. |
-| 5 - save game and load game | Not started |
+| 5 - save game and load game | **Built** 2026-09-12, awaiting review. 222 tests green and 2 skipped in 7.6 s. A game saves as the PGN of spec 9.1 and loads back with its moves, side and level; a file from elsewhere loads its main line; a bad one is refused and the game is untouched. Undo and redo now evaluate where they land, and go back through a game that arrived whole. |
 | 6 - scenes, the probe and the layout pass | Not started |
 | 7 - the iPad Home Screen app | Not started |
 | 8 - the Windows app and the installer | Not started |
@@ -1418,3 +1419,198 @@ stylesheet sweep for a declaration repeated in one rule finds nothing.
   and reported it fine. A stale page, as suspected. Nothing to carry forward.
 
 - [x] **Review gate 4 passed** (2026-09-12)
+
+### Phase 5 - builder notes (2026-09-12)
+
+The session was compacted before this phase. Every document the chip named was read
+fresh before anything was touched.
+
+**Measured.**
+
+- `npx vitest run`: 25 files, 222 tests passed and 2 skipped, 7.6 seconds warm. By
+  project: `string` 17 files, 178 passed, 2 skipped (the two Tauri version tests);
+  `dom` 8 files, 44 passed. `tsc -b` clean, `npx oxlint` silent, `npm run build`
+  clean.
+- **The browser bundle carries no Tauri plugin.** The main chunk is 316.83 kB
+  (101.57 kB gzipped) and the only Tauri text in it is the single
+  `__TAURI_INTERNALS__` check in `isDesktop`. The dialog and fs plugins are three
+  separate chunks of 90, 285 and 1354 bytes, which a browser never asks for because
+  nothing imports them until `isDesktop()` is true. That is spec S14 working, and it
+  is visible in the build rather than argued for.
+- **Red first, seven times.** Dropping the set-position refusal turns "refuses a game
+  that starts from a set position" red. Fixing the loaded side to White turns two
+  tests red. Removing the empty-game sentence turns "says so when the game has not
+  started" red. Taking `await quietRef.current` out of `play` turns "holds a move
+  played on top of it" red. Removing `evaluateLanded` from undo turns all three undo
+  tests red. Ungreying the two file buttons turns "offers neither button" red.
+  Ignoring the file's level turns "replaces the game with the file's moves, side and
+  level" red. Putting the session's floor back turns TEN tests red across four files.
+  Each was restored and the suite re-run green.
+- **The file, written live in the pane.** After 1.d4 e6 2.c4 Be7 at level 4, Save
+  game produced exactly the text spec 9.1 shows, tag for tag:
+  `[Event "Simple Chess"] [Site "-"] [Date "2026.09.12"] [Round "-"] [White "You"]
+  [Black "Stockfish level 4"] [Result "*"]`, then
+  `1. d4 e6 2. c4 Be7 {Stopped after move 2. White was played by you at level 4.} *`.
+  The blob's type is `application/x-chess-pgn` and the link's name was
+  `simple-chess-2026-09-12-1246.pgn`.
+- **The round trip, live, through the real file input.** The level was moved to 7 and
+  the game saved; New game threw it away (0 rows, and the file still said level 7);
+  the saved text was handed to the hidden input, and back came all four moves, the
+  select reading 7, the board White, and `simple-chess.game` holding
+  `{"version":1,"sans":["e4","e5","Nf3","Nc6","Bb5","a6","Ba4","Nf6"],"side":"white","level":7}`.
+  No file input was left in the page afterwards.
+- **A bad file, live.** A `.pgn` holding "just some writing about chess" gave the
+  parser's own sentence in the `notice bad` style, background rgb(46, 31, 31) and
+  text rgb(224, 180, 174), and the move list still had its four rows.
+- **The notice comes and goes by itself.** A `MutationObserver` on the board column
+  recorded "Saved to your downloads folder" at 16 ms and gone at 3506 ms. The code
+  says 3000; a hidden pane clamps timers, which is a standing hazard in CLAUDE.md,
+  so the drift is the pane's rather than the app's.
+- **Undo into a position with no number, live**, on a ten-ply game reopened from
+  storage, caught as a sequence rather than claimed. The observer recorded: at 17 ms
+  "4 rows | (none) | Your move | undo on | hint on"; at 182 ms "4 rows | +0.3 | Your
+  move | undo on | hint on". So the game moves at once, nothing says the engine is
+  thinking, no button greys, and the number for the position landed on arrives about
+  150 ms later. That is gate 4's ruling exactly.
+- **1280 by 1000, all four combinations.** Bar, `.board` and `cg-board` end on the
+  same pixel every time: small dark 497, small light 497, large dark 913, large light
+  913, all three boxes agreeing to the pixel. `scrollWidth` 1280 against `innerWidth`
+  1280. The large board is the full 832 here because the pane reports a display scale
+  of 1 after a navigation. The two file buttons are 103 and 105 px wide and 38 px
+  tall, the same height as New game, with the same background, text and border colour
+  as it in both themes: rgb(42, 46, 53) on rgb(58, 63, 71) dark, white on
+  rgb(189, 184, 174) light.
+- **820 by 1180 upright.** Small: board 416, bar and both boards ending at 497, the
+  sidebar under the column at x 24 and 757 wide, the notice at x 68 and 416 wide,
+  level with the board's left edge. `scrollWidth` 805 against `innerWidth` 820, so no
+  sideways scroll. Large: board 720, all three boxes ending at 801, `scrollWidth`
+  805. 720 rather than phase 4's 728 because the display scale was 1.5 in this drive
+  and 728 would want squares of 136.5 device pixels; that is S2's second condition
+  doing its job, not a regression.
+- `git -C ../London status` and `git -C ../Conquest status` show the same two
+  untracked files gate 3 and gate 4 saw, both dated 2026-09-11.
+- **The pane's storage was cleared, the viewport reset and the dev server stopped.**
+
+**A contradiction, stopped and recorded, then resolved by the spec.**
+
+**A game that arrived whole could not be undone at all.** `PlaySession` copies the
+trainer's floor: the moves given to the constructor are replayed and undo may not go
+below them. In the trainer those moves are an authored line an exercise is set up on,
+and unplaying them would leave a different exercise. In this app they are the game -
+the one from storage (spec 10) or from a PGN file (spec 9.2) - so the floor meant
+Undo did nothing whatever on any reopened game, and phase 5's own acceptance ("undo
+into an unevaluated position gets a number") was unreachable. Spec 5.4 describes no
+floor, and spec 9.2 as amended at gate 4 says in as many words that undo goes along a
+loaded game. The spec wins over copied code by its own preamble, so the floor is
+gone: `undoTarget` walks to the first move. Phase 3's test that pinned the floor is
+replaced by one that pins the opposite, plus a new one for the case the floor used to
+cover by accident (a user playing Black who has not moved yet has nothing of their
+own to take back). Found by the first undo test going red for a reason that was not
+the reason it was written for. Spec 5.4 said "Neither asks the engine anything: every
+position they land on has already been evaluated" and described no floor; both halves
+had stopped being true at gate 4, so 5.4 now carries the floor correction and the
+amended 9.2's behaviour, with the reason in brackets.
+
+**Decided (code shape).**
+
+- **`quietRef`: anything that asks the engine to MOVE waits for the undo's number.**
+  The evaluation undo and redo fetch is the one thing in this app nobody is waiting
+  for, so it deliberately does not set `thinking` (gate 4's ruling), and the user can
+  play a move while it is still out. `atAnalysisProfile` sets the analysis profile,
+  searches and puts the playing level back, and each of those is its own turn on the
+  engine's queue: a search enqueued in the middle of that sequence lands between the
+  two `setStrength` calls. A move would be played at level 8 with one candidate, or a
+  hint answered at the game's own level. Both are silent, which is the same class of
+  failure `atAnalysisProfile` itself exists to prevent, so `play` and `askHint` both
+  await the outstanding background work first. It costs nothing in the ordinary case
+  because there usually is none. The test drives it: with the undo's evaluation held,
+  the user's move appears on the board and the engine is asked nothing until it is
+  released.
+- **`levelOrNull` moved from `storage/prefs.ts` to `play/level.ts`.** A PGN file names
+  a level, so `load-pgn.ts` needs the check; `prefs.ts` imports React, and `src/play`
+  imports no React (spec S13). Rather than write the check twice, the pure half came
+  out of the module full of hooks. Its three callers are now the setting, the
+  remembered game and the file. Its tests moved with it.
+- **`asMessage` moved to `ui/message.ts`.** The provider had it and the shell now
+  needs it for a file that would not be written or read. Two copies of "turn an
+  unknown thrown thing into a sentence" is exactly the snippet the reuse rule says to
+  house the moment it appears twice.
+- **`playedMoves` in `src/test/`.** Three test files want a game to write out. The
+  trainer's own copy lived in its `game-pgn.test.ts`; here it would have been three.
+- **`pad` at module scope in `game-pgn.ts`.** `pgnDate` and `saveFileName` both pad to
+  two digits, which is the second date formatter the chip predicted. One helper, and
+  `pgnDate` is otherwise the trainer's text unchanged.
+- **`EngineError` is now `Notice` with a `bad` prop**, and it is the only thing that
+  draws a message under the board. `.notice` and `.notice.bad` were both already in
+  `play.css` from phase 2. Its two uses in `Screen.tsx` and `StatusLine.tsx` were
+  updated; nothing else referred to it.
+- **`startFrom(sans, side, level)` in `Shell`.** The remembered game and a loaded file
+  are the same act, and the chip named the risk: two paths that set the level, the
+  side and the session would drift. The mount effect and Load game both go through
+  it.
+- **`saveFileName` loses its stamp rather than printing nonsense** when handed a
+  timestamp that will not parse: `simple-chess.pgn`. `pgnDate` has the standard's
+  `????.??.??` for that case and a file name has no such convention. Nothing reads
+  the name back, so the fallback costs nothing.
+- **`pgnResult`'s parameter is `side` rather than `studentColour`.** The file is
+  adapted rather than identical, so spec 3's allowance for keeping the trainer's
+  identifier does not apply; the body is otherwise the trainer's text.
+- **The level and the side written into a file come from the RUNNING game**, not from
+  the sidebar beside it. They are the same until a game is loaded or the level is
+  changed mid-game, and it is the game that is being written down.
+
+**Departures from the chip, both deliberate.**
+
+- **`paths.ts` has `isDesktop` only.** The chip says `LOCAL_FOLDER` waits for phase 8;
+  plan box 5.3 and the spec's 13.2 folder table both say it belongs in this file.
+  Gate 2 ruled that unused code goes, and nothing until the Tauri window needs the
+  folder name, so it waits. The box records it and 13.2's row now says so.
+- **The three-second notice is not the trainer's `CopyGame` timing.** The chip and
+  plan box 5.5 both attribute three seconds to `CopyGame`; `CopyGame` actually uses
+  2500 ms. The number in the chip is stated twice and is what was built; only the
+  attribution is wrong.
+
+**Asked of Nick.** Nothing. The one thing a person can see that the chip did not
+settle - what happens to Undo on a game that arrived whole - is settled by spec 5.4
+and spec 9.2, and is written up above rather than guessed at.
+
+**Reuse review.** `gameToPgn` is the only thing that writes PGN and it goes through
+`Movetext` and `pgnTag`; `parsePgn` is the only thing that reads one. `levelOrNull`,
+`asMessage`, `playedMoves` and `pad` each have one home, three of them created by
+this phase's second caller appearing. `canReplayMoves` is still the only legality
+check on a move list, and `load-pgn.ts` uses it rather than replaying the moves
+itself. `isDesktop` is asked in one place and only `storage/files.ts` acts on it.
+`localStorage` is touched only in `src/storage` and in tests (`theme.ts`'s two
+mentions are its comment). No pixel number or colour appears in a `.ts` or `.tsx`.
+No React under `src/play`, `src/model` or `src/engine`. The only chess.js under
+`src/ui` is a comment in `PromotionPicker.tsx` and the test that builds a position.
+No new or adapted file says "trainee", "student", "repertoire", "course" or "book";
+two comments explaining what the trainer does differently were reworded for that
+reason. No em dashes under `src/`.
+
+**Copies.**
+
+- **New, from the trainer:** `src/play/game-pgn.ts` (`pgnDate` and `pgnResult` kept,
+  everything about the report cut), `src/storage/files.ts` (`backup.ts`'s shape, with
+  `bundles.ts`'s `fileName` and its file input turned round into an opener),
+  `src/storage/paths.ts` (`isDesktop` only), `src/test/played-moves.ts`.
+- `src/play/load-pgn.ts`, `src/play/level.ts` and `src/ui/message.ts` are new; the
+  trainer has no equivalent of any of them.
+
+**Left.**
+
+- **A browser that fires neither `change` nor `cancel` on a file input leaves the
+  promise unresolved and one hidden input in the page.** The chip ruled the closure
+  acceptable and ruled out a timeout; the leftover input is the same fact seen from
+  the DOM. Safari before 16 is the case. Nothing hangs on it: the button is live
+  again the moment the chooser closes. Driven in the pane, choosing a file and
+  cancelling both removed it.
+- **The desktop half of `files.ts` has not run.** No unit test can drive a save dialog
+  or a download, and the DOM tests mock the module at exactly the seam where the app
+  stops knowing where it is running. The Tauri dialogs are driven in phase 8, which is
+  where the capabilities that let them run get built.
+- **Load game's real file chooser cannot be driven from the pane.** What was proved
+  there instead: the button makes a hidden `input[type=file]` with `accept=".pgn"`,
+  puts it in the document and clicks it; and the whole path after that, from the
+  file's text to the game on the board, was driven by handing the real input a real
+  `File`.

@@ -18,7 +18,10 @@ export {
   type Evaluation,
   type NumberPlacement,
 } from './evalbar'
+export { gameToPgn, pgnDate, pgnResult, saveFileName, type GameForPgn } from './game-pgn'
 export { engineHint, type Hint } from './hint'
+export { levelOrNull } from './level'
+export { loadPgn, type LoadResult, type LoadedGame } from './load-pgn'
 export { endingFromMoves, isCheckmateOutcome, outcomeOf } from './outcome'
 export { canReplayMoves } from './replay'
 export {

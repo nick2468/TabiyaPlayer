@@ -14,6 +14,7 @@ import {
   type Hint,
 } from '../play'
 import { forgetGame, rememberGame } from '../storage/current-game'
+import { asMessage } from './message'
 
 /**
  * Origin: London src/ui/play-context.tsx, adapted: the game and nothing about reviewing or recording it; setLevel and the remembered game are new; New game keeps the worker; the worker's stop waits out StrictMode.
@@ -103,6 +104,20 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
   // from one move would otherwise each start from the map their own render saw,
   // and the second would write the first one out again.
   const evaluationsRef = useRef<Map<string, Evaluation>>(new Map())
+  /**
+   * Analysis nobody is waiting for: the number undo and redo fetch for the
+   * position they land on (ruled at gate 4).
+   *
+   * It is deliberately not behind `thinking`, so undo stays instant and the
+   * number arrives a moment later. That leaves it in flight while the user does
+   * something else, and the something else can be a move. `atAnalysisProfile`
+   * sets the analysis profile, searches, and puts the playing level back, and
+   * each of those is its own turn on the engine's queue: a move asked for
+   * between the first and the last would be played at level 8. So everything
+   * that asks the engine to MOVE waits for this to settle first, which costs
+   * nothing in the ordinary case because it has already settled.
+   */
+  const quietRef = useRef<Promise<void>>(Promise.resolve())
 
   // The worker goes when the app goes, and not before.
   //
@@ -187,6 +202,33 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
     setEvaluations(next)
   }, [])
 
+  /**
+   * Brings the bar up to date for a position undo or redo just landed on, when
+   * that position has no number yet (spec 9.2, amended at gate 4).
+   *
+   * A game played forward costs nothing extra, because `evaluate` skips a
+   * position it already knows and every position played through is already
+   * known. A game loaded from a file or reopened from storage is evaluated at
+   * its final position only, so undoing along it is where the numbers get
+   * fetched, 150 ms at a time, and never in a batch that holds the engine's
+   * queue while the user waits to move.
+   *
+   * Nothing awaits this and nothing greys while it runs. A failure is still
+   * worth saying: an engine that has stopped answering will say so here before
+   * the user finds out by trying to move.
+   */
+  const evaluateLanded = useCallback(
+    (running: PlaySession) => {
+      const live = engineRef.current
+      const setup = setupRef.current
+      if (!live || !setup) return
+      quietRef.current = quietRef.current
+        .then(() => evaluate(live, running.fen, setup.level))
+        .then(refresh, (error: unknown) => setEngineError(asMessage(error)))
+    },
+    [evaluate, refresh],
+  )
+
   const start = useCallback(
     async (options: StartOptions) => {
       setEngineError(null)
@@ -245,6 +287,9 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
       refresh()
       setThinking(true)
       try {
+        // An undo's evaluation may still be in flight, and the engine is at the
+        // analysis profile until it finishes. See `quietRef`.
+        await quietRef.current
         // The bar is brought up to date before the engine is asked to move, so
         // it answers the move that was just played rather than the reply.
         const live = engineRef.current
@@ -266,8 +311,12 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
   )
 
   /**
-   * Undo and redo. Neither one asks the engine anything: every position they
-   * land on has already been evaluated, so the bar follows them for free.
+   * Undo and redo. Both are instant: they move the game and the screen at once
+   * and do not wait for the engine.
+   *
+   * A position played through already has its number, so the bar follows them
+   * for free. A position from a loaded or reopened game does not, and that is
+   * what `evaluateLanded` goes and gets, behind them rather than in front.
    */
   const undo = useCallback(() => {
     const running = sessionRef.current
@@ -276,8 +325,9 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
       setHint(null)
       rememberNow()
       refresh()
+      evaluateLanded(running)
     }
-  }, [refresh, rememberNow, thinking])
+  }, [evaluateLanded, refresh, rememberNow, thinking])
 
   const redo = useCallback(() => {
     const running = sessionRef.current
@@ -286,8 +336,9 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
       setHint(null)
       rememberNow()
       refresh()
+      evaluateLanded(running)
     }
-  }, [refresh, rememberNow, thinking])
+  }, [evaluateLanded, refresh, rememberNow, thinking])
 
   /**
    * Origin: London src/ui/play-context.tsx askHint, adapted: the engine half only, and the SAN comes from sanForMove.
@@ -310,6 +361,11 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
 
     setThinking(true)
     try {
+      // As `play`, the other way round: an undo's number may still be in
+      // flight, and its restore would land between this hint's setStrength and
+      // its search, answering at the game's level instead of full strength.
+      // See `quietRef`.
+      await quietRef.current
       const live = await engine()
       const result = await atAnalysisProfile(live, setup.level, () =>
         live.search(running.fen, HINT_MOVETIME),
@@ -419,8 +475,4 @@ export function usePlay(): PlayGame {
   const value = useContext(PlayContext)
   if (!value) throw new Error('usePlay needs a PlayProvider above it')
   return value
-}
-
-function asMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error)
 }

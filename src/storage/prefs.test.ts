@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest'
-import { BOARD_SIZES, SIDES, levelOrNull, read, readOneOf, remove, write } from './prefs'
+import { BOARD_SIZES, SIDES, read, readOneOf, remove, write } from './prefs'
 
 /**
  * The helpers every setting goes through.
@@ -90,26 +90,5 @@ describe('readOneOf', () => {
   })
 })
 
-describe('levelOrNull', () => {
-  it('takes a level on the scale, written either way', () => {
-    expect(levelOrNull(6)).toBe(6)
-    expect(levelOrNull('6')).toBe(6)
-    expect(levelOrNull(1)).toBe(1)
-    expect(levelOrNull(8)).toBe(8)
-  })
-
-  it('refuses a number off the scale', () => {
-    expect(levelOrNull(0)).toBeNull()
-    expect(levelOrNull(9)).toBeNull()
-    expect(levelOrNull(-4)).toBeNull()
-  })
-
-  it('refuses anything that is not a whole level', () => {
-    expect(levelOrNull(4.5)).toBeNull()
-    expect(levelOrNull('club')).toBeNull()
-    expect(levelOrNull(null)).toBeNull()
-    expect(levelOrNull(undefined)).toBeNull()
-    expect(levelOrNull(true)).toBeNull()
-    expect(levelOrNull({ level: 4 })).toBeNull()
-  })
-})
+// `levelOrNull` moved to src/play/level.ts in phase 5, with its tests. A PGN
+// file names a level too, and src/play imports no React (spec S13).

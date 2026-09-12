@@ -1,9 +1,12 @@
-import { useEffect, useRef } from 'react'
-import { canReplayMoves } from '../play'
+import { useEffect, useRef, useState } from 'react'
+import type { Colour } from '../model/types'
+import { canReplayMoves, gameToPgn, loadPgn, saveFileName } from '../play'
 import { recallGame } from '../storage/current-game'
+import { openPgn, savePgn } from '../storage/files'
 import { useBoardSize, useLevel, useSide } from '../storage/prefs'
+import { asMessage } from './message'
 import { PlayProvider, usePlay } from './play-context'
-import { Screen } from './Screen'
+import { Screen, type ScreenNotice } from './Screen'
 import { useTheme } from './theme'
 import './app.css'
 
@@ -36,13 +39,41 @@ export function App() {
  * that wants the app with a fake engine has to supply it. Nothing else uses
  * this directly.
  */
+/** How long a notice under the board stays up. */
+const NOTICE_MS = 3000
+
 export function Shell() {
   const game = usePlay()
   const { theme, toggle } = useTheme()
   const { level, setLevel } = useLevel()
   const { side, setSide } = useSide()
   const { boardSize, setBoardSize } = useBoardSize()
+  const [notice, setNotice] = useState<ScreenNotice | null>(null)
   const switchTo = theme === 'dark' ? 'Switch to the light theme' : 'Switch to the dark theme'
+
+  // A notice says one thing about something that has just happened, so it goes
+  // by itself rather than waiting to be dismissed. Cleared on the way out as
+  // well, so a second message does not inherit the first one's timer.
+  useEffect(() => {
+    if (!notice) return
+    const timer = setTimeout(() => setNotice(null), NOTICE_MS)
+    return () => clearTimeout(timer)
+  }, [notice])
+
+  /**
+   * Starts a game from a list of moves, with the side and level it carries.
+   *
+   * Two things arrive this way: the game the app was closed on (spec 10) and a
+   * game loaded from a file (spec 9.2). They are the same act, so they are one
+   * function: both make the file's or the record's settings the current ones,
+   * because a game that came with its own is not a game to play at somebody
+   * else's.
+   */
+  const startFrom = (sans: string[], from: Colour, atLevel: number) => {
+    setLevel(atLevel)
+    setSide(from)
+    void game.start({ level: atLevel, side: from, startMoves: sans })
+  }
 
   // StrictMode runs effects twice in development, and a second start would
   // throw the first game away. The ref survives the rerun; the flag in it is
@@ -53,18 +84,10 @@ export function Shell() {
     started.current = true
 
     // The game the app was closed on comes back, and it wins over the
-    // remembered settings, because it carries its own (spec 10). A game loaded
-    // from a file in phase 5 arrives the same way, with the file's side and
-    // level, and neither should be overwritten by what was set before it.
+    // remembered settings, because it carries its own (spec 10).
     const remembered = recallGame()
     if (remembered && canReplayMoves(remembered.sans)) {
-      setLevel(remembered.level)
-      setSide(remembered.side)
-      void game.start({
-        level: remembered.level,
-        side: remembered.side,
-        startMoves: [...remembered.sans],
-      })
+      startFrom([...remembered.sans], remembered.side, remembered.level)
       return
     }
 
@@ -88,6 +111,57 @@ export function Shell() {
   const chooseLevel = (next: number) => {
     setLevel(next)
     void game.setLevel(next)
+  }
+
+  /**
+   * The game as a file (spec 9.1).
+   *
+   * The side and the level come from the RUNNING game rather than from the
+   * settings beside it. They are usually the same, and they are not after a
+   * game has been loaded from a file or the level has been changed mid-game,
+   * and it is the game that is being written down.
+   */
+  const save = async () => {
+    const running = game.session
+    if (!running) return
+    const at = new Date().toISOString()
+    const text = gameToPgn({
+      moves: running.moves,
+      side: running.userColour,
+      level: game.level ?? level,
+      outcome: running.outcome,
+      at,
+    })
+    try {
+      const { message } = await savePgn(text, saveFileName(at))
+      // Null is a cancelled dialog, which needs no comment at all.
+      if (message) setNotice({ text: message, bad: false })
+    } catch (error) {
+      setNotice({ text: asMessage(error), bad: true })
+    }
+  }
+
+  /**
+   * A game from a file, in place of this one (spec 9.2).
+   *
+   * No confirmation, as New game has none: the game on the board is in
+   * storage and the user asked for this. A file that cannot be read changes
+   * nothing at all, which is why the reading happens before anything is
+   * started.
+   */
+  const load = async () => {
+    try {
+      const file = await openPgn()
+      if (!file) return
+      const result = loadPgn(file.text)
+      if ('error' in result) {
+        setNotice({ text: result.error, bad: true })
+        return
+      }
+      startFrom(result.sans, result.side, result.level ?? level)
+    } catch (error) {
+      setNotice({ text: asMessage(error), bad: true })
+    }
   }
 
   return (
@@ -119,6 +193,12 @@ export function Shell() {
             boardSize,
             onBoardSize: setBoardSize,
           }}
+          files={{
+            onSave: () => void save(),
+            onLoad: () => void load(),
+            thinking: game.thinking,
+          }}
+          notice={notice}
           onNewGame={newGame}
         />
       </main>

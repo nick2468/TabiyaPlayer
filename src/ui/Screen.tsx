@@ -7,8 +7,8 @@ import { Board } from './Board'
 import { EvalBar } from './EvalBar'
 import { PlayControls } from './PlayControls'
 import { PromotionPicker, type PromotionPiece } from './PromotionPicker'
-import { Sidebar, type SettingsProps } from './Sidebar'
-import { EngineError, StatusLine } from './StatusLine'
+import { Sidebar, type FileProps, type SettingsProps } from './Sidebar'
+import { Notice, StatusLine } from './StatusLine'
 import { usePlay } from './play-context'
 import { useBoardPixels } from './use-board-pixels'
 import './play.css'
@@ -21,11 +21,22 @@ import './play.css'
  * and nothing else. Until the first game exists there is nothing to show,
  * except an engine that would not start.
  */
+/** A message under the status line, until its few seconds are up. */
+export interface ScreenNotice {
+  text: string
+  /** The warning colour, for something that did not work. */
+  bad: boolean
+}
+
 export function Screen({
   settings,
+  files,
+  notice,
   onNewGame,
 }: {
   settings: SettingsProps
+  files: FileProps
+  notice: ScreenNotice | null
   onNewGame: () => void
 }) {
   const game = usePlay()
@@ -40,7 +51,7 @@ export function Screen({
   // what makes it a move (spec 5.3).
   const [pending, setPending] = useState<{ from: string; to: string } | null>(null)
 
-  if (!session) return game.engineError ? <EngineError message={game.engineError} /> : null
+  if (!session) return game.engineError ? <Notice message={game.engineError} bad /> : null
 
   const fen = session.fen
   // Locked while the engine thinks, once the game is over (spec 5.2), and while
@@ -108,11 +119,13 @@ export function Screen({
 
         <StatusLine session={session} thinking={thinking} engineError={game.engineError} />
 
+        {notice && <Notice message={notice.text} bad={notice.bad} />}
+
         {game.hint && <p className="hint-said engine">{game.hint.text}</p>}
       </div>
 
       <aside className="sidebar">
-        <Sidebar {...settings} moves={session.moves} />
+        <Sidebar {...settings} {...files} moves={session.moves} />
       </aside>
     </div>
   )

@@ -97,12 +97,30 @@ describe('a game against the engine', () => {
     expect(game.moves.map((move) => move.san)).toEqual(['f3', 'e5'])
   })
 
-  it('undo cannot go below the moves the game started from', () => {
+  /**
+   * The moves a game is given when it starts are the game, not a floor under
+   * it: they come from storage or from a PGN file (spec 9.2, spec 10), and a
+   * game that has been reopened is the same game it was before it was closed.
+   * The trainer treats them as a floor, because there they are an authored
+   * line the exercise is set up on.
+   */
+  it('undo goes back through the moves the game started from', () => {
     const game = session({ startMoves: ['e4', 'e5'] })
-    expect(game.moves).toHaveLength(2)
+    expect(game.canUndo()).toBe(true)
+    expect(game.undo()).toBe(true)
+    expect(game.moves).toEqual([])
+    expect(game.canUndo()).toBe(false)
+    // And redo puts them back, so the undo is not a way of losing the game.
+    expect(game.redo()).toBe(true)
+    expect(game.moves.map((move) => move.san)).toEqual(['e4', 'e5'])
+  })
+
+  it('has nothing to undo in a game the user has not moved in yet', () => {
+    // The user is Black and White has opened: no move of the user's own.
+    const game = session({ side: 'black', startMoves: ['e4'] })
     expect(game.canUndo()).toBe(false)
     expect(game.undo()).toBe(false)
-    expect(game.moves).toHaveLength(2)
+    expect(game.moves).toHaveLength(1)
   })
 
   it('a game started with Black has the engine to move first', async () => {

@@ -1,5 +1,6 @@
 import type { Colour } from '../model/types'
-import { SIDES, levelOrNull, read, remove, write } from './prefs'
+import { levelOrNull } from '../play'
+import { SIDES, read, remove, write } from './prefs'
 
 /**
  * Origin: Conquest src/ui/remembered-setup.ts recallSetup, adapted: one game rather than a game setup, and the storage helpers are prefs.ts's.

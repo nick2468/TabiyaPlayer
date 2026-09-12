@@ -4,7 +4,7 @@ import { outcomeOf } from './outcome'
 import type { Colour } from '../model/types'
 
 /**
- * Origin: London src/play/session.ts, adapted: the engine plays every reply, with no length cap and no hint count; the user's colour is an option; setProfile is new; PlayedMove and fullMove come from London src/play/report.ts.
+ * Origin: London src/play/session.ts, adapted: the engine plays every reply, with no length cap and no hint count; the user's colour is an option; setProfile is new; replayed moves are not a floor; PlayedMove and fullMove come from London src/play/report.ts.
  * A game of chess against the engine.
  *
  * The user's colour is an option, White unless told otherwise. When the user
@@ -18,9 +18,15 @@ import type { Colour } from '../model/types'
  * to move with nothing to make it move, so the game would sit there. So undo
  * goes back to the last position where the user was to move, which is the
  * engine's reply and the move before it in the ordinary case, and one move
- * when the game has just ended on the user's own move. It cannot go back past
- * where the game started: a game started from a list of moves replays them in
- * the constructor and they are the floor.
+ * when the game has just ended on the user's own move.
+ *
+ * It goes all the way back to the first move, including through the moves the
+ * game was given when it started. The trainer treats those as a floor, because
+ * there they are an authored line the game was set up on and unplaying them
+ * would leave a different exercise. Here they are the game itself: the one
+ * arriving from storage or from a PGN file (spec 9.2, spec 10). A floor would
+ * mean Undo did nothing at all on a game that had been reopened, which is the
+ * same game it was before it was closed.
  *
  * The strength profile is a FIELD rather than a reading of the options,
  * because the level can change in the middle of a game (spec S6). `setProfile`
@@ -65,8 +71,6 @@ export class PlaySession {
   private readonly side: Colour
   /** The strength the engine plays at, read at each search. */
   private profile: StrengthProfile
-  /** How many plies the game started with, which undo may not go below. */
-  private readonly floor: number
   /** What undo took off, latest removed at the top, for redo to put back. */
   private readonly undone: PlayedMove[] = []
   /** Set when the game ends by itself: checkmate, stalemate, a draw. */
@@ -90,7 +94,6 @@ export class PlaySession {
         after: this.chess.fen(),
       })
     }
-    this.floor = this.moves.length
     // A game started from a list of moves may already be over, and a checkmate
     // replayed here is still a checkmate. Without this, a replayed mate would
     // read as a game in progress with a board that could not move.
@@ -176,9 +179,9 @@ export class PlaySession {
    * Takes the game back to the last position where the user was to move.
    *
    * Returns false when there is nothing to take back, which includes the case
-   * where every move since the floor belongs to the engine: a game with the
-   * user on Black, before the user has answered White's first move, has
-   * nothing of the user's in it.
+   * where every move so far belongs to the engine: a game with the user on
+   * Black, before the user has answered White's first move, has nothing of the
+   * user's in it.
    */
   undo(): boolean {
     const target = this.undoTarget()
@@ -215,7 +218,7 @@ export class PlaySession {
    * pairing fall out rather than having to be counted.
    */
   private undoTarget(): number | null {
-    for (let count = this.moves.length - 1; count >= this.floor; count -= 1) {
+    for (let count = this.moves.length - 1; count >= 0; count -= 1) {
       if (this.moves[count].colour === this.userColour) return count
     }
     return null
