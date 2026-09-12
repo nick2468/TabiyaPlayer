@@ -1,7 +1,7 @@
 # Simple Chess - build plan
 
 Version 1. Written 2026-09-11. Status: **Active**. Phases 0 and 1 passed review
-2026-09-11, phase 2 on 2026-09-12; phase 3 is built and awaiting review.
+2026-09-11, phases 2 and 3 on 2026-09-12; phase 4 is next.
 
 Read [the specification](simple-chess-spec.md) first. It says what the app does. This
 document says what gets built, in what order, and how we know each part is finished.
@@ -542,7 +542,7 @@ did it that way too.
 | 0 - the scaffold | **Complete** 2026-09-11, gate passed the same day. 4 tests green, build clean. |
 | 1 - the engine and the model | **Complete** 2026-09-11, gate passed the same day. 90 tests green in 1.8 s. |
 | 2 - the board, the session and a playable game | **Complete** 2026-09-12, gate passed the same day. 111 tests green; a game plays in the pane. |
-| 3 - the sidebar and what is remembered | **Complete** 2026-09-12, awaiting review. 162 tests green, 2 skipped; the settings and the game survive a reload; the large board is whatever fits and draws whole squares, which is 808, 624 and 728 at the three viewports at a display scale of 1, and 800, 624 and 720 at 1.5. |
+| 3 - the sidebar and what is remembered | **Complete** 2026-09-12, gate passed the same day. 162 tests green; the settings and the game survive a reload; the large board is whatever fits and draws whole squares (808, 624 and 728 at scale 1; 800, 624 and 720 at 1.5). |
 | 4 - the bar, the hint and the promotion picker | Not started |
 | 5 - save game and load game | Not started |
 | 6 - scenes, the probe and the layout pass | Not started |
@@ -1152,3 +1152,47 @@ multiple of 32. Spec S2 and the 4.2 table were updated to say so, and S2 records
 this supersedes Q3's "832 px on Windows"; 832 is now the ceiling rather than a
 promise. `fitBoardSize` takes `devicePixelRatio` as a fifth argument with a default of
 1, so it stays pure and the tests name the scale they are about.
+
+### Gate 3 findings (orchestrator, 2026-09-12)
+
+- **Verified from the repo.** `npx vitest run`: 17 files, 162 passed, 2 skipped, 4.8
+  seconds. `tsc -b` clean, `npx oxlint` silent, `npm run build` clean at 302.8 kB.
+  `Board.tsx` differs from the trainer by the size effect only and `board-stub.tsx` by
+  the orientation attribute only, both as their origin lines say. No forbidden words
+  outside identical copies, no browser global in the pure folders, no pixel number in
+  code outside `board-size.ts`. `localStorage` is touched in `src/storage` and in
+  `theme.ts` (see below). `../London` and `../Conquest` untouched.
+- **Mutation-checked.** Disabling the stored game's version check turns "gives null on
+  another version" red. Restored from git. The builder's own two (the New game guard
+  and the device-pixel condition) are taken on its account.
+- **Driven in the pane, whose display scale is 1.5.** At 1280 by 1000 the small board
+  measured exactly as at gate 2. Choosing Large gave 800 (not 808: the scale is 1.5),
+  bar, `.board` and `cg-board` all 800 and ending on 880.67 together; the sidebar 280
+  wide at x 892; `scrollWidth` 1280. Choosing level 6 mid-game put the session's
+  profile at level 6, 300 ms, Elo 1750 and wrote both the setting and the remembered
+  game as 6. A reload brought back the game, the level 6 select, Large ticked and the
+  board at 808 (the pane reports scale 1 after a navigation, and 808 is right for 1).
+  At 820 by 1180, after a dispatched `resize`, the board was 728, the sidebar under
+  the column at 757 wide, the list 232 tall, `scrollWidth` 805 against 820. Storage
+  cleared afterwards.
+- **The pane held a 22-move game from the builder's drive when I opened it.** The
+  chip's last item was to clear the pane's storage, and the notes do not say it was
+  done. No harm and nothing in the repo; noted so the next drive starts clean.
+- **Nick's ruling on the device-pixel fit is recorded in the spec by the builder**,
+  which was the right thing to do with a ruling taken mid-phase, and the wording is
+  faithful. The Q3 row now says it is superseded and points at S2.
+- **Two spec table rows the builder flagged as stale are corrected** (13.2: `Board.tsx`
+  adapted, `board-stub.tsx` adapted, and the two new files named).
+- **`Board.tsx` keeps both the observer and the size effect.** The observer covers a
+  host resized by CSS, which the narrow layout and a future change could do; the
+  effect covers the prop. Two lines and a comment each; not worth a third finding.
+- **One small reuse item, taken into phase 4:** `theme.ts` has its own try-catch
+  around `localStorage` from phase 0, and `prefs.ts` now owns that pattern (`read`
+  and `write`). `theme.ts` is already adapted, so it should call them. Spec S13 says
+  `src/storage` is the only place that reads or writes storage.
+- **For the phase 4 chip, confirmed:** `scriptedEngine` must not answer the bar's or
+  the hint's searches from its script, and the way to tell them apart is the profile
+  the provider sets before each: the analysis profile is level 8 at 150 ms, which no
+  playing level uses (level 3 is 150 ms but is not level 8).
+
+- [x] **Review gate 3 passed** (2026-09-12)

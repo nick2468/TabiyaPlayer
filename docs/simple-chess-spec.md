@@ -44,7 +44,7 @@ each folded into the body where it belongs:
 |---|---|---|
 | Q1 | Product name and identifiers | **Simple Chess.** Tauri identifier `com.nick.simple-chess`. Browser profile folder `%LOCALAPPDATA%\Simple Chess Data`. |
 | Q2 | iPad delivery | As Conquest: Cloudflare Pages from a private GitHub repository, at **`simplechess.datacrafter.net`**. Nick does the GitHub, Cloudflare and DNS steps. The GPL point (S22) is accepted. |
-| Q3 | What double size means | Small is 416 px, as the trainer. Large is 832 px on Windows. On iPad, large is as big as fits. |
+| Q3 | What double size means | Small is 416 px, as the trainer. Large is 832 px on Windows. On iPad, large is as big as fits. **Superseded 2026-09-12** (Nick: "the double size doesn't need to be taken literally"): large is the largest board that fits and draws whole squares, up to 832, on every platform. See S2. |
 | Q4 | The evaluator | The trainer's vertical bar beside the board, **with the number on it and no words.** |
 | Q5 | Buttons under the board | All four of the trainer's: New game, Undo, Redo, Hint. |
 | Q6 | Which colour you play | A "Play as" setting, White or Black, remembered, applied at the next New game. No random option. |
@@ -664,8 +664,10 @@ SimpleChess/
       paths.ts                    London, cut to isDesktop and LOCAL_FOLDER
     ui/
       App.tsx                     the shell: header, theme, the one screen
-      Board.tsx, board.css        London, identical
+      Board.tsx                   London, adapted: a size effect (phase 3; the board changes size while mounted)
+      board.css                   London, identical
       board-size.ts               London, plus the large size and the fit rule
+      use-board-pixels.ts         new: measures the viewport and the display scale for the fit rule
       theme.ts                    London, identical but for the key
       play-context.tsx            London, adapted: no book, no report, no record
       Screen.tsx                  the board column and the sidebar
@@ -679,7 +681,9 @@ SimpleChess/
     dev/
       scenes.ts                   the dev-only scene setup (section 15)
     test/
-      fake-engine.ts, board-stub.tsx, dom-setup.ts, dom.tsx   London, adapted
+      fake-engine.ts, dom-setup.ts   London, identical
+      board-stub.tsx, dom.tsx        London, adapted (the stub reports its orientation)
+      scripted-engine.ts             new: an engine that plays a script, for a mate in a test
   src-tauri/                      London, names changed, capabilities cut
   .claude/launch.json             simple-chess-dev on 5185, simple-chess-preview on 5186
 ```
