@@ -15,19 +15,21 @@ import { UpdateWatch } from './UpdateWatch'
 import './app.css'
 
 /**
- * Origin: London src/ui/App.tsx, adapted: the header and its two toggles, the selector row chooses a difficulty, the App and Shell split, one screen, and the settings read here.
+ * Origin: London src/ui/App.tsx, adapted: the header is the name alone, the selector row chooses a difficulty, the App and Shell split, one screen, and the settings read here.
  * The app shell: the header, the selector row, and the one screen under them
- * (spec 18.1).
+ * (spec 19.1).
  *
- * The header holds the name with the version beside it and the two toggles,
- * the board size and the theme. The selector row under it holds the
- * difficulty, where the trainer holds its course. There is no nav to a second
- * screen, because there is no second screen (spec S1).
+ * The header holds the name with the version beside it and nothing else. Its
+ * two toggles went under the board with every other control in phase 13 (spec
+ * Q23), and there is no nav to a second screen because there is no second
+ * screen (spec S1). The selector row under it holds the difficulty, where the
+ * trainer holds its course.
  *
- * The three settings are read here, once, and handed down (spec 10). This is
+ * The four settings are read here, once, and handed down (spec 10). This is
  * also the one place that knows what each one does to the running game, so no
  * control has to know: the level reaches the engine at once, the side waits for
- * the next new game, and the board size touches nothing but pixels.
+ * the next new game, and the board size and the theme touch nothing but pixels
+ * and colours.
  */
 
 export function App() {
@@ -59,9 +61,6 @@ export function Shell() {
   const { side, setSide } = useSide()
   const { boardSize, setBoardSize } = useBoardSize()
   const [notice, setNotice] = useState<ScreenNotice | null>(null)
-  const switchTo = theme === 'dark' ? 'Switch to the light theme' : 'Switch to the dark theme'
-  const switchSize =
-    boardSize === 'small' ? 'Switch to the large board' : 'Switch to the small board'
 
   // A notice says one thing about something that has just happened, so it goes
   // by itself rather than waiting to be dismissed. Cleared on the way out as
@@ -114,14 +113,15 @@ export function Shell() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  /** A fresh game at whatever the sidebar now says (spec 5.1). */
+  /** A fresh game at whatever the settings row now says (spec 5.1). */
   const newGame = () => void game.start({ level, side })
 
   /**
    * A new level: remembered, and heard by the engine's next move (spec S6).
    *
-   * The two halves belong together and neither belongs in `Sidebar`, which
-   * knows nothing about the running game, so this is where they are joined.
+   * The two halves belong together and neither belongs in `DifficultyRow`,
+   * which knows nothing about the running game, so this is where they are
+   * joined.
    */
   const chooseLevel = (next: number) => {
     setLevel(next)
@@ -216,30 +216,6 @@ export function Shell() {
         <h1>
           Simply Chess <span className="app-version">v{__APP_VERSION__}</span>
         </h1>
-        <nav className="app-nav">
-          {/* Each toggle reads the size or the theme it would switch TO, which
-              is the trainer's rule for its own. The size one goes first so the
-              theme toggle keeps the end of the row it has always had (spec
-              18.1). */}
-          <button
-            type="button"
-            className="nav-link theme-toggle"
-            onClick={() => setBoardSize(boardSize === 'small' ? 'large' : 'small')}
-            title={switchSize}
-            aria-label={switchSize}
-          >
-            {boardSize === 'small' ? 'Large' : 'Small'}
-          </button>
-          <button
-            type="button"
-            className="nav-link theme-toggle"
-            onClick={toggle}
-            title={switchTo}
-            aria-label={switchTo}
-          >
-            {theme === 'dark' ? 'Light' : 'Dark'}
-          </button>
-        </nav>
       </header>
 
       <DifficultyRow level={level} onLevel={chooseLevel} />
@@ -248,11 +224,12 @@ export function Shell() {
         <Screen
           settings={{
             level,
-            onLevel: chooseLevel,
             side,
             onSide: setSide,
             boardSize,
             onBoardSize: setBoardSize,
+            theme,
+            onTheme: toggle,
           }}
           files={{
             onSave: () => void save(),

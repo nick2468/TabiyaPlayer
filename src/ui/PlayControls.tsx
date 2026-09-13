@@ -1,8 +1,9 @@
 import type { PlaySession } from '../play'
+import { PlayActions } from './PlayActions'
 
 /**
- * Origin: London src/ui/Play.tsx PlayControls, adapted: no length cap, so the Keep playing tooltip says nothing about a record this app does not keep.
- * The rows of buttons under the board.
+ * Origin: London src/ui/Play.tsx PlayControls, adapted: no length cap, so the Keep playing tooltip says nothing about a record this app does not keep; row two carries the actions as well.
+ * The first two rows of buttons under the board (spec S19).
  *
  * Under the board because that is where the hand is, and real buttons because
  * these do things to the game: New game throws it away, Undo and Redo move it,
@@ -10,6 +11,10 @@ import type { PlaySession } from '../play'
  *
  * New game first, because it is the one you look for; then the two that move
  * the game; then the one that helps with the position in front of you.
+ *
+ * Row one is the game and row two is THIS game, and the two rows below them,
+ * the file and the settings, act on neither: they are `FileRow` and
+ * `SettingsRow`, composed beside this one by `Screen`.
  */
 
 /** What walks a reviewed game, built once so one object drives every stepper. */
@@ -30,12 +35,15 @@ export function PlayControls({
   canResume,
   replay,
   playFromWhy,
+  scanning,
   onNew,
   onUndo,
   onRedo,
   onHint,
   onResume,
   onPlayFrom,
+  onFinish,
+  onDiscard,
 }: {
   session: PlaySession
   /** A report is showing, so the game is not the board's any more (spec 18.4). */
@@ -51,12 +59,16 @@ export function PlayControls({
    * Null when there is no review at all and the button does not belong.
    */
   playFromWhy: string | null
+  /** How far the review's scan has got, while one is running (spec 18.3). */
+  scanning: { done: number; total: number } | null
   onNew: () => void
   onUndo: () => void
   onRedo: () => void
   onHint: () => void
   onResume: () => void
   onPlayFrom: () => void
+  onFinish: () => void
+  onDiscard: () => void
 }) {
   return (
     <>
@@ -91,9 +103,13 @@ export function PlayControls({
         </button>
       </div>
 
-      {/* Row two: what a reviewed game offers, and it exists only while one is
-          showing. Two rows rather than one because the board can be 416px and
-          one row of all of these does not fit under it.
+      {/* Row two: this game. While one is going that is the two ways to stop
+          it; once a report is showing it is what the report offers instead. The
+          two states are exclusive, so this is one row and never two.
+
+          Two rows rather than one because the board can be 416px and all of
+          these in one row would wrap into a ragged second line rather than a
+          deliberate one.
 
           The two on the left are the pair people confuse, so they are side by
           side and each says in its tooltip what happens to the game. */}
@@ -149,7 +165,15 @@ export function PlayControls({
             </button>
           </div>
         </div>
-      ) : null}
+      ) : (
+        <PlayActions
+          session={session}
+          scanning={scanning}
+          thinking={thinking}
+          onFinish={onFinish}
+          onDiscard={onDiscard}
+        />
+      )}
     </>
   )
 }

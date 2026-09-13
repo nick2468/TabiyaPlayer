@@ -9,6 +9,11 @@ import { ReportBar } from './EvalBar'
  * Two headings: what the engine thought of the user's moves, and what it makes
  * of the position the game ended in. Everything is in words; the number is the
  * live bar's job (spec S18).
+ *
+ * Every line of it reads in the head row's colour at the body size and weight
+ * (spec S20), which is one rule in the stylesheet rather than a class per line:
+ * the hint count and the outcome had their own until phase 13 and no longer
+ * need one.
  */
 export function Report({
   report,
@@ -27,7 +32,7 @@ export function Report({
 
       <h4>Your moves</h4>
       {report.hints ? (
-        <p className="hint-count">
+        <p>
           You used {report.hints} {report.hints === 1 ? 'hint' : 'hints'}.
         </p>
       ) : null}
@@ -51,7 +56,7 @@ export function Report({
       <h4>The final position</h4>
       <p>{report.verdict}</p>
       {report.finalEval !== undefined ? <ReportBar pawns={report.finalEval} /> : null}
-      {report.outcome ? <p className="hint">{report.outcome}</p> : null}
+      {report.outcome ? <p>{report.outcome}</p> : null}
 
       <CopyGame text={pgn} />
     </div>

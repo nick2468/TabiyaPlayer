@@ -7,16 +7,31 @@ from is Q22 and undecided),
 from one React, TypeScript and Vite code base. The code is copied from those two apps
 wherever they already do the job, so that a shared library can follow later.
 
-Current state: **version 1.1.0 is built, and it is the whole of the specification.**
-Phase 12 landed 2026-09-13 and is the last: the version is 1.1.0 in its three files, the
-Windows installer is built, `docs/acceptance.md` is rewritten for version 2 and walks
+Current state: **version 1.2.0 is built, and it is the whole of the specification.**
+Phase 13 landed 2026-09-14, after Nick used 1.1.0 and asked for the report to have the
+room: **every button and every toggle is now under the board**, in the four rows of spec
+S19 (the game; this game; the file; the settings, with the board size and theme toggles
+at its right-hand end), and the side panel holds the hint sentence and the report and
+nothing else. The report starts at the top of that column, where it used to start 195.8
+px down it, and reads in the head row's colour at the body size and weight (S20). The
+selector row is left aligned, so "Difficulty" starts on the same pixel as "Simply
+Chess". The header is the name and the version alone. Two rows under the board became
+four, so `CHROME_BELOW` is 224 where it was 120 and the large board gives up the
+difference: 584 at 1400 by 980 (576 at a display scale of 1.25 or 1.5), 424 on a
+landscape iPad, 728 upright. Nick ruled that trade when he asked for the room.
+**No Windows window was built at 1.2.0**: it is a source version, and the build is the
+next phase or Nick's call. The only installer on disk is 1.1.0's.
+Three boxes are open and all three are Nick's: 7.8 (publish, Home
+Screen, aeroplane mode), 8.6 and its successor 12.6 (install, play, save and load through
+the real dialogs, reopen, review, uninstall).
+
+Phase 12 landed 2026-09-13: the version became 1.1.0 in its three files, the
+Windows installer was built, `docs/acceptance.md` was rewritten for version 2 and walks
 every item of spec 17 with 18.7's additions folded in, and the deploy document carries
 both of Q22's routes with the choice still Nick's. Gate 11's one finding is fixed: Play
 from here is now off at the start of a game, with "This is the start of the game. Use New
 game.", because ply 0 here is always the opening position and the button there was New
-game under another name. Three boxes are open and all three are Nick's: 7.8 (publish, Home
-Screen, aeroplane mode), 8.6 and its successor 12.6 (install, play, save and load through
-the real dialogs, reopen, review, uninstall).
+game under another name.
 
 Phase 11 passed gate 11 on 2026-09-13 (commits `2502c88` and `a92020b`): **a reviewed game
 is a viewer** (spec 18.4). Every move in the list is a
@@ -78,8 +93,9 @@ scale).
 ## Documents
 
 - [docs/simple-chess-spec.md](docs/simple-chess-spec.md) - what the app does and how
-  it is built. Authoritative. Section 2 records Nick's rulings Q1 to Q14 and section
-  18 his Q15 to Q22; **section 18 wins wherever it and sections 1 to 17 differ.**
+  it is built. Authoritative. Section 2 records Nick's rulings Q1 to Q14, section
+  18 his Q15 to Q22 and section 19 his Q23 to Q26; **each later section wins wherever
+  it and an earlier one differ, so 19 wins over 18 and 18 over 1 to 17.**
   Numbered decisions S1 upward carry their reasons.
 - [docs/simple-chess-build-plan.md](docs/simple-chess-build-plan.md) - the phases,
   their boxes, and the rules for the builder. Tick a box when the item lands with
@@ -155,7 +171,11 @@ scale).
   `canPlayFromPly` and `whyNotPlayable` in `ui/play-from-replay.ts` (whether a
   viewed position can be played on from, and the sentence saying why not);
   `keepInView` in `ui/MoveList.tsx` (the only thing that scrolls the list, for
-  both the newest row and the marked move); `toClipboard` in `ui/CopyGame.tsx`
+  both the newest row and the marked move); one component per row under the
+  board, and each row built in exactly one of them (`PlayControls` for rows one
+  and two, which includes `PlayActions` as row two's other state, `FileRow` for
+  row three and `SettingsRow` for row four, which is the only place the two
+  toggles and their "switch to" sentences are written); `toClipboard` in `ui/CopyGame.tsx`
   (the only clipboard); `pgnNow` in `Shell` (the running game as text, for Save game and Copy
   game, which must write the same one); the `read`, `write`, `oneOf`, `readOneOf`, `useRemembered` and
   `remember*` helpers in `prefs.ts` (every setting; `oneOf` answers "is this one of

@@ -93,6 +93,18 @@ describe('walking a reviewed game', () => {
     expect(screen.queryByRole('button', { name: /^move / })).toBeNull()
     expect(button('Undo').disabled).toBe(true)
     expect(button('Redo').disabled).toBe(true)
+
+    // S15 item 20 in the OTHER state of row two: the row that replaced Stop and
+    // review is under the board like the rest, and the panel is the report
+    // (spec S19, Q24). The only buttons in it are the report's own, which are
+    // its slips and Copy game rather than controls (spec 18.5).
+    for (const name of ['Keep playing', 'Play from here', 'Back one move']) {
+      expect(button(name).closest('.play-column')).not.toBeNull()
+    }
+    expect(screen.queryByRole('button', { name: 'Stop and review' })).toBeNull()
+    for (const inPanel of document.querySelectorAll('.play-side button')) {
+      expect(inPanel.closest('.report')).not.toBeNull()
+    }
   })
 
   it("stands on the slip's own position, with the engine's move beside it", async () => {

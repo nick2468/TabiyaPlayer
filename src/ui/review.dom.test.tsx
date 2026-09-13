@@ -85,6 +85,15 @@ describe('Stop and review', () => {
     // The verdict is the FINAL position's, in words, with the bar beside it.
     expect(report()?.textContent).toContain('Winning for Black')
     expect(screen.getByRole('img', { name: 'Evaluation: winning for black' })).toBeTruthy()
+
+    // S15 item 21: every line of the report reads in the head row's colour,
+    // which is ONE rule on `.report` (spec S20). jsdom applies no stylesheet,
+    // so the colour itself is measured in the pane; what a test can hold is
+    // that no line carries a colour of its own for that rule to lose to, which
+    // is how the hint count and the outcome used to read differently.
+    const lines = report()?.querySelectorAll('h3, h4, p') ?? []
+    expect(lines.length).toBeGreaterThan(0)
+    for (const line of lines) expect(line.className).toBe('')
   })
 
   it('says so plainly when nothing went wrong', async () => {
@@ -131,8 +140,9 @@ describe('Stop and review', () => {
     await user.click(await screen.findByRole('button', { name: 'move g4' }))
     await vi.waitFor(() => expect(movesOnScreen()).toHaveLength(4))
 
-    // The notice says the game is not finished with until it has been looked at.
-    expect(document.querySelector('.play-actions .notice')?.textContent).toBe(
+    // The notice says the game is not finished with until it has been looked
+    // at. It is under the rows with the app's other notices (spec S19).
+    expect(document.querySelector('.play-column .notice')?.textContent).toBe(
       'You were checkmated. Review it to see what it cost.',
     )
 
@@ -153,7 +163,7 @@ describe('Stop and review', () => {
 
     await user.click(button('Stop and review'))
     await vi.waitFor(() => expect(report()).not.toBeNull())
-    expect(document.querySelector('.hint-count')?.textContent).toBe('You used 1 hint.')
+    expect(screen.getByText('You used 1 hint.')).toBeTruthy()
   })
 })
 

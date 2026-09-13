@@ -695,25 +695,25 @@ fit rule). `src/ui/App.tsx` (the header and the nav), `src/ui/DifficultyRow.tsx`
 `src/ui/SidePanel.tsx`, `src/ui/PlayActions.tsx`, `src/ui/PlayControls.tsx`,
 `src/ui/Screen.tsx`, `src/ui/board-size.ts`, `src/ui/app.css` and `src/ui/play.css`.
 
-- [ ] 13.1 The four rows under the board, in S19's order and grouping: the game, this
+- [x] 13.1 The four rows under the board, in S19's order and grouping: the game, this
       game (the actions or the review row), the file, the settings with the two toggles
       at the right-hand end. Every row the width of the board at both sizes.
-- [ ] 13.2 The side panel holds the hint sentence and the report, nothing else, and the
+- [x] 13.2 The side panel holds the hint sentence and the report, nothing else, and the
       report starts at the top of the column. `SidePanel.tsx` goes or becomes the row
       it now is; `PlayActions` moves under the board.
-- [ ] 13.3 "Applies to the next new game." moves into the Play as control's `title`.
-- [ ] 13.4 The report's words take `--text-soft` at the body size and weight (S20). The
+- [x] 13.3 "Applies to the next new game." moves into the Play as control's `title`.
+- [x] 13.4 The report's words take `--text-soft` at the body size and weight (S20). The
       slips' left edges, the tag colours and the bar are untouched.
-- [ ] 13.5 The selector row is left aligned under the heading (Q26).
-- [ ] 13.6 `CHROME_BELOW` re-measured at the large board with a report showing, which is
+- [x] 13.5 The selector row is left aligned under the heading (Q26).
+- [x] 13.6 `CHROME_BELOW` re-measured at the large board with a report showing, which is
       the state with the most rows, and the new large board size recorded. Nothing else
       in `board-size.ts` changes.
-- [ ] 13.7 Tests: S15 items 20, 21 and 22; every test that reaches a moved control
+- [x] 13.7 Tests: S15 items 20, 21 and 22; every test that reaches a moved control
       through the old markup updated rather than deleted.
-- [ ] 13.8 Driven in the pane at the three viewports of 15.2, both sizes, both themes,
+- [x] 13.8 Driven in the pane at the three viewports of 15.2, both sizes, both themes,
       with the probe: S16's two numbers hold, no row is wider than the board, and the
       report's colour is the head row's. Both states of row 2.
-- [ ] 13.9 Version 1.2.0 in the three files, the docs swept, the reuse review, commit.
+- [x] 13.9 Version 1.2.0 in the three files, the docs swept, the reuse review, commit.
 
 ## Progress
 
@@ -732,7 +732,7 @@ fit rule). `src/ui/App.tsx` (the header and the nav), `src/ui/DifficultyRow.tsx`
 | 10 - stop, review, the report | **Complete** 2026-09-13, gate passed the same day. 305 tests green in 14.4 s. A game can be stopped and reviewed or stopped and discarded; the report names each slip with the engine's better move and gives the final position a verdict in words; the hint count reaches the report and the file; Copy game and Save game write the same text. Driven against the real Stockfish in the pane. |
 | 11 - the review viewer, Keep playing, Play from here | **Complete** 2026-09-13. 323 tests green in 16.3 s. A reviewed game is a viewer: every move is a button, the marked one is in `--mark`, the arrow keys step, the bar follows the position being looked at, and a slip's sentence puts the board where it was played from with the engine's move as a blue arrow beside it. Keep playing and Play from here both work. The board does not change size when row two appears. |
 | 12 - version 1.1.0 | **Complete** 2026-09-13, box 12.6 is Nick's. 324 tests green in 9.2 s. Gate 11's finding fixed in `ce0e743`; 1.1.0 in the three files; the installer is 6,898,142 bytes and the shipped window was driven, reviewed and walked at 688 with S16 holding; `docs/acceptance.md` rewritten for version 2; both of Q22's routes documented. |
-| 13 - room for the report | **Not started.** Spec section 19: every control under the board, the report alone in the side panel and reading in the head row's colour, the selector row left aligned, 1.2.0. |
+| 13 - room for the report | **Complete** 2026-09-14. 324 tests green in 9.1 s. Every button and toggle is under the board in the four rows of S19; the side panel is the hint sentence and the report, which starts at the top of the column and reads in the head row's colour; the selector row lines up under the heading. `CHROME_BELOW` is 224 and the large board 584 at 1400 by 980. Version 1.2.0 in the three files; no window built at it. |
 
 ## Phase notes
 
@@ -3317,4 +3317,189 @@ in the source reads a URL.
   not deleted. The packaged window's own storage did have a game seeded into it for the
   review drive, over a 65-move game a previous session's drive had left; the seeded game
   was removed afterwards and the four settings keys left as they were.
+- `../London` and `../Conquest` were not touched.
+
+### Phase 13 - builder notes (2026-09-14)
+
+Everything the chip named was read fresh before anything was touched: `CLAUDE.md` all
+through, spec 19 then 18.1, 18.3 to 18.5 and S2, the plan's rules and phase 13 and the
+phase 9 notes, `docs/testing.md` and `docs/acceptance.md`, and then `App.tsx`,
+`DifficultyRow.tsx`, `SidePanel.tsx`, `PlayActions.tsx`, `PlayControls.tsx`,
+`Screen.tsx`, `board-size.ts`, `app.css` and `play.css`.
+
+**Measured.**
+
+- `npx vitest run`: 37 files, **324 tests passed, none skipped**, 9.1 seconds warm (255
+  string in 25 files, 69 DOM in 12). The count is unchanged because this phase added
+  assertions to tests that already mount rather than mounts of its own, which is what
+  the twenty-second rule asks for. `tsc -b` clean, `npx oxlint` silent, `npm run build`
+  clean (main chunk 329.31 kB, precache 21 entries), `grep -c midgame` 0 in every built
+  chunk, no em dashes under `src/` or `src-tauri/src/`.
+- **The layout pass, twelve rows**, `?scene=midgame`, the probe read from the file in
+  the pane. The bar, `.board` and `cg-board` share one bottom in every row, no row under
+  the board is wider than the board, and `scrollWidth` never exceeds `innerWidth`.
+
+  | Viewport | Size | Theme | Board | Bar/board/cg bottom | Fourth row ends at | Row widths | scrollWidth / innerWidth |
+  |---|---|---|---|---|---|---|---|
+  | 1400 x 980 | large | dark | 584 | 751 | 951 | 584, 584, 584, 584 | 1400 / 1400 |
+  | 1400 x 980 | large | light | 584 | 751 | 951 | 584, 584, 584, 584 | 1400 / 1400 |
+  | 1400 x 980 | small | dark | 416 | 583 | 783 | 416, 416, 416, 416 | 1400 / 1400 |
+  | 1400 x 980 | small | light | 416 | 583 | 783 | 416, 416, 416, 416 | 1400 / 1400 |
+  | 1180 x 820 | large | dark | 424 | 591 | 791 | 424, 424, 424, 424 | 1180 / 1180 |
+  | 1180 x 820 | large | light | 424 | 591 | 791 | 424, 424, 424, 424 | 1180 / 1180 |
+  | 1180 x 820 | small | dark | 416 | 583 | 783 | 416, 416, 416, 416 | 1180 / 1180 |
+  | 1180 x 820 | small | light | 416 | 583 | 783 | 416, 416, 416, 416 | 1180 / 1180 |
+  | 820 x 1180 | large | dark | 728 | 895 | 1095 | 728, 728, 728, 728 | 805 / 820 |
+  | 820 x 1180 | large | light | 728 | 895 | 1095 | 728, 728, 728, 728 | 805 / 820 |
+  | 820 x 1180 | small | dark | 416 | 583 | 783 | 416, 416, 416, 416 | 820 / 820 |
+  | 820 x 1180 | small | light | 416 | 583 | 783 | 416, 416, 416, 416 | 820 / 820 |
+
+  The last four rows are the narrow layout, where the page scrolls down as it always
+  did there and the board takes the width the other two columns would have had.
+
+  One thing about the pane rather than about the app: its viewport emulation does not
+  fire a `resize` event, so the first reading after a resize is the OLD window's answer
+  and says 584 where the board is about to be 424. Every row above was taken after a
+  navigation at that viewport. A real window fires `resize` and `useBoardPixels` listens
+  for it.
+- **`CHROME_BELOW` is 224**, where phase 9 measured 120. Read off the probe at 1400 by
+  980 with the small board: the column's 12px gap under the board, then four rows of 38
+  with a 12px gap between them, then the page's 24px bottom padding. 12 + 38 + 12 + 38 +
+  12 + 38 + 12 + 38 + 24 = 224. Measured at a display scale of 1, where a row is 38
+  rather than the 37.33 the pane reports at 1.5, because the larger is the one that has
+  to fit.
+- **The state with the most rows is a game in progress, not a report**, which is the one
+  place this phase departs from the chip's wording. Both states have four rows; the
+  review row carries phase 11's -4px top margin, so a report showing ends at 947 where a
+  game in progress ends at 951, in the same load at the same board size. 224 covers the
+  taller of the two, and the board was 584 in both, so it still does not change size when
+  the report arrives.
+- **What it costs the board**, recorded so the number is not a surprise: the large board
+  is **584** at 1400 by 980 where phase 9 measured 688, and **576** at a display scale of
+  1.25 or 1.5, which is this machine. On a landscape iPad it is **424** against the small
+  board's 416, and at a fractional scale there it steps to 416 itself. The upright iPad is
+  unchanged at 728, because the width runs out there before the height does. The full 832
+  now needs a viewport 1223px tall rather than 1115.
+- **The report, in the pane at 1400 by 980.** It starts at y 167 with the side panel's own
+  top at y 167, where the chip measured it starting 195.8px down the column. Its computed
+  colour is `rgb(200, 204, 210)` at 16px and weight 400, and `.play-opening`'s is
+  `rgb(200, 204, 210)` at 16px and weight 400: the same three values, read in the same
+  load. In the light theme both are `rgb(61, 65, 71)`. The headings, the slips, the
+  verdict, the hint count and the outcome are all that colour; the blunder's left edge is
+  still `rgb(224, 122, 111)`.
+- **"Difficulty" starts on the same pixel as "Simply Chess"**: both x 24, which is the
+  page's `--pad-left` and nothing else (Q26). No button is left in the header, and the
+  only buttons in the panel are the report's own two slips and Copy game.
+- **Looked at**, two screenshots. A reviewed game at the large board in the dark theme:
+  the header with the name alone, the Difficulty row under it at the left, the 584 board
+  with its bar at -6.2, the four rows under it with the review row second and the arrows
+  at the board's right edge, the settings row with PLAY AS, the two radios and Small and
+  Light at the far end, and the report filling the panel from its top with both slips in
+  their coloured borders. The same game at the small board in the light theme reads the
+  same way. Nothing is cut off and nothing scrolls sideways.
+- **The seeded game for that drive** was 1.e4 e5 2.Qh5 Nc6 3.Qxe5+ Nxe5, scanned by the
+  real engine into a blunder and an inaccuracy, so the slips on screen are the engine's
+  rather than a fixture's.
+
+**Decided (code shape), and why.**
+
+- **A component per row, and `PlayControls` keeps rows one and two.** The chip left the
+  choice open. Rows one and two act on the game in front of you and row two has two
+  exclusive states, so the choice between them belongs in one place, which is
+  `PlayControls`: it renders `PlayActions` where the review row is not. Rows three and
+  four act on neither, so they are `FileRow.tsx` and `SettingsRow.tsx`, composed by
+  `Screen` beside it. Each row is built in exactly one file.
+- **`SidePanel.tsx` is gone rather than renamed.** Both halves of it left: Play as went
+  into `SettingsRow` and the file buttons into `FileRow`, and what is left in the panel
+  is the hint sentence and the report, which `Screen` already composed. A file holding
+  nothing is not a file. `SettingsProps` and `FileProps` went with their controls, so each
+  interface now lives in the component that consumes it.
+- **`SettingsProps.onLevel` went with it.** It was passed from `Shell` to `Screen` and
+  read by nobody: the selector row is wired up directly. The level itself stays in the
+  bundle, because the head row falls back to it.
+- **Play as is a `role="radiogroup"` rather than a fieldset.** Measured first: a fieldset
+  draws its legend in the top border, which put "PLAY AS" on a line of its own, made the
+  row 53.39px tall against the 38 of the three above it, and cost the board 15 more
+  pixels. The role and an `aria-label` say the same thing to a screen reader, on one
+  line. The label keeps the legend's faint upper case.
+- **The outcome's sentence is a `Notice` under the rows**, not a line inside row two. The
+  chip asks for it "where the other notices already are, under the buttons", and that is
+  also the only place it does not move the two rows below it every time a game ends. It
+  is written in `Screen`, beside the two notices it now sits with, and `PlayActions` says
+  so in its header comment. It was a hand-written `<p className="notice">` in
+  `PlayActions` before this phase, which was a second copy of what `Notice.tsx` exists to
+  be, so the move closed a duplication as well.
+- **The two toggles are ordinary buttons now.** They were `nav-link theme-toggle`, whose
+  margin, left border and faint colour are a header device; in a row of buttons under the
+  board they read as buttons, which is what spec 19.1's diagram draws. `.nav-link`,
+  `.theme-toggle` and `.app-nav` are gone from `app.css` with the nav they styled.
+- **`.play-steps` and `.play-views` share one rule.** The chip asks for the toggles to end
+  their row "exactly as the stepping arrows end row 2 today. One pattern, already in
+  play.css", so the pattern is one rule with two selectors rather than three declarations
+  written twice.
+- **The report's colour is one rule on `.report`**, and the per-line classes went: the
+  hint count's `.hint-count` and the outcome's `.hint` were the two lines that read
+  differently, and with one colour for all of them neither has anything left to say. The
+  `.hint` class survives with one user, Copy game's "Copied", which is feedback rather
+  than a line of the report.
+- **The headings keep their case and letter spacing.** S20 names the colour, the size and
+  the weight and says nothing about case, and without something a heading at the body size
+  and weight is not a heading. Looked at in both themes: they read as labels, which is
+  what they are.
+
+**Tests.**
+
+- **S15 item 20** is held twice, once per state of row two. `remembered.dom.test.tsx`
+  walks ten named controls plus the radios and asks that each one's
+  `closest('.play-column')` is not null, and that neither the panel nor the header holds
+  a button; `viewer.dom.test.tsx` asks the same of Keep playing, Play from here and the
+  arrows, and that every button in the panel is inside the report. Finding each by NAME is
+  the point: a control that moves again keeps its test, and only the column it is asked
+  about changes.
+- **S15 item 21** can only be held structurally in jsdom, which applies no stylesheet:
+  `review.dom.test.tsx` asks that no heading or paragraph of the report carries a class of
+  its own for the one rule to lose to. The colour itself is a pane measurement, above, and
+  `docs/acceptance.md` says so rather than implying a test holds it.
+- **S15 item 22** is `remembered.dom.test.tsx`, which now clicks the theme toggle beside
+  the other three settings and checks all four across a restart.
+- **Mutation-checked.** Rendering `FileRow` inside the side panel instead of under the
+  board turns both halves of item 20 red, one test in each file. Reversed with the reverse
+  edit, never `git checkout --`.
+- **Five test files reached a moved control, not the four the chip predicted.** The fifth
+  is `shell.dom.test.tsx`, whose theme-toggle test pressed a button that used to be in the
+  header and is now inside `Screen`, which renders nothing until the first game exists: it
+  waits for the board first, which is the one line it cost. `files.dom.test.tsx` needed no
+  change at all, because every one of its seventeen references finds a button by its name.
+
+**Asked of Nick.** Nothing. Section 19 settled every question this phase raised, and the
+two judgement calls it left open (which component holds each row, and what to do with a
+row that will not fit) are the chip's own decision rules.
+
+**Reuse review.** Four things found and closed: the notice duplication above; the
+`margin-left: auto` pattern, now one rule for both groups; the dead `onLevel`; and the
+"switch to the large board" and "switch to the light theme" sentences, which are now
+written once in `SettingsRow` where they were in `App`. Every class in both stylesheets
+still has a component that uses it, counted. `--surface-hover` in `index.css` is now
+unused and was left, because that file is the trainer's palette copied byte-identical (S3)
+and a palette entry is not a rule. No em dashes under `src/`, and no forbidden word in a
+new or adapted file.
+
+**Left.**
+
+- **No Windows window was built.** 1.2.0 is a source version this phase (the chip's own
+  out-of-scope list), so the only installer on disk is 1.1.0's.  `docs/acceptance.md` item
+  9 says which version its numbers belong to and what will differ when a 1.2.0 window is
+  built: the board size and the four rows.
+- **Box 12.6 still names 1.1.0**, because that is the installer that exists. Whoever
+  builds 1.2.0 should point that box at the new one.
+- **The landscape iPad's two board sizes have nearly converged**: 424 against 416, and 416
+  against 416 at a fractional display scale. It is not BELOW the small board, so the
+  chip's stop rule does not fire, but at 1180 by 820 the size toggle now does almost
+  nothing, and Nick should know that before he meets it.
+- Two files, `src/dev/use-dev-scene.ts` and `src/ui/keep-in-view.ts`, showed as modified in
+  `git status` at the start of this session with an empty diff. They are byte-identical to
+  `HEAD`, checked by hash and by length: a stale stat cache, and neither was touched or
+  staged.
+- The pane's `localStorage` and `sessionStorage` were cleared after the last drive and the
+  dev server was stopped.
 - `../London` and `../Conquest` were not touched.

@@ -14,22 +14,23 @@ import {
 } from '../play'
 import { Board } from './Board'
 import { EvalBar } from './EvalBar'
+import { FileRow, type FileProps } from './FileRow'
 import { MoveList } from './MoveList'
 import { Notice } from './Notice'
-import { PlayActions } from './PlayActions'
 import { PlayControls } from './PlayControls'
 import { PlayHead } from './PlayHead'
 import { Report } from './Report'
 import { PromotionPicker, type PromotionPiece } from './PromotionPicker'
-import { SidePanel, type FileProps, type SettingsProps } from './SidePanel'
+import { SettingsRow, type SettingsProps } from './SettingsRow'
 import { whyNotPlayable } from './play-from-replay'
 import { usePlay } from './play-context'
 import { useBoardPixels } from './use-board-pixels'
 import './play.css'
 
 /**
- * The one screen (spec 18.1): the head row, and under it three columns - the
- * board with its bar and buttons, the move list, and the side panel.
+ * The one screen (spec 19.1): the head row, and under it three columns - the
+ * board with its bar and its four rows of buttons, the move list, and the side
+ * panel, which is the report.
  *
  * Built from the provider's state and the settings handed down from `Shell`,
  * and nothing else. Until the first game exists there is nothing to show,
@@ -206,6 +207,10 @@ export function Screen({
             )}
           </div>
 
+          {/* The four rows of spec S19, in its order: the game, this game, the
+              file, the settings. Rows one and two act on the game in front of
+              you and are `PlayControls`; rows three and four do not and are
+              their own. */}
           <PlayControls
             session={session}
             reviewing={report !== null}
@@ -214,16 +219,41 @@ export function Screen({
             canResume={game.canResume}
             replay={report ? { ply, count: atEnd, onBack, onForward } : null}
             playFromWhy={playFromWhy}
+            scanning={game.scanning}
             onNew={onNewGame}
             onUndo={game.undo}
             onRedo={game.redo}
             onHint={() => void game.askHint()}
             onResume={game.resume}
             onPlayFrom={() => onPlayFrom(moves.slice(0, ply).map((move) => move.san))}
+            onFinish={() => void game.finish()}
+            onDiscard={onDiscard}
+          />
+
+          <FileRow {...files} />
+
+          <SettingsRow
+            side={settings.side}
+            onSide={settings.onSide}
+            boardSize={settings.boardSize}
+            onBoardSize={settings.onBoardSize}
+            theme={settings.theme}
+            onTheme={settings.onTheme}
           />
 
           {/* Under the buttons, where something that has just happened belongs.
-              Where the game is up to is in the head row instead (spec 18.1). */}
+              Where the game is up to is in the head row instead (spec 18.1).
+
+              The first of the three is the game's own: a game that ended by
+              itself is not finished with until it has been looked at, and the
+              head row says the outcome in three words without saying that. It
+              is a notice rather than a line in row two, because a sentence
+              inside the rows would move the two below it every time a game
+              ended. */}
+          {report === null && session.outcome && (
+            <Notice message={`${session.outcome}. Review it to see what it cost.`} />
+          )}
+
           {game.engineError && <Notice message={game.engineError} bad />}
 
           {notice && <Notice message={notice.text} bad={notice.bad} />}
@@ -236,25 +266,16 @@ export function Screen({
           onSelect={step}
         />
 
-        {/* Play as, the file buttons, the hint sentence, and then either what
-            you can do with the game or the report on it (spec 18.1). */}
+        {/* The hint sentence and the report, and nothing else (spec Q24). Both
+            are the game talking rather than controls, and the report starts at
+            the top of the column because it is what the column is for. During a
+            game with no hint showing the panel is empty, which is allowed: the
+            screen is left weighted while you play and fills when there is
+            something to read. */}
         <aside className="play-side">
-          <SidePanel side={settings.side} onSide={settings.onSide} {...files} />
           {game.hint && <p className="hint-said engine">{game.hint.text}</p>}
-          {report ? (
-            <Report
-              report={report}
-              pgn={pgn}
-              onJump={(movePly) => step(plyBeforeMove(movePly))}
-            />
-          ) : (
-            <PlayActions
-              session={session}
-              scanning={game.scanning}
-              thinking={thinking}
-              onFinish={() => void game.finish()}
-              onDiscard={onDiscard}
-            />
+          {report && (
+            <Report report={report} pgn={pgn} onJump={(movePly) => step(plyBeforeMove(movePly))} />
           )}
         </aside>
       </div>

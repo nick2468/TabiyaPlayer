@@ -1,12 +1,18 @@
 import type { PlaySession } from '../play'
 
 /**
- * Origin: London src/ui/Play.tsx PlayActions, adapted: no length cap, so the two extend buttons go and the notice is only ever about an outcome; the engine error is shown under the board instead.
+ * Origin: London src/ui/Play.tsx PlayActions, adapted: no length cap, so the two extend buttons go; it is a row under the board rather than a block in the panel, and its notice goes with the other notices.
  * What you can do with a game that is not yet a report (spec 18.3).
  *
- * A game that ended by itself gets a notice above the buttons, because the head
- * row says the outcome in three words and there is one more thing worth saying:
- * the game is not finished with until it has been looked at.
+ * This is row two under the board while a game is going; the same row carries
+ * Keep playing, Play from here and the stepping arrows once a report is showing
+ * (spec S19). The two states are exclusive, so `PlayControls` chooses between
+ * them and this file is only ever the first of them.
+ *
+ * The sentence a finished game gets, "Review it to see what it cost.", is under
+ * the rows with the other notices from phase 13, where `Screen` writes it. It
+ * sat above these two buttons while they were in the side panel; under the
+ * board it would move the three rows below every time a game ended.
  *
  * Stop and discard sits second because review is what a game is for. There is
  * no confirmation, for the trainer's reason: an unsaved game is the smallest
@@ -27,25 +33,17 @@ export function PlayActions({
 }) {
   const finished = session.isFinished()
   return (
-    <div className="play-actions">
-      {/* The outcome rather than `finished`, so nothing can print the word
-          "undefined" at a reader: every way a game ends by itself has a
-          sentence for it (spec 5.5). */}
-      {session.outcome ? (
-        <p className="notice">{session.outcome}. Review it to see what it cost.</p>
-      ) : null}
-      <div className="play-extend">
-        <button type="button" className="primary" onClick={onFinish} disabled={thinking}>
-          {scanning
-            ? `Scanning ${scanning.done} of ${scanning.total}...`
-            : finished
-              ? 'Review the game'
-              : 'Stop and review'}
-        </button>
-        <button type="button" onClick={onDiscard} disabled={thinking}>
-          Stop and discard
-        </button>
-      </div>
+    <div className="play-controls">
+      <button type="button" className="primary" onClick={onFinish} disabled={thinking}>
+        {scanning
+          ? `Scanning ${scanning.done} of ${scanning.total}...`
+          : finished
+            ? 'Review the game'
+            : 'Stop and review'}
+      </button>
+      <button type="button" onClick={onDiscard} disabled={thinking}>
+        Stop and discard
+      </button>
     </div>
   )
 }

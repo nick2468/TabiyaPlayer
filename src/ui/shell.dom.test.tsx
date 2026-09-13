@@ -5,7 +5,13 @@ import { renderApp } from '../test/dom'
 vi.mock('./Board', async () => await import('../test/board-stub'))
 
 /**
- * The header: the name, the version and the theme toggle (spec 4.1 and 4.5).
+ * The header and the theme (spec 19.1 and 4.5).
+ *
+ * The header is the name and the version, and from phase 13 that is all of it:
+ * the theme toggle is in the settings row under the board with every other
+ * control (spec Q23), so the second test waits for the board before it can
+ * press it. The toggle is found by its name either way, which is why moving it
+ * cost this file one line.
  *
  * The version is `__APP_VERSION__` rather than a second read of package.json:
  * `version.test.ts` already holds that constant to package.json, so the two
@@ -21,6 +27,7 @@ describe('the header', () => {
 
   it('switches the theme, remembers it, and switches back', async () => {
     const { user } = renderApp()
+    await screen.findByTestId('board')
 
     await user.click(screen.getByRole('button', { name: 'Switch to the light theme' }))
     expect(document.documentElement.dataset.theme).toBe('light')

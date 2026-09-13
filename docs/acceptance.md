@@ -1,10 +1,12 @@
 # Acceptance, checked
 
-Spec section 17, item by item, with 18.7's additions folded in, and with what was
-actually done to check each one and when. Written 2026-09-12 in phase 8 for version
+Spec section 17, item by item, with 18.7's and 19.2's additions folded in, and with what
+was actually done to check each one and when. Written 2026-09-12 in phase 8 for version
 1.0.0; **rewritten 2026-09-13 in phase 12 for version 1.1.0**, because phases 9 to 11
 changed the name, the screen and what the app does, and a record that says what the app
-used to be is not a record of what was checked.
+used to be is not a record of what was checked. **Brought to 1.2.0 in phase 13**, which
+moved every control under the board: items 1, 3 and 11 say what changed and the rest
+stand, because nothing else about what the app DOES moved with them.
 
 Where something was checked by driving the app, it was driven: the development build in
 the browser pane, the production bundle from `npm run preview`, and the packaged window
@@ -19,12 +21,22 @@ gate finding that measured it, and says which. Nothing here is an estimate.
 
 ## 1. The screen
 
-**Green.** One screen, laid out as spec 18.1: the header with the name, the version and
-the two toggles; the centred selector row with the difficulty; the head row with the
-opening line and the status; and under them three columns, the board with its bar and
-its two button rows, the move list in its own 167 px column at the board's height, and
-the side panel with Play as, the file buttons, the hint sentence and then either the
-actions or the report.
+**Green.** One screen, laid out as spec 19.1: the header with the name and the version;
+the left-aligned selector row with the difficulty, its label starting on the same pixel
+as the heading; the head row with the opening line and the status; and under them three
+columns, the board with its bar and its four rows of buttons (the game; this game,
+which is the two ways to stop it or what a report offers instead; the file; the
+settings, with the board size and theme toggles at the row's right-hand end), the move
+list in its own 167 px column at the board's height, and the side panel, which holds
+the hint sentence and the report and nothing else.
+
+Phase 13 is where the controls moved. Until then the side panel stacked Play as, the
+file buttons and the two stop buttons above the report, so the report started 195.8 px
+down a 552 px column; it now starts at the top of it, which was measured at y 167 in
+the pane with the panel's own top at y 167. The report also reads in the head row's
+colour from that phase (spec S20): `rgb(200, 204, 210)` at 16 px and weight 400 in the
+dark theme, and `rgb(61, 65, 71)` in the light one, both measured equal to
+`.play-opening`'s in the same load.
 
 The layout probe (`scripts/probes/layout.js`, spec 15.3) has been run at every viewport
 of spec 15.2, at both board sizes and both themes, in every phase that moved the screen,
@@ -38,11 +50,21 @@ pixel, and `scrollWidth` never exceeds `innerWidth`.
 | Gate 9 findings | The same, driven by the orchestrator at 1280x980 | Large 672, all three ending on 836 |
 | Phase 10 notes | With the report showing | Small 416 and large 672 at 1280x980, unchanged by the report; the side panel grows instead |
 | Gate 11 findings | With the report AND row two showing | Small 416 ending at 583, large 672 ending at 836, row two spanning the board exactly; 94.7 px used of `CHROME_BELOW`'s 120 |
-| Phase 12 (this phase) | Row two at the start of a game, after 12.1 | Board 416, Back disabled at ply 0, Play from here off with its own sentence |
+| Phase 12 notes | Row two at the start of a game, after 12.1 | Board 416, Back disabled at ply 0, Play from here off with its own sentence |
+| Phase 13 notes | The version 1.2.0 layout, twelve rows, and the review state beside them | S16 held in all twelve; large board 584 at 1400x980, 424 landscape, 728 upright; no row wider than the board |
 
 **The board does not change size when row two appears**, which is what phase 9's
 re-measured chrome was for: it counted a second button row that did not exist until phase
 11. 416 and 672 at 1280 by 980 are gate 10's own numbers with only row one showing.
+Phase 13 kept that rule with four rows: the review state of row two is the same 38 px
+with a -4 px top margin, so a report showing takes four pixels LESS than a game in
+progress, and the board was measured at 584 in both states of the same load.
+
+**What the room for the report cost the board**, recorded because it is a real trade
+rather than a detail: `CHROME_BELOW` went from 120 to 224, so at 1400 by 980 the large
+board is 584 where phase 9 measured 688 (576 at a display scale of 1.25 or 1.5), and on
+a landscape iPad it is 424 against the small board's 416. Nick ruled the trade when he
+asked for the room (spec 19.1).
 
 Phase 6 is also where this item earned its instrument. The move list's "keep the newest
 move in view" called `scrollIntoView`, which scrolls every scrollable ancestor, so at
@@ -76,9 +98,13 @@ pane mid-game and the session's profile became level 6, 300 ms, Elo 1750, with t
 setting and the remembered game both written as 6. A string test with a recording fake
 engine pins the order: the level reaches the engine before the next search.
 
-The select moved in phase 9 from the sidebar to the centred selector row under the header
-(spec 18.1), and the level's two sentences moved with it into the select's `title`, so
-they are a hover and nowhere else. A DOM test holds where the select lives.
+The select moved in phase 9 from the sidebar to the selector row under the header (spec
+18.1), and the level's two sentences moved with it into the select's `title`, so they
+are a hover and nowhere else. Phase 13 left it where it is and moved the row to the left
+of the page (spec Q26), so the label starts under the heading: both were measured at
+x 24 in the same load. A DOM test holds where the select lives. It is the one control
+NOT under the board, which is the spec's own exception: a row under the header is where
+the trainer's course selector sits and the two screens are siblings (spec S17).
 
 ## 4. The bar
 
@@ -221,7 +247,14 @@ one is the start's, with Back disabled beside it.
 
 ## 9. Windows
 
-**Green as far as a session can take it. The installer run is Nick's.**
+**Green as far as a session can take it, at 1.1.0. The installer run is Nick's.**
+
+Everything below was built and measured in phase 12, at version 1.1.0. **Phase 13 did
+not build a window**: 1.2.0 is a source version and the Windows build is the next phase
+or Nick's call (spec 19, out of scope). What phase 13 changed that this item will show
+when it is next built is the board size, 584 rather than 688 at 1400 by 980 and 576 at
+the 1.5 display scale this machine runs, and four rows of buttons under it instead of
+two. Nothing else here depends on the layout.
 
 Built in phase 12 with `npx tauri build`:
 
@@ -232,7 +265,7 @@ Built in phase 12 with `npx tauri build`:
 - The executable is `src-tauri/target/release/simply-chess.exe`, **9,150,976 bytes (8.7 MB)**.
 - The window was started with WebView2's debugging port on and read through
   `scripts/packaged-eval.mjs`. Its title is "Simply Chess" and its inner size is
-  **1400 by 980**, which is spec 18.1. The header says "Simply Chess v1.1.0", the version
+  **1400 by 980**, which is spec 18.1 and unchanged by 19.1. The header says "Simply Chess v1.1.0", the version
   in `package.json`, `tauri.conf.json` and `Cargo.toml` (four tests hold them together),
   and `__TAURI_INTERNALS__` is present, which is what `isDesktop()` reads.
 - **The layout probe, run against that real window** (the same file the pane runs, read a
@@ -317,13 +350,14 @@ Date: ______
 
 ## 11. Tests
 
-**Green.** 324 tests in 37 files, both projects, in 9.5 seconds warm on this machine,
+**Green.** 324 tests in 37 files, both projects, in 9.1 seconds warm on this machine,
 which is inside the twenty-second rule. By project: 255 string tests in 25 files, 69 DOM
 tests in 12. Nothing is skipped. `tsc -b` clean, `npx oxlint` silent. No em dashes under
 `src/` or `src-tauri/`. The version is held in three files by four tests, and the Windows
 data folder's name is held in three files by three more.
 
-All eleven tests of spec S15 are present, and all eight that spec 18.7 adds:
+All eleven tests of spec S15 are present, all eight that spec 18.7 adds, and all three
+of 19.2:
 
 | S15 | Where |
 |---|---|
@@ -344,8 +378,11 @@ All eleven tests of spec S15 are present, and all eight that spec 18.7 adds:
 | 15. Keep playing returns to the final position with the report gone | `ui/viewer.dom.test.tsx`, "keeps playing from the final position, then plays from a viewed one" |
 | 16. Play from here starts a new game from the viewed position | the same test, plus `ui/play-from-replay.test.ts` for which plies allow it |
 | 17. Copy game and Save game produce the same text, with the comments | `ui/review.dom.test.tsx`, "write the same text for a reviewed game, with the report in it" |
-| 18. The size toggle and the selector row's select work and are remembered | `ui/remembered.dom.test.tsx`, "remembers the level, the side and the board size across a restart" and "puts the difficulty select in the selector row under the header" |
+| 18. The size toggle and the selector row's select work and are remembered | `ui/remembered.dom.test.tsx`, "remembers the level, the side, the board size and the theme" and "puts every control under the board, and the select in the selector row" |
 | 19. The hint count reaches the report and the file | `ui/review.dom.test.tsx`, "carries the hint count into the report", and `play/game-pgn.test.ts`, "says how many hints were used, before the first move" |
+| 20. Every control is under the board and the panel holds none, in both states of row two | `ui/remembered.dom.test.tsx`, "puts every control under the board, and the select in the selector row", and `ui/viewer.dom.test.tsx`, "clicks, steps and marks, with the board still locked" for the review state |
+| 21. The report's text takes the head row's colour | `ui/review.dom.test.tsx`, "names a blunder with its move number, its tag and the better move", holds that no line carries a colour of its own; the colour itself is measured in the pane, because jsdom applies no stylesheet |
+| 22. The Play as radios and the two toggles work from their new home and are remembered | `ui/remembered.dom.test.tsx`, "remembers the level, the side, the board size and the theme" and "lets the engine open, and turns the board the other way up"; `ui/shell.dom.test.tsx` for the theme's own storage key |
 
 Two items have found holes in this walk rather than confirming them, which is what the
 walk is for. Item 10, in phase 8: the redo stack was held and the hint and the outcome

@@ -31,15 +31,20 @@ const levels = () => screen.getByLabelText('Difficulty') as HTMLSelectElement
 const radio = (name: string) => screen.getByLabelText(name) as HTMLInputElement
 
 /**
- * The header's board size toggle (spec S15 item 18). It reads the size it would
- * switch TO, so the name it answers to is also what it says about the size in
- * use: offering the large board means the small one is on screen.
+ * The board size toggle (spec S15 item 18), in the settings row under the board
+ * from phase 13. It reads the size it would switch TO, so the name it answers
+ * to is also what it says about the size in use: offering the large board means
+ * the small one is on screen.
  */
 const sizeToggle = (to: 'large' | 'small') =>
   screen.getByRole('button', { name: `Switch to the ${to} board` })
 
+/** The theme toggle, which reads the same way and sits beside it. */
+const themeToggle = (to: 'light' | 'dark') =>
+  screen.getByRole('button', { name: `Switch to the ${to} theme` })
+
 describe('the settings', () => {
-  it('remembers the level, the side and the board size across a restart', async () => {
+  it('remembers the level, the side, the board size and the theme', async () => {
     const { user } = renderApp()
     await screen.findByTestId('board')
 
@@ -48,28 +53,61 @@ describe('the settings', () => {
     await user.click(sizeToggle('large'))
     // The toggle flips its own label as well as the size.
     expect(sizeToggle('small')).toBeTruthy()
+    await user.click(themeToggle('light'))
+    expect(document.documentElement.dataset.theme).toBe('light')
 
     restart()
     await screen.findByTestId('board')
     expect(levels().value).toBe('6')
     expect(radio('Black').checked).toBe(true)
     expect(sizeToggle('small')).toBeTruthy()
+    expect(themeToggle('dark')).toBeTruthy()
+    expect(document.documentElement.dataset.theme).toBe('light')
   })
 
-  it('starts at Club, White and Small on a fresh install', async () => {
+  it('starts at Club, White, Small and dark on a fresh install', async () => {
     renderApp()
     await screen.findByTestId('board')
     expect(levels().value).toBe('4')
     expect(radio('White').checked).toBe(true)
     expect(sizeToggle('large')).toBeTruthy()
+    expect(themeToggle('light')).toBeTruthy()
   })
 
-  /** The other half of S15 item 18: the select is in the selector row. */
-  it('puts the difficulty select in the selector row under the header', async () => {
+  /**
+   * The other half of S15 item 18, and S15 item 20 while a game is going: the
+   * select is in the selector row, and every other control is under the board
+   * (spec S19). Finding each by its NAME is the point: a control that moves
+   * again keeps this test, and only the column it is asked about changes.
+   */
+  it('puts every control under the board, and the select in the selector row', async () => {
     renderApp()
     await screen.findByTestId('board')
+
     expect(levels().closest('.course-switch')).not.toBeNull()
     expect(levels().closest('.play-side')).toBeNull()
+
+    const named = [
+      'New game',
+      'Undo',
+      'Redo',
+      'Hint',
+      'Stop and review',
+      'Stop and discard',
+      'Save game',
+      'Load game',
+      'Switch to the large board',
+      'Switch to the light theme',
+    ]
+    for (const name of named) {
+      expect(screen.getByRole('button', { name }).closest('.play-column')).not.toBeNull()
+    }
+    expect(radio('White').closest('.play-column')).not.toBeNull()
+
+    // And nothing is left in the panel or in the header to press.
+    expect(document.querySelector('.play-side')).not.toBeNull()
+    expect(document.querySelector('.play-side button')).toBeNull()
+    expect(document.querySelector('.app-header button')).toBeNull()
   })
 
   /**

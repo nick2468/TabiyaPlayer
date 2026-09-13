@@ -23,10 +23,13 @@
   padding: var(--pad-top) var(--pad-right) var(--pad-bottom) var(--pad-left);
 }
 
+/* The name and the version, and nothing else (spec Q23): the two toggles that
+   sat at its right end went under the board in phase 13 with every other
+   control. It keeps its flex box, which costs nothing and is what puts the
+   heading's baseline on the rule below it. */
 .app-header {
   display: flex;
   align-items: flex-end;
-  justify-content: space-between;
   gap: 24px;
   flex-wrap: wrap;
   border-bottom: 1px solid var(--line);
@@ -50,29 +53,26 @@
   vertical-align: middle;
 }
 
-.app-nav {
-  display: flex;
-  gap: 4px;
-}
-
 /* Origin: London src/ui/catalog.css .course-switch and its label and select
-   rules, adapted: centred, and without the two idle rules for a state this app
-   does not have.
+   rules, adapted: without the two idle rules for a state this app does not
+   have.
 
-   A row of its own between the header above and the view below (spec 18.1).
+   A row of its own between the header above and the view below (spec 19.1).
    The header leaves 8px above it, matching the 8px above its own rule. Below
    it, 12px: the trainer halved the old 24 because the gap read as the row
    having drifted away from what it belongs to. The label and the select are
    centred on each other rather than sharing a baseline, because the two boxes
    are different heights.
 
-   `justify-content` is this app's: the trainer's row sits at the left of a
-   screen with a nav above it, and the spec puts this one in the middle of its
-   own row. */
+   Left aligned, so "Difficulty" starts on the same pixel as "Simply Chess"
+   (spec Q26). Both sit inside the page's own `--pad-left`, so that is all it
+   takes. It was centred until phase 13, which is the trainer's row in a screen
+   this app no longer has: with every control under the board, a row centred
+   over nothing read as adrift. */
 .course-switch {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 8px;
   margin: 0 0 12px;
   color: var(--text-dim);
@@ -95,21 +95,6 @@
   font: inherit;
   margin: 0;
   max-width: 220px;
-}
-
-.nav-link {
-  background: none;
-  border: none;
-  border-bottom: 2px solid transparent;
-  border-radius: 0;
-  padding: 6px 12px;
-  color: var(--text-dim);
-  cursor: pointer;
-}
-
-.nav-link:hover {
-  background: var(--surface-hover);
-  color: var(--text);
 }
 
 button {
@@ -145,17 +130,6 @@ button.primary:hover {
 button:disabled {
   opacity: 0.5;
   cursor: default;
-}
-
-.theme-toggle {
-  margin-left: 12px;
-  border-left: 1px solid var(--line);
-  border-bottom-color: transparent;
-  color: var(--text-faint);
-}
-
-.theme-toggle:hover {
-  color: var(--text);
 }
 
 /* Origin: Conquest src/ui/styles.css .update-bar, .update-words and

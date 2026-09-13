@@ -128,7 +128,10 @@ is 0, and a phase that touches this says so in its notes.
 **The probe** is `scripts/probes/layout.js`, one expression returning the boxes of
 `.board`, `cg-board`, `.live-eval`, `.play-controls`, `.play-head`,
 `.course-switch`, `.play-side` and `.move-list` beside `scrollWidth`, `innerWidth`
-and the display scale. Evaluate it in the pane by
+and the display scale. From phase 13 it also returns `rows`, one entry per row of
+buttons under the board with its width, height, bottom and text: there are four of
+them (spec S19), none may be wider than the board, and the last one's bottom plus the
+page's padding is what `CHROME_BELOW` has to cover. Evaluate it in the pane by
 fetching it from the dev server, so the file is what runs rather than a copy of it:
 
 ```js

@@ -18,8 +18,8 @@ export const BOARD_SIZE = 416
 /**
  * The large board, twice the small one, so it divides by eight for the same
  * reason. It is what `fitBoardSize` asks for and rarely what it gets: with the
- * layout of spec 18.1 above and below it, 832 needs a viewport about 1115 px
- * tall, and neither an iPad nor the 980 px Windows window has one (spec S2).
+ * layout of spec 19.1 above and below it, 832 needs a viewport 1223 px tall,
+ * and neither an iPad nor the 980 px Windows window has one (spec S2).
  */
 export const BOARD_SIZE_LARGE = 832
 
@@ -42,18 +42,23 @@ export const NARROW_BELOW = 900
  * one pixel too big for its column is a page that scrolls sideways.
  *
  * Re-measured in phase 9 for the layout of spec 18.1, in the pane at 1400 by
- * 980 with the small board, from the probe's own numbers.
+ * 980 with the small board, from the probe's own numbers. `CHROME_BELOW` was
+ * measured again in phase 13, when two rows under the board became four.
  *
  * Above, 167: the page's top padding and the header take 81 (the selector row's
  * y), the selector row 34 and its margin 12, the head row 24 and its margin 16.
  * The board's y was measured at exactly 167 at a display scale of 1 and at 164
  * at 1.5, where a row of text is a third of a pixel shorter; the larger of the
- * two is the one that has to fit.
- * Below, 120: the column's gap under the board 12, the button row 38, the
- * second button row with its own gap and its -4 margin 46, and the page's
- * bottom padding 24. The second row only exists while a report is showing (spec
- * 18.1) and is counted anyway, so the board does not change size when it
- * appears.
+ * two is the one that has to fit. Nothing above the board moved in phase 13:
+ * the header lost its two toggles and the selector row moved to the left, and
+ * neither changes a height.
+ * Below, 224: the column's gap under the board 12, then the four rows of spec
+ * S19 at 38 each with a 12px gap between them, and the page's bottom padding
+ * 24. Measured at a display scale of 1, where a row is 38 rather than 37.33 and
+ * so is the one that has to fit. Row two is the taller of its two states here:
+ * the review row is the same 38 with a -4px top margin, so a report showing
+ * takes four pixels LESS than a game in progress, and the board does not change
+ * size when the report arrives.
  * Beside, wide, 607: the page padding both sides 48, the bar 24, the gap after
  * it 20, the gap to the move list 24, the list column 167, the gap to the side
  * panel 24, and the panel's own minimum 300. The panel takes what is left
@@ -62,7 +67,7 @@ export const NARROW_BELOW = 900
  * the panel are under the board there and take none of the width.
  */
 const CHROME_ABOVE = 167
-const CHROME_BELOW = 120
+const CHROME_BELOW = 224
 const CHROME_BESIDE_WIDE = 607
 const CHROME_BESIDE_NARROW = 92
 

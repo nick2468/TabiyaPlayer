@@ -41,6 +41,19 @@
     cg: box('cg-board'),
     bar: box('.live-eval'),
     controls: box('.play-controls'),
+    /* Every row under the board, from phase 13: there are four of them (spec
+       S19) and none may be wider than the board, or the page scrolls sideways.
+       `controls` above is the first of them and stays, because the packaged
+       app's own checks name it. */
+    rows: [...document.querySelectorAll('.play-controls')].map((node) => {
+      const rect = node.getBoundingClientRect()
+      return {
+        width: Math.round(rect.width * 100) / 100,
+        height: Math.round(rect.height * 100) / 100,
+        bottom: Math.round(rect.bottom * 100) / 100,
+        text: (node.textContent ?? '').trim(),
+      }
+    }),
     head: box('.play-head'),
     selector: box('.course-switch'),
     side: box('.play-side'),
