@@ -729,20 +729,20 @@ this restores. `src/ui/App.tsx`, `src/ui/SettingsRow.tsx`, `src/ui/PlayControls.
 `src/ui/app.css`, `src/ui/play.css`, and the same files at `fccab21`, which is the
 commit before phase 13 and holds the header this brings back.
 
-- [ ] 14.1 The board size and theme toggles return to the header, in the trainer's
+- [x] 14.1 The board size and theme toggles return to the header, in the trainer's
       `theme-toggle` style, restored from `fccab21` rather than rewritten: `.app-nav`,
       `.nav-link`, `.nav-link:hover` and `.theme-toggle` come back to `app.css`, and the
       nav markup to `App.tsx`.
-- [ ] 14.2 New game moves from row one to row four, at its left edge, beside Play as.
-- [ ] 14.3 The two stepping arrows move from row two to row one, right justified, so
+- [x] 14.2 New game moves from row one to row four, at its left edge, beside Play as.
+- [x] 14.3 The two stepping arrows move from row two to row one, right justified, so
       they end at the board's bottom right corner. The `margin-left: auto` rule already
       does this and is not rewritten.
-- [ ] 14.4 Tests: S15 item 23, and items 20 and 22 updated to say "every control except
+- [x] 14.4 Tests: S15 item 23, and items 20 and 22 updated to say "every control except
       the two view toggles". Nothing else about them changes.
-- [ ] 14.5 Driven in the pane at 1400 by 980, both sizes, both themes, both states of
+- [x] 14.5 Driven in the pane at 1400 by 980, both sizes, both themes, both states of
       row two, with the probe: S16's two numbers hold, no row wider than the board, and
       the board is the SAME size as 1.2.0's, because the row count has not changed.
-- [ ] 14.6 Version 1.2.1 in the three files, docs swept, reuse review, commit, and the
+- [x] 14.6 Version 1.2.1 in the three files, docs swept, reuse review, commit, and the
       installer built.
 
 ## Progress
@@ -763,7 +763,7 @@ commit before phase 13 and holds the header this brings back.
 | 11 - the review viewer, Keep playing, Play from here | **Complete** 2026-09-13. 323 tests green in 16.3 s. A reviewed game is a viewer: every move is a button, the marked one is in `--mark`, the arrow keys step, the bar follows the position being looked at, and a slip's sentence puts the board where it was played from with the engine's move as a blue arrow beside it. Keep playing and Play from here both work. The board does not change size when row two appears. |
 | 12 - version 1.1.0 | **Complete** 2026-09-13, box 12.6 is Nick's. 324 tests green in 9.2 s. Gate 11's finding fixed in `ce0e743`; 1.1.0 in the three files; the installer is 6,898,142 bytes and the shipped window was driven, reviewed and walked at 688 with S16 holding; `docs/acceptance.md` rewritten for version 2; both of Q22's routes documented. |
 | 13 - room for the report | **Complete** 2026-09-14. 324 tests green in 9.1 s. Every button and toggle is under the board in the four rows of S19; the side panel is the hint sentence and the report, which starts at the top of the column and reads in the head row's colour; the selector row lines up under the heading. `CHROME_BELOW` is 224 and the large board 584 at 1400 by 980. Version 1.2.0 in the three files; no window built at it. |
-| 14 - the three placements, corrected | **Not started.** Spec Q27: the two view toggles back in the header, New game beside Play as, the stepping arrows ending the first row under the board. Version 1.2.1. |
+| 14 - the three placements, corrected | **Complete** 2026-09-14. 325 tests green in 9.0 s. The two view toggles are back in the header, restored from `fccab21`; New game is in row four with Play as; the arrows end row one at the board's bottom right corner. The board is unchanged at 584 (576 at 1.5), because four rows are still four rows. Version 1.2.1 in the three files, and its installer built at 6,897,569 bytes. |
 
 ## Phase notes
 
@@ -3606,3 +3606,167 @@ number for a scale of 1.5; its four rows are each 576 and the last ends at 937 i
 window, with the bar and `cg-board` ending together at 740. **The engine runs in it**:
 the bar read +0.4 on the opening position. One screenshot was taken and looked at.
 Box 12.6 now has a 1.2.0 installer to point at.
+
+### Phase 14 - builder notes (2026-09-14)
+
+Everything the chip named was read fresh before anything was touched: `CLAUDE.md`, spec
+section 19 in full with Q27 and the S19 it corrects, 18.1's header, the plan's rules and
+phase 14's boxes, the phase 13 notes and the gate 13 findings, then `App.tsx`,
+`SettingsRow.tsx`, `PlayControls.tsx`, `Screen.tsx`, `app.css` and `play.css`, and the
+same files at `fccab21`, the commit before phase 13.
+
+**Measured.**
+
+- `npx vitest run`: 37 files, **325 tests passed, none skipped**, 9.0 seconds warm (255
+  string in 25 files, 70 DOM in 12). One test is new. `tsc -b` clean, `npx oxlint`
+  silent, `npm run build` clean (main chunk 329.25 kB, precache 21 entries), `grep -c
+  midgame` 0 in every built chunk, no em dashes under `src/` or `src-tauri/src/`.
+- **The pane pass at 1400 by 980, eight rows**: both states of row two, both board sizes,
+  both themes. The bar, `.board` and `cg-board` share one bottom in every row, no row is
+  wider than the board, the page scrolls in neither direction, and the arrow group's
+  right edge is the board's right edge in all four review rows.
+
+  | Row two | Size | Theme | Board | Bar/board/cg bottom | Fourth row ends at | Row widths | Arrows end at | scrollWidth / innerWidth |
+  |---|---|---|---|---|---|---|---|---|
+  | playing | large | dark | 584 | 751 | 951 | 584 x 4 | not shown | 1400 / 1400 |
+  | review | large | dark | 576 | 740 | 933.33 | 576 x 4 | 644, board 644 | 1400 / 1400 |
+  | review | large | light | 576 | 740 | 933.33 | 576 x 4 | 644, board 644 | 1400 / 1400 |
+  | review | small | light | 416 | 580 | 773.33 | 416 x 4 | 484, board 484 | 1400 / 1400 |
+  | review | small | dark | 416 | 580 | 773.33 | 416 x 4 | 484, board 484 | 1400 / 1400 |
+  | playing | small | dark | 416 | 580 | 777.33 | 416 x 4 | not shown | 1400 / 1400 |
+  | playing | small | light | 416 | 580 | 777.33 | 416 x 4 | not shown | 1400 / 1400 |
+  | playing | large | light | 576 | 740 | 937.33 | 576 x 4 | not shown | 1400 / 1400 |
+
+  The first row is the one load the pane reported at a display scale of 1, where the
+  board is 584 and a row is 38; every other row is at 1.5, where the board is 576 and a
+  row 37.33. Both are 1.2.0's own numbers for those scales, which is 14.5's real
+  question: **the board did not change size.** `board-size.ts` was not touched.
+- **The four rows' content widths at the small board**, which is the 416 that matters:
+  197 (Undo, Redo, Hint), 293 (Stop and review, Stop and discard), 214 (Save game, Load
+  game) and **324** (New game, Play as and its radios). The widest is row four with 92px
+  to spare. The chip predicted about 294 for it; the extra 30 is the Play as label's
+  upper case and letter spacing, which phase 13 measured at 214 for the group rather
+  than the 184 the chip carried forward. Nothing wraps at either size.
+- **The three placements, read off the screen.** The header's buttons are Small and
+  Light, both inside `.app-nav`, with the nav's right edge at x 1376 against the page's
+  own right padding. The arrows are in row ZERO, ending at x 644 with the board's right
+  edge at 644 (484 and 484 at the small board), immediately under the board's bottom.
+  New game is the first thing in row three, the last row, with Play as beside it.
+  "Difficulty" and "Simply Chess" still start on the same pixel, both x 24.
+- **Two screenshots, looked at.** The large dark review state: Small and Light at the
+  right of the header, the 576 board, the arrows on its bottom right corner in the Undo,
+  Redo, Hint row, Keep playing and Play from here under them, then Save game and Load
+  game, then New game beside PLAY AS, and the report filling the panel from its top with
+  both slips in their coloured borders. The large dark playing state reads the same with
+  Stop and review and Stop and discard in row two and no arrows anywhere. The seeded
+  game for both was 1.e4 e5 2.Qh5 Nc6 3.Qxe5+ Nxe5, scanned by the real engine into a
+  blunder and an inaccuracy.
+
+**The installer, 14.6.** `npx tauri build` with `%USERPROFILE%\.cargo\bin` on the path,
+**1 m 55 s**, the Rust half 1 m 40 s.
+
+| | |
+|---|---|
+| Installer | `src-tauri/target/release/bundle/nsis/Simply Chess_1.2.1_x64-setup.exe`, **6,897,569 bytes** |
+| Executable | `src-tauri/target/release/simply-chess.exe`, **9,150,464 bytes** |
+| Version | 1.2.1 in `package.json`, `tauri.conf.json` and `Cargo.toml`, held by four tests |
+
+**The shipped window was driven, not assumed.** Started with its debugging port and read
+through `scripts/packaged-eval.mjs`: title "Simply Chess", "v1.2.1" in the header, inner
+1400 by 980 at a display scale of 1.5, `__TAURI_INTERNALS__` present, no service worker
+(S12). The header's two buttons are Small and Light. The four rows read "UndoRedoHint",
+"Stop and reviewStop and discard", "Save gameLoad game" and "New gamePlay asWhiteBlack",
+each 576 wide from x 68 to x 644, which is the board's own span; New game is in the
+fourth. The bar, `.board` and `cg-board` all end at 740, `scrollWidth` 1400 =
+`innerWidth` and `scrollHeight` 980 = `innerHeight`. A game seeded into the window's own
+storage was scanned by Stop and review into two slips, the blunder naming 3.Bc4, with the
+report starting at the panel's own top; row one then read "UndoRedoHint" plus the arrows,
+the arrow group ending at x 644, and row two was Keep playing and Play from here with no
+arrows in it. One screenshot was taken, looked at and sent to Nick. The seeded game was
+removed afterwards and the four settings keys left as they were.
+
+**Decided (code shape), and why.**
+
+- **The header is bytes, not a rewrite.** `git show fccab21:src/ui/app.css` was diffed
+  against the file afterwards: the only differences left are 1.2.0's selector-row
+  change, which stays. `.app-header`'s `justify-content: space-between`, `.app-nav`,
+  `.nav-link`, `.nav-link:hover`, `.theme-toggle` and `.theme-toggle:hover` are the same
+  declarations in the same order with their own comments, and the nav markup in
+  `App.tsx` is the same JSX with one word added to its comment to say Q27 restored it.
+  Nick liked what was there, so what he gets back is what was there.
+- **`SettingsProps` lost two setters and kept two readers.** `onBoardSize`, `theme` and
+  `onTheme` went back to `Shell`, which owns the header. `boardSize` stays in the bundle
+  because `Screen` works the board's pixels out from it, beside `level`, which the head
+  row falls back to: the interface already said in a comment that a value can be there to
+  be READ, and now two are.
+- **`SettingsRow` keeps its name**, as the chip asks. It is still the row that says what
+  the NEXT game will be, which is what the name means; its header comment says that
+  rather than describing settings in general, and says where the toggles went.
+- **`PlayControls` lost `onNew` altogether.** It was passed from `Screen` and used by one
+  button, and that button is in row four now, so the prop went with it rather than being
+  left to be wired to nothing. `Screen` passes `onNewGame` to `SettingsRow` instead.
+- **New game's disabled rule travelled with the button**, comment included: still
+  `disabled={thinking}`, still for gate 2's reason.
+- **`.play-views` is gone from the markup and from the selector list**, and
+  `.play-controls .play-steps` stands alone again with the comment saying it moved rows
+  rather than changed. `--surface-hover` in `index.css` has a user again, which is what
+  the chip predicted.
+
+**Tests.**
+
+- **S15 item 23** is held in both places it can be seen: `viewer.dom.test.tsx` asks that
+  the two arrows, Undo, Redo and Hint are all in `rows[0]`, that Keep playing is in
+  `rows[1]`, and that row two holds no `.play-steps` at all;
+  `remembered.dom.test.tsx` asks that each toggle's `closest('.app-nav')` is not null and
+  its `closest('.play-column')` is.
+- **Items 20 and 22 now say "every control except the two view toggles"**, which is
+  19.2's own wording, and the test that held item 20 is renamed to match: "puts every
+  control but the two toggles under the board".
+- **One new test**, "puts New game in the same row as Play as", for the third of Q27's
+  placements: it takes the four `.play-controls` rows and asserts New game and the White
+  radio are both in the fourth. That is the pairing Nick asked for, held where a test can
+  see it.
+- **Mutation-checked, three, each reversed with the reverse edit.**
+
+  | Mutation | Red |
+  |---|---|
+  | the arrows never rendered in row one (`false && replay`) | 3 tests in `viewer.dom.test.tsx` |
+  | New game hidden in row four | 10 tests across five files |
+  | `.app-nav` renamed on the header's nav | 1, the header half of items 20 and 23 |
+
+  The third is the weakest of the three and is recorded as such: it proves the assertion
+  reads the header's nav rather than the button's existence, but a real move of the
+  toggles back under the board would have needed the props threading through `Screen`
+  again, which is a bigger edit than a mutation check should be.
+- **`shell.dom.test.tsx` kept phase 13's extra line.** It waits for the board before
+  pressing the theme toggle. That wait is no longer needed now the toggle is in the
+  header again, and it costs nothing and is true either way, so it stays rather than
+  being taken out and put back the next time something moves.
+
+**Asked of Nick.** Nothing. Q27 settled all three placements and the chip settled the
+rest.
+
+**Reuse review.** Both "switch to" sentences are written once, in `App.tsx`, where they
+were before phase 13; the row markup is still one component per row with no row built
+twice; `.play-views` left no orphan rule behind; and every class in both stylesheets has
+a component that uses it, counted (`live-eval-number` is reached through a template
+literal in `EvalBar.tsx`, as it was in phase 13). No em dashes under `src/`, and no
+forbidden word in a changed file.
+
+**Left.**
+
+- **The board is still 584 at 1400 by 980** (576 at 1.25 or 1.5) and 424 on a landscape
+  iPad. Gate 13 offered Nick a lever for getting it back and Q27 did not pull it: the
+  toggles left row four and New game arrived in it, so there are still four rows and
+  `CHROME_BELOW` still counts four. If he wants the board back it is a separate ruling
+  about the number of ROWS, not about where a control sits.
+- **Box 12.6 now has a 1.2.1 installer to point at**, and `docs/acceptance.md` says so.
+  The 1.1.0 walk is kept under it because that is where the uninstaller, the data folder
+  and the capability list were checked and none of that has changed.
+- **The installer was not run** and `%LOCALAPPDATA%\Simply Chess Data` was not deleted.
+- The pane's `localStorage` and `sessionStorage` were cleared after the drive and the dev
+  server stopped; the packaged window was closed.
+- Two files, `src/dev/use-dev-scene.ts` and `src/ui/keep-in-view.ts`, still show as
+  modified in `git status` with an empty diff and are byte-identical to `HEAD`. It is the
+  same stale stat cache phase 13 recorded; neither was touched or staged.
+- `../London` and `../Conquest` were not touched.

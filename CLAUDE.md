@@ -7,20 +7,28 @@ from is Q22 and undecided),
 from one React, TypeScript and Vite code base. The code is copied from those two apps
 wherever they already do the job, so that a shared library can follow later.
 
-Current state: **version 1.2.0 is built, and it is the whole of the specification.**
-Phase 13 landed 2026-09-14, after Nick used 1.1.0 and asked for the report to have the
-room: **every button and every toggle is now under the board**, in the four rows of spec
-S19 (the game; this game; the file; the settings, with the board size and theme toggles
-at its right-hand end), and the side panel holds the hint sentence and the report and
-nothing else. The report starts at the top of that column, where it used to start 195.8
-px down it, and reads in the head row's colour at the body size and weight (S20). The
-selector row is left aligned, so "Difficulty" starts on the same pixel as "Simply
-Chess". The header is the name and the version alone. Two rows under the board became
-four, so `CHROME_BELOW` is 224 where it was 120 and the large board gives up the
-difference: 584 at 1400 by 980 (576 at a display scale of 1.25 or 1.5), 424 on a
-landscape iPad, 728 upright. Nick ruled that trade when he asked for the room.
-**No Windows window was built at 1.2.0**: it is a source version, and the build is the
-next phase or Nick's call. The only installer on disk is 1.1.0's.
+Current state: **version 1.2.1 is built, and it is the whole of the specification.**
+Phase 14 landed 2026-09-14, after Nick used 1.2.0 and corrected three placements (spec
+Q27, which wins over Q23): **the board size and theme toggles are back in the header**,
+restored from the commit before phase 13 so they read exactly as they did in 1.1.0;
+**New game sits with Play as** in the last row, because the side chosen is the side the
+next new game is played at; and **the two stepping arrows moved up to the Undo, Redo and
+Hint row**, right justified, so they sit on the board's bottom right corner. The four
+rows under the board are now this position, this game, the file, and the next game.
+Everything else about 1.2.0 stands, and the row count did not change, so neither did the
+board: `CHROME_BELOW` is still 224 and the large board still 584 at 1400 by 980 (576 at
+a display scale of 1.25 or 1.5).
+
+Phase 13 landed the same day, after Nick used 1.1.0 and asked for the report to have the
+room: **every button went under the board**, in the four rows of spec S19, and the side
+panel holds the hint sentence and the report and nothing else. The report starts at the
+top of that column, where it used to start 195.8 px down it, and reads in the head row's
+colour at the body size and weight (S20). The selector row is left aligned, so
+"Difficulty" starts on the same pixel as "Simply Chess". Two rows under the board became
+four, so `CHROME_BELOW` went from 120 to 224 and the large board gave up the difference:
+584 at 1400 by 980, 424 on a landscape iPad, 728 upright. Nick ruled that trade when he
+asked for the room, and Q27 gives none of it back, because New game arrived in row four
+as the toggles left it.
 Three boxes are open and all three are Nick's: 7.8 (publish, Home
 Screen, aeroplane mode), 8.6 and its successor 12.6 (install, play, save and load through
 the real dialogs, reopen, review, uninstall).
@@ -94,7 +102,7 @@ scale).
 
 - [docs/simple-chess-spec.md](docs/simple-chess-spec.md) - what the app does and how
   it is built. Authoritative. Section 2 records Nick's rulings Q1 to Q14, section
-  18 his Q15 to Q22 and section 19 his Q23 to Q26; **each later section wins wherever
+  18 his Q15 to Q22 and section 19 his Q23 to Q27; **each later section wins wherever
   it and an earlier one differ, so 19 wins over 18 and 18 over 1 to 17.**
   Numbered decisions S1 upward carry their reasons.
 - [docs/simple-chess-build-plan.md](docs/simple-chess-build-plan.md) - the phases,
@@ -174,8 +182,9 @@ scale).
   both the newest row and the marked move); one component per row under the
   board, and each row built in exactly one of them (`PlayControls` for rows one
   and two, which includes `PlayActions` as row two's other state, `FileRow` for
-  row three and `SettingsRow` for row four, which is the only place the two
-  toggles and their "switch to" sentences are written); `toClipboard` in `ui/CopyGame.tsx`
+  row three and `SettingsRow` for row four, which is New game and Play as); the
+  two view toggles and their "switch to" sentences, written once in the header
+  in `App.tsx`; `toClipboard` in `ui/CopyGame.tsx`
   (the only clipboard); `pgnNow` in `Shell` (the running game as text, for Save game and Copy
   game, which must write the same one); the `read`, `write`, `oneOf`, `readOneOf`, `useRemembered` and
   `remember*` helpers in `prefs.ts` (every setting; `oneOf` answers "is this one of

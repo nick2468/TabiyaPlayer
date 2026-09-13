@@ -207,10 +207,10 @@ export function Screen({
             )}
           </div>
 
-          {/* The four rows of spec S19, in its order: the game, this game, the
-              file, the settings. Rows one and two act on the game in front of
-              you and are `PlayControls`; rows three and four do not and are
-              their own. */}
+          {/* The four rows of spec S19, in its order: this position, this game,
+              the file, the next game. Rows one and two are the position and the
+              game in front of you and are `PlayControls`; rows three and four
+              act on neither and are their own. */}
           <PlayControls
             session={session}
             reviewing={report !== null}
@@ -220,7 +220,6 @@ export function Screen({
             replay={report ? { ply, count: atEnd, onBack, onForward } : null}
             playFromWhy={playFromWhy}
             scanning={game.scanning}
-            onNew={onNewGame}
             onUndo={game.undo}
             onRedo={game.redo}
             onHint={() => void game.askHint()}
@@ -235,10 +234,8 @@ export function Screen({
           <SettingsRow
             side={settings.side}
             onSide={settings.onSide}
-            boardSize={settings.boardSize}
-            onBoardSize={settings.onBoardSize}
-            theme={settings.theme}
-            onTheme={settings.onTheme}
+            thinking={thinking}
+            onNew={onNewGame}
           />
 
           {/* Under the buttons, where something that has just happened belongs.

@@ -31,10 +31,13 @@ const levels = () => screen.getByLabelText('Difficulty') as HTMLSelectElement
 const radio = (name: string) => screen.getByLabelText(name) as HTMLInputElement
 
 /**
- * The board size toggle (spec S15 item 18), in the settings row under the board
- * from phase 13. It reads the size it would switch TO, so the name it answers
- * to is also what it says about the size in use: offering the large board means
- * the small one is on screen.
+ * The board size toggle (spec S15 item 18), in the header. It reads the size it
+ * would switch TO, so the name it answers to is also what it says about the
+ * size in use: offering the large board means the small one is on screen.
+ *
+ * It spent version 1.2.0 in the settings row under the board and came back to
+ * the header in 1.2.1 (spec Q27). Everything in this file that presses it was
+ * unaffected, which is what finding a control by its name buys.
  */
 const sizeToggle = (to: 'large' | 'small') =>
   screen.getByRole('button', { name: `Switch to the ${to} board` })
@@ -75,12 +78,14 @@ describe('the settings', () => {
   })
 
   /**
-   * The other half of S15 item 18, and S15 item 20 while a game is going: the
-   * select is in the selector row, and every other control is under the board
-   * (spec S19). Finding each by its NAME is the point: a control that moves
-   * again keeps this test, and only the column it is asked about changes.
+   * The other half of S15 item 18, S15 item 20 while a game is going, and the
+   * header half of item 23: the select is in the selector row, every control
+   * EXCEPT the two view toggles is under the board, and those two are in the
+   * header (spec S19, Q27). Finding each by its NAME is the point: a control
+   * that moves again keeps this test, and only the place it is asked about
+   * changes, which is exactly what happened to the toggles in 1.2.1.
    */
-  it('puts every control under the board, and the select in the selector row', async () => {
+  it('puts every control but the two toggles under the board', async () => {
     renderApp()
     await screen.findByTestId('board')
 
@@ -96,18 +101,38 @@ describe('the settings', () => {
       'Stop and discard',
       'Save game',
       'Load game',
-      'Switch to the large board',
-      'Switch to the light theme',
     ]
     for (const name of named) {
       expect(screen.getByRole('button', { name }).closest('.play-column')).not.toBeNull()
     }
     expect(radio('White').closest('.play-column')).not.toBeNull()
 
-    // And nothing is left in the panel or in the header to press.
+    // The two that change how the page is drawn rather than anything about a
+    // game are in the header, and nowhere near the board (Q27).
+    for (const toggle of [sizeToggle('large'), themeToggle('light')]) {
+      expect(toggle.closest('.app-nav')).not.toBeNull()
+      expect(toggle.closest('.play-column')).toBeNull()
+    }
+
+    // And nothing is left in the panel to press.
     expect(document.querySelector('.play-side')).not.toBeNull()
     expect(document.querySelector('.play-side button')).toBeNull()
-    expect(document.querySelector('.app-header button')).toBeNull()
+  })
+
+  /**
+   * The pairing half of Q27: New game and Play as are one row, because the side
+   * chosen is the side the next new game is played at. The row is the last of
+   * the four, so it is the last `.play-controls` in the column.
+   */
+  it('puts New game in the same row as Play as', async () => {
+    renderApp()
+    await screen.findByTestId('board')
+
+    const rows = [...document.querySelectorAll('.play-column .play-controls')]
+    const newGame = screen.getByRole('button', { name: 'New game' })
+    expect(rows).toHaveLength(4)
+    expect(newGame.closest('.play-controls')).toBe(rows[3])
+    expect(radio('White').closest('.play-controls')).toBe(rows[3])
   })
 
   /**

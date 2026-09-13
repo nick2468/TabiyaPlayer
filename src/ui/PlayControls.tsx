@@ -2,19 +2,22 @@ import type { PlaySession } from '../play'
 import { PlayActions } from './PlayActions'
 
 /**
- * Origin: London src/ui/Play.tsx PlayControls, adapted: no length cap, so the Keep playing tooltip says nothing about a record this app does not keep; row two carries the actions as well.
+ * Origin: London src/ui/Play.tsx PlayControls, adapted: no length cap, so the Keep playing tooltip says nothing about a record this app does not keep; row two carries the actions as well, and row one ends with the stepping arrows.
  * The first two rows of buttons under the board (spec S19).
  *
  * Under the board because that is where the hand is, and real buttons because
- * these do things to the game: New game throws it away, Undo and Redo move it,
- * Hint answers it.
+ * these do things to the game: Undo and Redo move it, Hint answers it.
  *
- * New game first, because it is the one you look for; then the two that move
- * the game; then the one that helps with the position in front of you.
+ * Row one is THIS POSITION: Undo, Redo and Hint act on the position showing,
+ * and the two stepping arrows, at the row's right-hand end, are the two that
+ * change which position that is. That puts them at the bottom right corner of
+ * the board (spec Q27). Row two is THIS GAME. New game left row one in 1.2.1
+ * and is in row four with Play as, because the side chosen is the side the next
+ * new game is played at and the two belong together.
  *
- * Row one is the game and row two is THIS game, and the two rows below them,
- * the file and the settings, act on neither: they are `FileRow` and
- * `SettingsRow`, composed beside this one by `Screen`.
+ * The two rows below these, the file and the next game, act on neither the
+ * position nor the game in front of you: they are `FileRow` and `SettingsRow`,
+ * composed beside this one by `Screen`.
  */
 
 /** What walks a reviewed game, built once so one object drives every stepper. */
@@ -36,7 +39,6 @@ export function PlayControls({
   replay,
   playFromWhy,
   scanning,
-  onNew,
   onUndo,
   onRedo,
   onHint,
@@ -61,7 +63,6 @@ export function PlayControls({
   playFromWhy: string | null
   /** How far the review's scan has got, while one is running (spec 18.3). */
   scanning: { done: number; total: number } | null
-  onNew: () => void
   onUndo: () => void
   onRedo: () => void
   onHint: () => void
@@ -72,16 +73,10 @@ export function PlayControls({
 }) {
   return (
     <>
-      {/* Row one: the game itself, and it is the same four buttons whether a
-          game is running or finished. */}
+      {/* Row one: this position. The same three buttons whether a game is
+          running or finished, and the two arrows beside them while a report is
+          being read. */}
       <div className="play-controls">
-        {/* Disabled while the engine thinks, like the other three. A New game
-            started mid-search let the old game's reply land on a session that had
-            already been thrown away, and a row where three buttons grey and one
-            does not is the odder screen anyway (ruled at gate 2). */}
-        <button type="button" onClick={onNew} disabled={thinking}>
-          New game
-        </button>
         {/* Both greyed during a review, as the trainer's are: the game the report
             is about must still be the game when it is read. */}
         <button
@@ -101,18 +96,47 @@ export function PlayControls({
         <button type="button" onClick={onHint} disabled={!canHint}>
           Hint
         </button>
+        {/* `auto` on this group is what puts it at the board's right edge, so
+            the row spans the board exactly and the arrows land on its bottom
+            right corner (spec Q27). An arrow is not a name, so each carries a
+            written one for a screen reader and for the tooltip. */}
+        {replay ? (
+          <div className="play-steps">
+            <button
+              type="button"
+              className="step-arrow"
+              onClick={replay.onBack}
+              disabled={replay.ply === 0}
+              aria-label="Back one move"
+              title="Back one move"
+            >
+              &#8592;
+            </button>
+            <button
+              type="button"
+              className="step-arrow"
+              onClick={replay.onForward}
+              disabled={replay.ply >= replay.count}
+              aria-label="Forward one move"
+              title="Forward one move"
+            >
+              &#8594;
+            </button>
+          </div>
+        ) : null}
       </div>
 
       {/* Row two: this game. While one is going that is the two ways to stop
-          it; once a report is showing it is what the report offers instead. The
-          two states are exclusive, so this is one row and never two.
+          it; once a report is showing it is the two ways on from it. The two
+          states are exclusive, so this is one row and never two.
 
           Two rows rather than one because the board can be 416px and all of
           these in one row would wrap into a ragged second line rather than a
           deliberate one.
 
-          The two on the left are the pair people confuse, so they are side by
-          side and each says in its tooltip what happens to the game. */}
+          Keep playing and Play from here are the pair people confuse, so they
+          are side by side and each says in its tooltip what happens to the
+          game. */}
       {replay ? (
         <div className="play-controls play-review-row">
           {canResume ? (
@@ -138,32 +162,6 @@ export function PlayControls({
               Play from here
             </button>
           ) : null}
-          {/* `auto` on this group is what puts it at the board's right edge,
-              so the row spans the board exactly. An arrow is not a name, so
-              each carries a written one for a screen reader and for the
-              tooltip. */}
-          <div className="play-steps">
-            <button
-              type="button"
-              className="step-arrow"
-              onClick={replay.onBack}
-              disabled={replay.ply === 0}
-              aria-label="Back one move"
-              title="Back one move"
-            >
-              &#8592;
-            </button>
-            <button
-              type="button"
-              className="step-arrow"
-              onClick={replay.onForward}
-              disabled={replay.ply >= replay.count}
-              aria-label="Forward one move"
-              title="Forward one move"
-            >
-              &#8594;
-            </button>
-          </div>
         </div>
       ) : (
         <PlayActions

@@ -23,13 +23,10 @@
   padding: var(--pad-top) var(--pad-right) var(--pad-bottom) var(--pad-left);
 }
 
-/* The name and the version, and nothing else (spec Q23): the two toggles that
-   sat at its right end went under the board in phase 13 with every other
-   control. It keeps its flex box, which costs nothing and is what puts the
-   heading's baseline on the rule below it. */
 .app-header {
   display: flex;
   align-items: flex-end;
+  justify-content: space-between;
   gap: 24px;
   flex-wrap: wrap;
   border-bottom: 1px solid var(--line);
@@ -51,6 +48,11 @@
   font-weight: 400;
   color: var(--text-faint);
   vertical-align: middle;
+}
+
+.app-nav {
+  display: flex;
+  gap: 4px;
 }
 
 /* Origin: London src/ui/catalog.css .course-switch and its label and select
@@ -97,6 +99,21 @@
   max-width: 220px;
 }
 
+.nav-link {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  padding: 6px 12px;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+.nav-link:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
 button {
   background: var(--control);
   color: var(--text);
@@ -130,6 +147,17 @@ button.primary:hover {
 button:disabled {
   opacity: 0.5;
   cursor: default;
+}
+
+.theme-toggle {
+  margin-left: 12px;
+  border-left: 1px solid var(--line);
+  border-bottom-color: transparent;
+  color: var(--text-faint);
+}
+
+.theme-toggle:hover {
+  color: var(--text);
 }
 
 /* Origin: Conquest src/ui/styles.css .update-bar, .update-words and

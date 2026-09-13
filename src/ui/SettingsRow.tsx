@@ -1,57 +1,63 @@
 import { colourName, type Colour } from '../model/types'
 import { SIDES, type BoardSizeName } from '../storage/prefs'
-import type { Theme } from './theme'
 
 /**
- * Row four under the board: the settings (spec S19).
+ * Row four under the board: the next game (spec S19).
  *
- * Furthest from the board because it is what you set once and leave, where the
- * three rows above it act on the game in front of you. Play as and its two
- * radios on the left, then the two view toggles at the right-hand end of the
- * row, the way the stepping arrows end row two.
+ * Furthest from the board because it is the one row that is not about the game
+ * in front of you. New game at the left edge, then Play as and its two radios,
+ * and they are one pairing rather than two things that happen to share a row:
+ * the side chosen is the side the next new game is played at, so the button and
+ * the choice it reads belong together (spec Q27).
  *
- * The toggles are here rather than in the header from phase 13: Nick ruled that
- * every button and every toggle belongs under the board (spec Q23), which
- * leaves the header the name and the version.
+ * The name stays `SettingsRow` because that is still what it is: the row that
+ * says what the NEXT game will be. It carried the two view toggles for version
+ * 1.2.0 and they went back to the header in 1.2.1, where Nick liked them (Q27):
+ * they change how the page is drawn and nothing about a game.
  *
- * This row knows nothing about the running game, and deliberately. `Shell` owns
- * the settings and decides what each one does: the level reaches the engine's
- * next move (spec S6), the side waits for the next new game (spec 5.1), and the
- * board size and the theme are only ever about pixels and colours. A control
- * that reached into the game would be a second place deciding that.
+ * This row knows nothing about the running game beyond whether the engine is
+ * busy, and deliberately. `Shell` owns the settings and decides what each one
+ * does: the side waits for the next new game (spec 5.1) and the level reaches
+ * the engine's next move (spec S6). A control that reached into the game would
+ * be a second place deciding that.
  */
 
 /**
  * The settings the screen is handed, passed together wherever they go.
  *
- * The level is here to be READ: the head row falls back to it for a game that
- * has not said what it is being played at. Changing one is the selector row's
- * job, which `Shell` wires up directly, so no setter for it travels this far.
+ * The level and the board size are here to be READ: the head row falls back to
+ * the level for a game that has not said what it is being played at, and the
+ * board's pixels are worked out from the size. Changing either is somebody
+ * else's job, the selector row's and the header's, and `Shell` wires both up
+ * directly, so no setter for them travels this far.
  */
 export interface SettingsProps {
   level: number
   side: Colour
   onSide: (side: Colour) => void
   boardSize: BoardSizeName
-  onBoardSize: (size: BoardSizeName) => void
-  theme: Theme
-  onTheme: () => void
 }
 
 export function SettingsRow({
   side,
   onSide,
-  boardSize,
-  onBoardSize,
-  theme,
-  onTheme,
-}: Omit<SettingsProps, 'level'>) {
-  const switchSize =
-    boardSize === 'small' ? 'Switch to the large board' : 'Switch to the small board'
-  const switchTheme = theme === 'dark' ? 'Switch to the light theme' : 'Switch to the dark theme'
-
+  thinking,
+  onNew,
+}: Pick<SettingsProps, 'side' | 'onSide'> & {
+  /** New game is disabled while the engine thinks, as it always was. */
+  thinking: boolean
+  onNew: () => void
+}) {
   return (
     <div className="play-controls">
+      {/* Disabled while the engine thinks. A New game started mid-search let
+          the old game's reply land on a session that had already been thrown
+          away, and a row where a button greys and its neighbours do not is the
+          odder screen anyway (ruled at gate 2). */}
+      <button type="button" onClick={onNew} disabled={thinking}>
+        New game
+      </button>
+
       {/* A radiogroup rather than the fieldset it was in the side panel: a
           legend is drawn in its box's top border, so in a row it puts the label
           on a line of its own and makes the row half as tall again as the
@@ -80,25 +86,6 @@ export function SettingsRow({
             {colourName(each)}
           </label>
         ))}
-      </div>
-
-      {/* Each toggle reads the size or the theme it would switch TO, which is
-          the trainer's rule for its own. The size one goes first so the theme
-          toggle keeps the end of the row it has always had. `auto` on the group
-          is what puts it at the board's right edge, so the row spans the board
-          exactly. */}
-      <div className="play-views">
-        <button
-          type="button"
-          onClick={() => onBoardSize(boardSize === 'small' ? 'large' : 'small')}
-          title={switchSize}
-          aria-label={switchSize}
-        >
-          {boardSize === 'small' ? 'Large' : 'Small'}
-        </button>
-        <button type="button" onClick={onTheme} title={switchTheme} aria-label={switchTheme}>
-          {theme === 'dark' ? 'Light' : 'Dark'}
-        </button>
       </div>
     </div>
   )

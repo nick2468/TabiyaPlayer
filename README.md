@@ -1,10 +1,10 @@
 # Simply Chess
 
-A no-frills chess game against the Stockfish engine. One screen: the name, the
-difficulty in a row under it, then the opening line and the status, then the board
-with its evaluation bar and four rows of buttons under it (the game, this game, the
-file, the settings), the move list in its own column, and a side panel that is the
-report on the game you have just played.
+A no-frills chess game against the Stockfish engine. One screen: the name with the
+board size and theme toggles at its right, the difficulty in a row under it, then the
+opening line and the status, then the board with its evaluation bar and four rows of
+buttons under it (this position, this game, the file, the next game), the move list in
+its own column, and a side panel that is the report on the game you have just played.
 
 It runs as an installed Windows app and as an iPad Home Screen app, from one code
 base. The code comes from the Repertoire Trainer (`../London`) and Conquest
@@ -16,14 +16,16 @@ the phases and their progress.
 
 ## Status
 
-**Version 1.2.0 is built, and it is the whole of the specification** (section 19 for
+**Version 1.2.1 is built, and it is the whole of the specification** (section 19 for
 this version, 18 for version 2, sections 1 to 17 for version 1). The game plays, saves
 and loads, remembers itself, is a Home Screen app that works with no internet, and
 installs on Windows. A game can be stopped and reviewed: the engine scans every
 position of it and the report names each slip with the move it would have played
 instead, and the move list becomes a viewer you can click and step through with the
 arrow keys. Version 1.2.0 gave the report the side panel to itself and put every
-button and toggle under the board, which is what the board gives up height for.
+button under the board, which is what the board gives up height for; 1.2.1 put the two
+view toggles back in the header and paired New game with Play as and the stepping
+arrows with Undo, Redo and Hint.
 
 Three things are left and all are Nick's, because they need his machine, his accounts
 and his iPad: running the installer, publishing the site, and playing a move in
@@ -71,7 +73,7 @@ Cloudflare Pages and Caddy on the LAN, and the choice between them is still open
 npx tauri build
 ```
 
-That writes `src-tauri/target/release/bundle/nsis/Simply Chess_1.2.0_x64-setup.exe`.
+That writes `src-tauri/target/release/bundle/nsis/Simply Chess_1.2.1_x64-setup.exe`.
 It installs for the current user, with no administrator prompt, into
 `%LOCALAPPDATA%\Simply Chess`. It is unsigned, so SmartScreen warns the first time:
 More info, then Run anyway. The window keeps its settings and the game in progress in

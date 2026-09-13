@@ -105,6 +105,17 @@ describe('walking a reviewed game', () => {
     for (const inPanel of document.querySelectorAll('.play-side button')) {
       expect(inPanel.closest('.report')).not.toBeNull()
     }
+
+    // S15 item 23: the two arrows are in the FIRST row under the board, with
+    // Undo, Redo and Hint, which is what puts them at the board's bottom right
+    // corner (spec Q27). They were in row two until 1.2.1. Row two is Keep
+    // playing and Play from here and nothing else.
+    const rows = [...document.querySelectorAll('.play-column .play-controls')]
+    for (const name of ['Back one move', 'Forward one move', 'Undo', 'Redo', 'Hint']) {
+      expect(button(name).closest('.play-controls')).toBe(rows[0])
+    }
+    expect(button('Keep playing').closest('.play-controls')).toBe(rows[1])
+    expect(rows[1].querySelector('.play-steps')).toBeNull()
   })
 
   it("stands on the slip's own position, with the engine's move beside it", async () => {

@@ -15,15 +15,19 @@ import { UpdateWatch } from './UpdateWatch'
 import './app.css'
 
 /**
- * Origin: London src/ui/App.tsx, adapted: the header is the name alone, the selector row chooses a difficulty, the App and Shell split, one screen, and the settings read here.
+ * Origin: London src/ui/App.tsx, adapted: the header and its two toggles, the selector row chooses a difficulty, the App and Shell split, one screen, and the settings read here.
  * The app shell: the header, the selector row, and the one screen under them
  * (spec 19.1).
  *
- * The header holds the name with the version beside it and nothing else. Its
- * two toggles went under the board with every other control in phase 13 (spec
- * Q23), and there is no nav to a second screen because there is no second
- * screen (spec S1). The selector row under it holds the difficulty, where the
- * trainer holds its course.
+ * The header holds the name with the version beside it and the two toggles,
+ * the board size and the theme. The selector row under it holds the
+ * difficulty, where the trainer holds its course. There is no nav to a second
+ * screen, because there is no second screen (spec S1).
+ *
+ * The toggles spent version 1.2.0 under the board and came back here in 1.2.1
+ * (spec Q27): they change how the page is drawn and nothing about the position,
+ * the game or the file, so they sit with the name rather than with the
+ * controls.
  *
  * The four settings are read here, once, and handed down (spec 10). This is
  * also the one place that knows what each one does to the running game, so no
@@ -61,6 +65,9 @@ export function Shell() {
   const { side, setSide } = useSide()
   const { boardSize, setBoardSize } = useBoardSize()
   const [notice, setNotice] = useState<ScreenNotice | null>(null)
+  const switchTo = theme === 'dark' ? 'Switch to the light theme' : 'Switch to the dark theme'
+  const switchSize =
+    boardSize === 'small' ? 'Switch to the large board' : 'Switch to the small board'
 
   // A notice says one thing about something that has just happened, so it goes
   // by itself rather than waiting to be dismissed. Cleared on the way out as
@@ -216,6 +223,30 @@ export function Shell() {
         <h1>
           Simply Chess <span className="app-version">v{__APP_VERSION__}</span>
         </h1>
+        <nav className="app-nav">
+          {/* Each toggle reads the size or the theme it would switch TO, which
+              is the trainer's rule for its own. The size one goes first so the
+              theme toggle keeps the end of the row it has always had (spec
+              18.1, restored by Q27). */}
+          <button
+            type="button"
+            className="nav-link theme-toggle"
+            onClick={() => setBoardSize(boardSize === 'small' ? 'large' : 'small')}
+            title={switchSize}
+            aria-label={switchSize}
+          >
+            {boardSize === 'small' ? 'Large' : 'Small'}
+          </button>
+          <button
+            type="button"
+            className="nav-link theme-toggle"
+            onClick={toggle}
+            title={switchTo}
+            aria-label={switchTo}
+          >
+            {theme === 'dark' ? 'Light' : 'Dark'}
+          </button>
+        </nav>
       </header>
 
       <DifficultyRow level={level} onLevel={chooseLevel} />
@@ -227,9 +258,6 @@ export function Shell() {
             side,
             onSide: setSide,
             boardSize,
-            onBoardSize: setBoardSize,
-            theme,
-            onTheme: toggle,
           }}
           files={{
             onSave: () => void save(),
