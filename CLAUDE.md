@@ -2,13 +2,24 @@
 
 A no-frills chess game against Stockfish, on one screen. It runs as an installed
 Windows app (Tauri 2 over WebView2, like the Repertoire Trainer in `../London`) and as
-an iPad Home Screen app (a PWA on Cloudflare Pages, like Conquest in `../Conquest`),
+an iPad Home Screen app (a PWA, like Conquest in `../Conquest`; where it is served
+from is Q22 and undecided),
 from one React, TypeScript and Vite code base. The code is copied from those two apps
 wherever they already do the job, so that a shared library can follow later.
 
-Current state: version 1.0.0 is built and gated, and version 2 is under way (spec
-section 18, which wins over sections 1 to 17). Phase 11 passed gate 11 on 2026-09-13
-(commits `2502c88` and the gate's own): **a reviewed game is a viewer** (spec 18.4). Every move in the list is a
+Current state: **version 1.1.0 is built, and it is the whole of the specification.**
+Phase 12 landed 2026-09-13 and is the last: the version is 1.1.0 in its three files, the
+Windows installer is built, `docs/acceptance.md` is rewritten for version 2 and walks
+every item of spec 17 with 18.7's additions folded in, and the deploy document carries
+both of Q22's routes with the choice still Nick's. Gate 11's one finding is fixed: Play
+from here is now off at the start of a game, with "This is the start of the game. Use New
+game.", because ply 0 here is always the opening position and the button there was New
+game under another name. Three boxes are open and all three are Nick's: 7.8 (publish, Home
+Screen, aeroplane mode), 8.6 and its successor 12.6 (install, play, save and load through
+the real dialogs, reopen, review, uninstall).
+
+Phase 11 passed gate 11 on 2026-09-13 (commits `2502c88` and `a92020b`): **a reviewed game
+is a viewer** (spec 18.4). Every move in the list is a
 button, the one the board is standing on is marked in `--mark`, the left and right
 arrow keys step (never with a text field focused), and the list scrolls itself to keep
 the mark in view. The bar follows the position being looked at. Standing where a slip
@@ -16,12 +27,8 @@ was played from, the move that was played is the highlight and the engine's bett
 is a blue arrow, both at once; a slip's sentence in the report is the button that puts
 the board there. Row two of the buttons holds **Keep playing** (a game that was stopped,
 handed back at its final position), **Play from here** (a new game from the viewed
-position, at the same side and level, disabled with the trainer's reasons where the
-engine is to move or the game is over) and the two stepping arrows. The board does not
-change size when row two appears, because phase 9's chrome already counted it. One
-thing is left for phase 12's box 12.1: Play from here is still live at the START of a
-game, where spec 18.4 says it is off, because the trainer it was copied from has no
-rule for the start.
+position, at the same side and level) and the two stepping arrows. The board does not
+change size when row two appears, because phase 9's chrome already counted it.
 
 Phase 10 passed gate 10 on 2026-09-13 (commits `fe794fd` and `445e175`): a game can be
 **stopped and reviewed** or **stopped and discarded**. The
@@ -39,19 +46,17 @@ the trainer's Play screen - the difficulty in a selector row under the header, t
 board size toggle beside Light/Dark, a head row with the opening line and the status,
 the move list in its own 167 px column at board height, and a side panel with Play as
 and the file buttons. The window opens at 1400 by 980 and the fit rule's chrome
-constants were re-measured for it (167 above, 120 below, 607 beside). The version
-stays 1.0.0 until phase 12, which bumps it to 1.1.0 and ships section 18.
+constants were re-measured for it (167 above, 120 below, 607 beside).
 
 Phase 8 (the Windows app and the installer) landed 2026-09-12 and passed gate 8:
 `src-tauri/` is the trainer's with the names changed, the window keeps its browser
 profile in
 `%LOCALAPPDATA%\Simply Chess Data`, the NSIS installer installs for the current user,
 and the uninstaller removes that one folder only when the box is ticked, proved by
-`node scripts/check-uninstall-hook.mjs`. The version is 1.0.0 in three files.
-`docs/acceptance.md` walks spec 17 item by item. Two boxes are Nick's and are still
-open: 8.6 (run the installer, play a move, save and load, reopen, uninstall) and
-7.8 (publish, add to the Home Screen, play a move in aeroplane mode). Both were
-written against version 1 and hold; the installer he runs will be phase 12's. Phases
+`node scripts/check-uninstall-hook.mjs`. It shipped 1.0.0; phase 12 bumped it to 1.1.0.
+`docs/acceptance.md` walked spec 17 item by item and was rewritten for version 2 in
+phase 12. Its box 8.6 is superseded by 12.6, which is the same walk on the installer
+Nick actually runs. Phases
 0 to 7 passed their gates. Phase 7 made it a Home Screen app: an icon, a manifest, the engine
 in the precache, and a new version offered in a bar that says loading it loses nothing;
 `docs/simple-chess-deploy.md` has Nick's steps for it. Phase 6 put every screen of spec 15 on the address bar in a
@@ -81,8 +86,8 @@ scale).
   green tests and works on screen.
 - [docs/testing.md](docs/testing.md) - the two kinds of test and the rules the suite
   keeps.
-- [docs/simple-chess-deploy.md](docs/simple-chess-deploy.md) - Nick's Cloudflare and
-  iPad steps.
+- [docs/simple-chess-deploy.md](docs/simple-chess-deploy.md) - Nick's iPad steps, by
+  either of Q22's two routes: Cloudflare Pages, or Caddy on the LAN.
 - [docs/acceptance.md](docs/acceptance.md) - spec 17 walked item by item, with what was
   done to check each one and who did it.
 - `SimpleChess-brief.txt` - Nick's brief, kept for history. Build from the spec, not

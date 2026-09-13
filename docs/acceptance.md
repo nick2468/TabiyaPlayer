@@ -1,34 +1,57 @@
 # Acceptance, checked
 
-Spec section 17, item by item, with what was actually done to check each one and when.
-Written 2026-09-12 in phase 8.
+Spec section 17, item by item, with 18.7's additions folded in, and with what was
+actually done to check each one and when. Written 2026-09-12 in phase 8 for version
+1.0.0; **rewritten 2026-09-13 in phase 12 for version 1.1.0**, because phases 9 to 11
+changed the name, the screen and what the app does, and a record that says what the app
+used to be is not a record of what was checked.
 
 Where something was checked by driving the app, it was driven: the development build in
 the browser pane, the production bundle from `npm run preview`, and the packaged window
 over the WebView2 debugging port. Where a check cannot be made from a build session at
-all, it says so and names the person who makes it. Two things are of that kind, and both
-are Nick's: the iPad, because this machine is not one, and the first run of the installer,
-because it writes to his machine.
+all, it says so and names the person who makes it. Three things are of that kind, and
+all are Nick's: the iPad, because this machine is not one; the first run of the
+installer, because it writes to his machine; and a real move on the packaged board,
+because the shipped build ignores synthetic events on purpose.
 
-Every claim below is recorded in more detail in the plan's phase notes and gate findings.
+Every number below was either measured in phase 12 or is quoted from the phase note or
+gate finding that measured it, and says which. Nothing here is an estimate.
 
 ## 1. The screen
 
-**Green.** One screen with the header, the bar, the board, the four buttons, the status
-line, the sidebar's three settings and two file buttons, and the move list.
+**Green.** One screen, laid out as spec 18.1: the header with the name, the version and
+the two toggles; the centred selector row with the difficulty; the head row with the
+opening line and the status; and under them three columns, the board with its bar and
+its two button rows, the move list in its own 167 px column at the board's height, and
+the side panel with Play as, the file buttons, the hint sentence and then either the
+actions or the report.
 
-The layout probe (`scripts/probes/layout.js`, spec 15.3) was run at every viewport of
-spec 15.2, at both board sizes and both themes, in phase 6, and S16's two numbers held in
-all twelve rows: the bar, `.board` and `cg-board` end on the same pixel, and
-`scrollWidth` never exceeds `innerWidth`. Phase 7 re-ran it with the update bar on screen
-at 1280 by 1000 and 820 by 1180 and the numbers did not move. Phase 8 ran the same file a
-second way, against the packaged window, and it agrees: see item 8.
+The layout probe (`scripts/probes/layout.js`, spec 15.3) has been run at every viewport
+of spec 15.2, at both board sizes and both themes, in every phase that moved the screen,
+and S16's two numbers held in every row: the bar, `.board` and `cg-board` end on the same
+pixel, and `scrollWidth` never exceeds `innerWidth`.
+
+| When | What was measured | Result |
+|---|---|---|
+| Phase 6 notes | The version 1 screen, twelve rows (three viewports x two sizes x two themes) | S16 held in all twelve |
+| Phase 9 notes | The version 2 layout, twelve rows | S16 held in all twelve; large board 688 at 1400x980, 528 landscape, 728 upright |
+| Gate 9 findings | The same, driven by the orchestrator at 1280x980 | Large 672, all three ending on 836 |
+| Phase 10 notes | With the report showing | Small 416 and large 672 at 1280x980, unchanged by the report; the side panel grows instead |
+| Gate 11 findings | With the report AND row two showing | Small 416 ending at 583, large 672 ending at 836, row two spanning the board exactly; 94.7 px used of `CHROME_BELOW`'s 120 |
+| Phase 12 (this phase) | Row two at the start of a game, after 12.1 | Board 416, Back disabled at ply 0, Play from here off with its own sentence |
+
+**The board does not change size when row two appears**, which is what phase 9's
+re-measured chrome was for: it counted a second button row that did not exist until phase
+11. 416 and 672 at 1280 by 980 are gate 10's own numbers with only row one showing.
 
 Phase 6 is also where this item earned its instrument. The move list's "keep the newest
 move in view" called `scrollIntoView`, which scrolls every scrollable ancestor, so at
 1180 by 820 the board's top rank was off the screen from the moment the app opened. Five
 phases of green tests never saw it, because jsdom has no layout. The scroll arithmetic is
-now one pure function with its own test, and the probe is how the rest is watched.
+now one pure function with its own test (`scrollToShow` in `ui/keep-in-view.ts`), and the
+probe is how the rest is watched. Phase 11 kept that rule when the viewer arrived: the
+trainer's own viewer still calls `scrollIntoView` on its marked move and this app does
+not.
 
 ## 2. A game
 
@@ -53,6 +76,10 @@ pane mid-game and the session's profile became level 6, 300 ms, Elo 1750, with t
 setting and the remembered game both written as 6. A string test with a recording fake
 engine pins the order: the level reaches the engine before the next search.
 
+The select moved in phase 9 from the sidebar to the centred selector row under the header
+(spec 18.1), and the level's two sentences moved with it into the select's `title`, so
+they are a hover and nowhere else. A DOM test holds where the select lives.
+
 ## 4. The bar
 
 **Green.** The bar follows every move, holds its value while the engine thinks, and
@@ -62,16 +89,26 @@ the bottom. `evalShare` and `evalText` have string tests for `+0.4`, `-1.2`, `0.
 and `-M5` and the share of each. Undo's missing number is fetched for the position it
 lands on, at the analysis profile, with nothing greyed (phase 5).
 
+During a review it shows the evaluation of the position being LOOKED AT rather than the
+game's last one (spec 18.4), which costs nothing because the scan filled every position.
+Driven in phase 11: clicking back through the blunder took the bar from -5.8 to -0.3, and
+the orchestrator's own walk at gate 11 read +0.8, +0.3 and +0.4 stepping back through a
+twenty-move game.
+
 ## 5. Hint
 
 **Green.** Phase 4 asked for a hint in the pane: "The engine suggests e4." with one
 auto-shape `bluee2e4` on the board, the button greyed while the engine thought. Phase 6
-re-checked it from the `hint` scene at 1180 by 820. It is disabled when the game is over
-and while the engine is thinking, which DOM tests hold.
+re-checked it from the `hint` scene at 1180 by 820. It is disabled when the game is over,
+while the engine is thinking, and now while a report is showing, which DOM tests hold.
+
+From phase 10 the session counts hints, because the report says how a game was played.
+The count is taken where the hint is GIVEN rather than where it is asked for, so a search
+that answered nothing does not claim the user had help.
 
 ## 6. Save and load
 
-**Green in the browser and on the iPad's side; the packaged window's dialogs are item 8.**
+**Green in the browser and on the iPad's side; the packaged window's dialogs are item 9.**
 A saved file is the PGN of spec 9.1: seven tags, the movetext, and one closing comment,
 with a string test on the writer and the reader together that round-trips the moves, the
 side and the level. A foreign PGN with variations loads its main line with the user as
@@ -84,6 +121,32 @@ hidden `.pgn` input in the page, took a Black game at level 6 through it, and th
 came back the other way up with the select on 6, the Black radio ticked and White's reply
 already played.
 
+**From phase 10 a reviewed game's file carries the report's comments** (spec 18.6): the
+hint count before the first move, the slip's own words beside the move that was it, and
+the verdict at the end. A game saved before it is reviewed is byte for byte what phase 5
+wrote, which its own test still holds unchanged. Copy game and Save game write the same
+text because one function builds it (`pgnNow` in `Shell`); a DOM test compares the two.
+The real file, read out of the save blob in the pane in phase 10:
+
+```
+[Event "Simply Chess"]
+[Site "-"]
+[Date "2026.09.13"]
+[Round "-"]
+[White "You"]
+[Black "Stockfish level 1"]
+[Result "*"]
+
+1. e4 e5 2. Qh5
+{mistake: slightly better for white to slightly better for black; the engine preferred 2.Nf3}
+2... Nc6 3. Qxe5+ {blunder: level to winning for black; the engine preferred 3.Bc4}
+3... Nxe5 4. Nf3 c6
+{Winning for Black. Stopped after move 4. White was played by you at level 1.} *
+```
+
+A reviewed file still loads back to the same moves, side and level, because the reader has
+always ignored comments (S8), and a string test walks that round trip.
+
 ## 7. Remembered
 
 **Green.** Every setting and the game in progress survive closing and reopening: DOM
@@ -93,62 +156,145 @@ starts. Driven in the pane in phase 3 (a reload brought back the game, the level
 select, Large ticked) and again in phase 7 offline, where the page reloaded with the
 server stopped and opened on the game it was closed on.
 
-On Windows the same storage is the WebView2 profile's, in `%LOCALAPPDATA%\Simple Chess
-Data`, which is the folder the window is pointed at in `src-tauri/src/lib.rs`. That it
-survives closing the window is Nick's step in item 8.
+The storage keys became `simply-chess.*` in phase 9, with the name. Nobody had data under
+the old keys, so nothing is migrated, and the spec's section 10 carries a bracketed note
+saying so.
 
-## 8. Windows
+On Windows the same storage is the WebView2 profile's, in `%LOCALAPPDATA%\Simply Chess
+Data`, which is the folder the window is pointed at in `src-tauri/src/lib.rs`. That it
+survives closing the window is Nick's step in item 9.
+
+## 8. Stopping, reviewing and walking a game
+
+**Green.** This item is new for version 2 and covers spec 18.3, 18.4 and 18.5. It is its
+own item rather than folded into item 2, because it is the largest thing version 2 added
+and item 2 is about playing rather than reading.
+
+**Stop and review** scans every position of the game at the analysis profile, handed
+everything the live bar already worked out, so the report cannot disagree with the numbers
+the user watched. A game played move by move therefore scans nothing, because the bar has
+already been everywhere; the scan does real work on a game reopened from storage or
+loaded from a file, which is what both the drives and the progress test use. Driven in
+phase 10 against the real Stockfish on a seeded game that hung the queen: the button went
+"Scanning 0 of 0..." to "Scanning 3 of 6..." to the report, and the orchestrator's own
+run at gate 10 saw "Scanning 4 of 8...". Undo, Redo, Hint, Save game, Load game and Stop
+and discard are all greyed while it runs.
+
+**The report** named the blunder with its move number, its tag and the engine's preferred
+move, most recent first: "A blunder on move 3: Qxe5+ turned "level" into "winning for
+black". The engine preferred 3.Bc4." above the inaccuracy. The final position got a
+verdict in words with the horizontal bar under it. **The report's numbers are the bar's,
+demonstrated rather than asserted**: in phase 10 the report bar's 2.78322 percent inverts
+to -5.33 pawns while the live bar beside the board read -5.3; at gate 10 the same check
+gave -6.0 against -6.0.
+
+**Stop and discard** left no report, no stored game, an empty move list, the two buttons
+back and "Your move" (phase 10 and gate 10, both in the pane; a DOM test holds it).
+
+**The viewer** (spec 18.4) was driven in phase 11 and again by the orchestrator at gate
+11, both themes. Clicking a move moves the board and the mark; the arrow keys step one
+move a press and do nothing with the difficulty select focused; the board stays locked
+and Undo and Redo stay greyed. Standing where a slip was played from, the move that was
+played is the highlight and the engine's better move is a blue arrow, both at once:
+`lastMove` h5-e5 with one blue f1-c4, and one step on the arrow is gone. The mark computes
+to `--mark` in both themes (#c9e2cc light, #3a5b3f dark).
+
+**The list scrolls itself and nothing above it**, which is the one thing no test can hold,
+because jsdom has no layout. Measured twice, in opposite directions: phase 11 clicked move
+1 from the bottom of a twenty-move list and the list's `scrollTop` went 304 to 0; gate 11
+clicked the last move from the top and it went 0 to 304. Both times the board's y stayed
+167, `main`'s `scrollTop` stayed 0 and the window's `scrollY` stayed 0.
+
+**Keep playing** hands the board back at the game's OWN final position rather than
+wherever the reader has walked to: pressed from a board standing at the slip, the board
+read the session's own fen, the report and row two went, and Undo and Hint came live. It
+is offered only for a game that was stopped, never for one that ended by itself.
+
+**Play from here** starts a new game from the position being looked at, with the old
+game's side and level, as `start` with a prefix of its moves. It is off where the engine
+is to move ("It is the engine's move here. Step one move on or back."), at a finished
+position ("The game is over here."), and **at the start of the game ("This is the start of
+the game. Use New game.")**, which phase 12 added: gate 11 found it live at ply 0, where
+it is New game under another name that also throws the reviewed game away. Driven in phase
+12 stepping back through a six-move game: the sentence changed at every ply and the last
+one is the start's, with Back disabled beside it.
+
+## 9. Windows
 
 **Green as far as a session can take it. The installer run is Nick's.**
 
-Built in phase 8 with `npx tauri build`:
+Built in phase 12 with `npx tauri build`:
 
-- The installer is `src-tauri/target/release/bundle/nsis/Simple Chess_1.0.0_x64-setup.exe`,
-  6,894,680 bytes (6.6 MB). `installMode: currentUser`, so it asks for no administrator
-  rights and installs into `%LOCALAPPDATA%\Simple Chess`. It is unsigned, so SmartScreen
-  warns once (spec 11.2, accepted).
-- The executable is `src-tauri/target/release/simple-chess.exe`, 9,147,392 bytes (8.7 MB).
+- The installer is `src-tauri/target/release/bundle/nsis/Simply Chess_1.1.0_x64-setup.exe`,
+  **6,898,142 bytes (6.6 MB)**. `installMode: currentUser`, so it asks for no administrator rights and
+  installs into `%LOCALAPPDATA%\Simply Chess`. It is unsigned, so SmartScreen warns once
+  (spec 11.2, accepted).
+- The executable is `src-tauri/target/release/simply-chess.exe`, **9,150,976 bytes (8.7 MB)**.
 - The window was started with WebView2's debugging port on and read through
-  `scripts/packaged-eval.mjs`. Its title is "Simple Chess" and its inner size is 1280 by
-  1000, which is spec 11.1. The header says "Simple Chess v1.0.0", the version in
-  `package.json`, `tauri.conf.json` and `Cargo.toml` (four tests hold them together).
-- The layout probe, run against that real window: `.board` and `cg-board` both 416 square
-  at x 68, the bar 24 wide at x 24, and all three ending on 496.67 together; the sidebar
-  280 wide at x 508; `scrollWidth` 1280 against `innerWidth` 1280. S16's two numbers hold
-  in the shipped window, at the machine's display scale of 1.5.
-- **The engine runs in it.** The bar read "+0.4" on the start position, and Hint, pressed
-  through the debugging port, drew a blue arrow from e2 to e3 and said "The engine
-  suggests e3." That is Stockfish's WASM loading and searching inside the window with no
-  server anywhere. A screenshot of both states was taken and is described in the phase
-  notes.
+  `scripts/packaged-eval.mjs`. Its title is "Simply Chess" and its inner size is
+  **1400 by 980**, which is spec 18.1. The header says "Simply Chess v1.1.0", the version
+  in `package.json`, `tauri.conf.json` and `Cargo.toml` (four tests hold them together),
+  and `__TAURI_INTERNALS__` is present, which is what `isDesktop()` reads.
+- **The layout probe, run against that real window** (the same file the pane runs, read a
+  second way): the board and `cg-board` both **688** square at x 68, the bar 24 wide at
+  x 24, and all three ending on **852** together; the move list 167 wide at x 780 and 688
+  tall; the side panel 405 wide at x 971; the selector row centred at y 80.67 and the head
+  row at y 124; `scrollWidth` **1400** against `innerWidth` **1400**. S16's two numbers
+  hold in the shipped window, at the machine's display scale of 1.5. 688 is exactly what
+  phase 9's re-measured chrome predicted for a 1400 by 980 window.
+- **The engine runs in it.** A game seeded into the window's own storage and reopened was
+  evaluated to **-6.0** on the bar, and Stop and review then scanned every position of it
+  and built the report. That is Stockfish's WASM loading and searching inside the window
+  with no server anywhere. (A game that ends in checkmate shows "the engine has not looked
+  yet" on reopening, which is correct rather than a fault: a mated position has no move to
+  search, so there is no evaluation to give it.)
 - **No service worker inside the window** (spec S12), read live rather than asserted:
   `navigator.serviceWorker.getRegistrations()` is empty and there is no update bar.
-- `%LOCALAPPDATA%\Simple Chess Data\WebView2` was created by that run, and no
-  `com.nick.simple-chess` folder appeared under `%LOCALAPPDATA%` or `%APPDATA%`, which is
+- **A game can be reviewed and walked in the shipped window.** Stop and review produced "A blunder on move 3:
+  Qxe5+ turned "level" into "winning for black". The engine preferred 3.Bc4." above the
+  inaccuracy, with "Winning for Black" and "Stopped after move 3" under THE FINAL
+  POSITION; the status read "Game reviewed" and row two appeared with Keep playing, Play
+  from here and the two arrows, Forward disabled at the end. Clicking the blunder's
+  sentence moved the mark to Nc6, took the bar to -0.2, highlighted h5 and e5 (the slip
+  itself) and drew the blue arrow f1-c4 beside it. The one screenshot this project makes
+  was taken there and shows all of it: the report, the marked move in `--mark`, the
+  highlight and the arrow together, row one greyed except New game, and row two under it.
+  `window.__cg` is undefined in the window, which is right: the dev handle is
+  `import.meta.env.DEV` gated and this is a production bundle.
+- `%LOCALAPPDATA%\Simply Chess Data\WebView2` holds the window's profile, and no
+  `com.nick.simply-chess` folder appears under `%LOCALAPPDATA%` or `%APPDATA%`, which is
   what building the window in `lib.rs` is for.
 - The uninstaller's four cases were proved by `node scripts/check-uninstall-hook.mjs`
   against a scratch folder: only a ticked, non-upgrade uninstall removes it. Taking the
   `$UpdateMode <> 1` half of the guard out turns the second case red, which is a version
-  bump deleting the user's game; it was put back and the four cases re-run.
+  bump deleting the user's game; that mutation was done in phase 8, put back, and the four
+  cases re-run here.
 
-**Nick's, once:** run the installer, open the app, play a move on the board (the shipped
-build ignores synthetic events, which is what makes it safe, so this needs a person),
-save a game and load it back through the real dialogs, close and reopen to see the game
-remembered, then uninstall with the box ticked and check `%LOCALAPPDATA%\Simple Chess
-Data` is gone. Plan box 8.6. Date: ______
+**Nick's, once:** install 1.1.0 (over the interim 1.0.0 if it is installed, checking the
+settings and the game survive), open the app, play a move on the board, save a game and
+load it back through the real dialogs, close and reopen to see the game remembered, stop
+and review a game in the installed app, then uninstall with the box ticked and check
+`%LOCALAPPDATA%\Simply Chess Data` is gone. Plan box 12.6. Date: ______
 
-The two dialogs are his because nothing else can do them: a save dialog is a window on
-the screen that only a person can answer, and a session that opened one would have to
-leave it there. What could be checked from here was: both buttons are on screen and
-live, and the window takes the desktop path (`__TAURI_INTERNALS__` is present, which is
-what `isDesktop()` reads), so the halves behind those buttons are the Tauri ones rather
-than the browser's download and file input. The capability file grants exactly the five
-permissions spec 11.4 lists.
+A real move is his because the shipped build ignores synthetic events on the board, which
+is what makes it safe; the dialogs are his because a save dialog is a window on the screen
+that only a person can answer. What could be checked from here was: both file buttons are
+on screen and live, and the window takes the desktop path (`__TAURI_INTERNALS__` is
+present, which is what `isDesktop()` reads), so the halves behind those buttons are the
+Tauri ones rather than the browser's download and file input. The capability file grants
+exactly the five permissions spec 11.4 lists.
 
-## 9. iPad
+**One thing to know before installing.** The identifier changed with the name in phase 9,
+from `com.nick.simple-chess` to `com.nick.simply-chess`, and NSIS keys an install on the
+product name. An install of the old Simple Chess 1.0.0 would sit BESIDE this one rather
+than be upgraded by it. Nothing is at risk: Simple Chess 1.0.0 was never installed. The
+interim Simply Chess 1.0.0 built at gate 9 has the same product name as this one and is
+upgraded normally.
+
+## 10. iPad
 
 **Green as far as a session can take it. The publishing and the aeroplane-mode game are
-Nick's.**
+Nick's, and which route to publish by is still his to choose (Q22).**
 
 Phase 7 built the manifest, the icons and the service worker and proved the offline case
 against the production bundle on this machine: `npm run preview` on 5186, one move played
@@ -157,27 +303,27 @@ second move answered by the engine from the precached WASM (delivered from
 `cache-storage`, transfer size 0) while a fetch of an unstored path was refused. The
 precache names both engine files; without `maximumFileSizeToCacheInBytes` Vite drops the
 7.3 MB WASM with one line in the log and the app opens offline and hangs, which was shown
-and put back (spec S11).
+and put back (spec S11). The precache is 21 entries at 1.1.0.
 
 The update banner was driven at `?pretendUpdate` in both themes at two viewports: it
 offers the new version, says the game is remembered so loading it loses nothing, and
 "Load it" calls the worker's `updateServiceWorker(true)` (DOM test). It is not registered
 at all inside the Tauri window (spec S12, DOM test).
 
-**Nick's, once:** push to GitHub, make the Cloudflare Pages project with its
-`NODE_VERSION`, add the DNS record, add the app to the Home Screen from Safari, and play a
-move in aeroplane mode after one online visit. Every step is in
-[simple-chess-deploy.md](simple-chess-deploy.md). Plan box 7.8. Date: ______
+**Nick's, once:** choose a route (Cloudflare Pages or Caddy on the LAN, both written up in
+[simple-chess-deploy.md](simple-chess-deploy.md)), publish, add the app to the Home Screen
+from Safari, and play a move in aeroplane mode after one online visit. Plan box 7.8.
+Date: ______
 
-## 10. Tests
+## 11. Tests
 
-**Green.** 257 tests in 31 files, both projects, in 8.1 seconds warm on this machine,
-which is inside the twenty-second rule. By project: 202 string tests in 21 files, 55 DOM
-tests in 10. Nothing is skipped. `tsc -b` clean, `npx oxlint` silent. No em dashes under
+**Green.** 324 tests in 37 files, both projects, in 9.5 seconds warm on this machine,
+which is inside the twenty-second rule. By project: 255 string tests in 25 files, 69 DOM
+tests in 12. Nothing is skipped. `tsc -b` clean, `npx oxlint` silent. No em dashes under
 `src/` or `src-tauri/`. The version is held in three files by four tests, and the Windows
 data folder's name is held in three files by three more.
 
-All eleven tests of spec S15 are present:
+All eleven tests of spec S15 are present, and all eight that spec 18.7 adds:
 
 | S15 | Where |
 |---|---|
@@ -192,16 +338,35 @@ All eleven tests of spec S15 are present:
 | 9. Play as Black: the engine opens, the board is flipped, White's share is at the top | `ui/remembered.dom.test.tsx` and `ui/bar-and-hint.dom.test.tsx` |
 | 10. New game clears the hint, the outcome and the redo stack | `ui/bar-and-hint.dom.test.tsx` and `ui/play-game.dom.test.tsx` |
 | 11. The large board fits and divides by 8 | `ui/board-size.test.ts` |
+| 12. Stop and review reports a scripted blunder | `ui/review.dom.test.tsx`, "names a blunder with its move number, its tag and the better move" |
+| 13. Stop and discard forgets the game | `ui/review.dom.test.tsx`, "leaves no report, no remembered game and a fresh board" |
+| 14. The viewer marks the clicked move, the keys step, the board is locked | `ui/viewer.dom.test.tsx`, "clicks, steps and marks, with the board still locked" |
+| 15. Keep playing returns to the final position with the report gone | `ui/viewer.dom.test.tsx`, "keeps playing from the final position, then plays from a viewed one" |
+| 16. Play from here starts a new game from the viewed position | the same test, plus `ui/play-from-replay.test.ts` for which plies allow it |
+| 17. Copy game and Save game produce the same text, with the comments | `ui/review.dom.test.tsx`, "write the same text for a reviewed game, with the report in it" |
+| 18. The size toggle and the selector row's select work and are remembered | `ui/remembered.dom.test.tsx`, "remembers the level, the side and the board size across a restart" and "puts the difficulty select in the selector row under the header" |
+| 19. The hint count reaches the report and the file | `ui/review.dom.test.tsx`, "carries the hint count into the report", and `play/game-pgn.test.ts`, "says how many hints were used, before the first move" |
 
-Item 10 is the one this walk found a hole in. The redo stack was held; the hint and the
-outcome were not, and S15 names all three. Two DOM tests were added in phase 8 and both
-were shown red first, against a `start` that keeps the old hint and a New game that
-carries the old moves into the fresh session.
+Two items have found holes in this walk rather than confirming them, which is what the
+walk is for. Item 10, in phase 8: the redo stack was held and the hint and the outcome
+were not, and S15 names all three; two DOM tests were added and both were shown red first.
+Item 16, at gate 11: Play from here was live at the start of the game, which spec 18.4
+says it must not be; fixed in phase 12 with a string test and a DOM case, both shown red
+against the unfixed rule.
 
-## 11. Docs
+## 12. Docs
 
 **Green.** The specification, the plan with every box ticked or its gap recorded, this
-document, `testing.md`, `simple-chess-deploy.md` for the iPad, the README for both
-platforms, and `CLAUDE.md` for the next session. Every copied file carries its `Origin:`
-line and adapted ones say what changed (spec S3). The only boxes still open are the two
-that need Nick's machine and accounts, 7.8 and 8.6, and both are named above.
+document, `testing.md`, `simple-chess-deploy.md` with both of Q22's routes, the README for
+both platforms, and `CLAUDE.md` for the next session. Every copied file carries its
+`Origin:` line and adapted ones say what changed (spec S3).
+
+The specification's sections 1 to 17 keep their version 1 text as history, which its own
+front matter says; section 18 is the version 2 delta and wins wherever they differ. Two
+bracketed corrections were added inside the earlier sections in phase 9, at 11.1 (the
+window size) and section 10 (the storage keys), because those two would otherwise have
+been read as current.
+
+The only boxes still open are the three that need Nick's machine, his accounts and his
+iPad: 7.8, 8.6 (superseded by 12.6, which is the same walk on 1.1.0) and 12.6. All are
+named above.

@@ -2,7 +2,8 @@
 
 Origin: Conquest `docs/conquest-deploy.md`, adapted: this app's project, repository
 and domain, an offline proof that plays a move against the engine, and an update
-that costs nothing. Written 2026-09-12 for plan phase 7.
+that costs nothing. Written 2026-09-12 for plan phase 7; the second route added
+2026-09-13 for phase 12.
 
 **Every step here needs Nick's GitHub account, Nick's Cloudflare account or Nick's
 iPad. They are steps for a person, not for Claude.** What the build session could do
@@ -10,9 +11,35 @@ is already done and is listed under "What is already built" below.
 
 ---
 
+## Two routes, and the choice is not made
+
+The iPad needs the app over **HTTPS**, because a service worker only runs on a secure
+page and without one the app never works offline. That is the only real requirement.
+There are two ways to meet it and Nick has not chosen (spec Q22):
+
+| | **Cloudflare Pages** | **Caddy on the LAN** |
+|---|---|---|
+| Who can reach it | Anyone with the address | Anyone on the home wifi |
+| Needs internet to install | Yes | No |
+| Needs a DNS record | Yes, one CNAME | No |
+| Needs a certificate trusted on the iPad | No, Cloudflare provides one | Yes, once |
+| Needs this machine running | No | Yes, to install and to update |
+| Publishing a new version | `git push` | `npm run build`, and the files are served |
+
+**The choice changes nothing in the code.** The app is the same `dist/` folder either
+way, the same service worker, the same manifest and the same offline behaviour. Nothing
+in the source reads a URL, so there is no build flag and no configuration to switch.
+
+Sections 1 to 3 below are the Cloudflare route. Section 3a is the LAN route, and is an
+alternative to sections 1 to 3 rather than an addition. Sections 4 onward are the same
+whichever route is taken.
+
+---
+
 ## It is live
 
-**https://simplechess.datacrafter.net** - published ______ (fill in the date).
+**https://simplechess.datacrafter.net** - published ______ (fill in the date), by the
+Cloudflare route.
 
 | Thing | Value |
 |---|---|
@@ -63,6 +90,8 @@ rather than checking that the page appears.
 
 ## 1. Put the repository on GitHub
 
+*Cloudflare route.*
+
 Cloudflare Pages builds from a Git repository, so it needs one it can read.
 
 ```bash
@@ -84,6 +113,8 @@ Private is fine. Cloudflare can read a private repository once you grant it.
 ---
 
 ## 2. Make the Cloudflare Pages project
+
+*Cloudflare route.*
 
 1. Open the Cloudflare dashboard, then **Workers & Pages**, then **Create**, then
    **Pages**, then **Connect to Git**.
@@ -117,6 +148,8 @@ The first build takes a couple of minutes. It ends with a URL like
 
 ## 3. Point simplechess.datacrafter.net at it
 
+*Cloudflare route.*
+
 1. In the Pages project, open **Custom domains**, then **Set up a custom domain**.
 2. Enter `simplechess.datacrafter.net`.
 3. Cloudflare already runs DNS for `datacrafter.net`, so it offers to add the record
@@ -137,9 +170,95 @@ on this machine with no certificate.
 
 ---
 
+## 3a. Or: Caddy on the LAN, with no internet at all
+
+*The LAN route. Instead of 1 to 3, not as well as.*
+
+The app is a folder of static files. Anything that serves them over HTTPS will do, and
+on the home wifi that means one small server here and one certificate trusted once on
+the iPad. No GitHub, no Cloudflare, no DNS record and no public URL.
+
+**Why a certificate at all.** Safari will not register a service worker on a page it
+does not trust, and without the worker there is no Home Screen app and nothing works
+offline. A LAN address has no public certificate authority behind it, so the trust has
+to be put on the iPad by hand. It is one file and one visit to Settings, and it lasts
+until it expires.
+
+1. **Build the app.**
+
+```bash
+npm run build
+```
+
+That writes `dist/`, which is the whole site.
+
+2. **Make a certificate for this machine's LAN name**, once, with
+   [mkcert](https://github.com/FiloSottile/mkcert). `mkcert -install` creates a private
+   root certificate authority on this machine and trusts it here; the second command
+   issues a certificate for the addresses the iPad will use.
+
+```bash
+mkcert -install
+```
+
+```bash
+mkcert simplychess.local 192.168.1.10
+```
+
+Use this machine's own LAN address in place of `192.168.1.10`. `ipconfig` gives it.
+
+3. **Trust the root certificate on the iPad**, once. `mkcert -CAROOT` prints the folder
+   holding `rootCA.pem`. Send that one file to the iPad (AirDrop, or email it to
+   yourself), open it, then:
+   - **Settings, General, VPN & Device Management**, and install the profile.
+   - **Settings, General, About, Certificate Trust Settings**, and turn full trust on
+     for it.
+
+   Both steps are needed. Installing the profile without the second step leaves Safari
+   refusing the page, which looks like the server being wrong.
+
+4. **Serve `dist/` with Caddy.** A `Caddyfile` beside the project:
+
+```
+simplychess.local, 192.168.1.10 {
+  tls cert.pem key.pem
+  root * ./dist
+  file_server
+  try_files {path} /index.html
+}
+```
+
+```bash
+caddy run
+```
+
+`try_files` matters: the app is a single page, so any path that is not a file has to
+return `index.html`.
+
+5. **Let it through the firewall.** Windows will ask the first time Caddy listens.
+   Allow it on **private** networks only, not public.
+
+6. **Open it on the iPad** at `https://192.168.1.10` (or `https://simplychess.local` if
+   the network resolves that name), and carry on at step 4 below.
+
+**Publishing a new version** is `npm run build` and nothing else: Caddy serves whatever
+is in `dist/`. The iPad picks it up the next time it is opened with the wifi on, through
+the same update bar described below.
+
+**The trade.** The app installs and updates only on the home wifi, and this machine has
+to be running for both. Once installed it works anywhere, because the service worker has
+stored it, which is the whole point. It is the better route if the app is never meant to
+be on the public internet, and the worse one if the iPad leaves the house before it has
+been installed.
+
+---
+
 ## 4. Add it to the iPad Home Screen
 
-1. Open `https://simplechess.datacrafter.net` in **Safari**. It must be Safari.
+*Either route. The address is the only difference.*
+
+1. Open the site in **Safari**: `https://simplechess.datacrafter.net` by the Cloudflare
+   route, or the LAN address by the other. It must be Safari.
    Chrome on iPadOS cannot add a Home Screen app.
 2. Press the Share button.
 3. Choose **Add to Home Screen**.
@@ -151,6 +270,8 @@ with no address bar and no browser buttons.
 ---
 
 ## 5. Check it really works with no internet
+
+*Either route.*
 
 This is plan box 7.8, and it is the one that finishes phase 7.
 

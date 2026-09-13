@@ -3,8 +3,9 @@
 A no-frills chess game against the Stockfish engine. One screen, laid out as the
 trainer's Play screen: the difficulty in a row under the header, the board size and
 the theme beside each other at the right of it, then the opening line and the status,
-then the board with its evaluation bar and four buttons, the move list in its own
-column, and a side panel with the colour you play and Save and Load.
+then the board with its evaluation bar and its buttons, the move list in its own
+column, and a side panel with the colour you play, Save and Load, and what you can do
+with the game.
 
 It runs as an installed Windows app and as an iPad Home Screen app, from one code
 base. The code comes from the Repertoire Trainer (`../London`) and Conquest
@@ -16,13 +17,17 @@ the phases and their progress.
 
 ## Status
 
-Version 1.0.0 is built, all eight phases: the game plays, saves and loads, remembers
-itself, is a Home Screen app that works with no internet, and installs on Windows.
-Version 2 is under way (specification section 18): phase 9 has renamed the app Simply
-Chess and laid the screen out as the trainer's Play screen. The version stays 1.0.0
-until phase 12.
-[docs/acceptance.md](docs/acceptance.md) walks the specification's acceptance list item
-by item and says who checked what.
+**Version 1.1.0 is built, and it is the whole of the specification** (section 18 for
+version 2, sections 1 to 17 for version 1). The game plays, saves and loads, remembers
+itself, is a Home Screen app that works with no internet, and installs on Windows. A
+game can be stopped and reviewed: the engine scans every position of it and the report
+names each slip with the move it would have played instead, and the move list becomes a
+viewer you can click and step through with the arrow keys.
+
+Three things are left and all are Nick's, because they need his machine, his accounts
+and his iPad: running the installer, publishing the site, and playing a move in
+aeroplane mode. [docs/acceptance.md](docs/acceptance.md) walks the specification's
+acceptance list item by item and says who checked what.
 
 ## Running it
 
@@ -54,8 +59,9 @@ see what the iPad sees.
 
 **On an iPad, as a Home Screen app.** Open the published site in Safari, press Share,
 then Add to Home Screen. Once it has been opened once it works in aeroplane mode,
-engine and all. Publishing it is Nick's job and needs his accounts:
-[docs/simple-chess-deploy.md](docs/simple-chess-deploy.md) has every step.
+engine and all. Publishing it is Nick's job and needs his accounts or his wifi:
+[docs/simple-chess-deploy.md](docs/simple-chess-deploy.md) writes up both routes,
+Cloudflare Pages and Caddy on the LAN, and the choice between them is still open.
 
 **On Windows, as an installed app.** The Rust toolchain has to be on the path first
 (it lives in `%USERPROFILE%\.cargo\bin` and is not there by default), then:
@@ -64,7 +70,7 @@ engine and all. Publishing it is Nick's job and needs his accounts:
 npx tauri build
 ```
 
-That writes `src-tauri/target/release/bundle/nsis/Simply Chess_1.0.0_x64-setup.exe`.
+That writes `src-tauri/target/release/bundle/nsis/Simply Chess_1.1.0_x64-setup.exe`.
 It installs for the current user, with no administrator prompt, into
 `%LOCALAPPDATA%\Simply Chess`. It is unsigned, so SmartScreen warns the first time:
 More info, then Run anyway. The window keeps its settings and the game in progress in

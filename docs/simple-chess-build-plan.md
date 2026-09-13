@@ -650,19 +650,19 @@ and its tests, `Play.tsx` (`MoveList` with `activePly`, `PlayControls` row two,
 
 **Goal: everything section 18 asks for is built, checked and shipped.**
 
-- [ ] 12.1 The three findings of gate 11, which land before the version bump.
+- [x] 12.1 The three findings of gate 11, which land before the version bump.
       **Play from here is off at the start of the game**, which spec 18.4 asks for and
       the trainer has no rule for: `whyNotPlayable` answers "This is the start of the
       game. Use New game." at ply 0, with a test for it and the DOM test's ply-0 case.
       The dead `walkable` class goes from `MoveList`. The double blank line in
       `play-context.tsx` goes.
-- [ ] 12.2 The acceptance walk (`docs/acceptance.md`) extended with 18.7's items and
+- [x] 12.2 The acceptance walk (`docs/acceptance.md`) extended with 18.7's items and
       re-checked where earlier items changed (the screen, the file).
-- [ ] 12.3 Version 1.1.0 in the three files; `npx tauri build`; the packaged window
+- [x] 12.3 Version 1.1.0 in the three files; `npx tauri build`; the packaged window
       driven again with the probe and the one screenshot; the installer's path and size.
-- [ ] 12.4 The deploy document updated for whichever of Q22's options Nick chooses,
+- [x] 12.4 The deploy document updated for whichever of Q22's options Nick chooses,
       when he chooses. Until then it documents both.
-- [ ] 12.5 Docs sweep (spec, plan, testing, deploy, README, CLAUDE.md) and commit.
+- [x] 12.5 Docs sweep (spec, plan, testing, deploy, README, CLAUDE.md) and commit.
 - [ ] 12.6 Nick: install 1.1.0 over 1.0.0 (the settings and the game survive), play,
       review a game. Record the date here.
 
@@ -696,7 +696,7 @@ did it that way too.
 | 9 - Simply Chess, and the trainer's layout | **Complete** 2026-09-13, gate passed the same day. 260 tests green in 7.9 s. The app is Simply Chess everywhere a person sees it; the screen is the trainer's Play screen, measured at three viewports, both sizes and both themes with S16 holding in all twelve rows; the window is 1400 by 980 and the chrome constants are 167, 120 and 607. |
 | 10 - stop, review, the report | **Complete** 2026-09-13, gate passed the same day. 305 tests green in 14.4 s. A game can be stopped and reviewed or stopped and discarded; the report names each slip with the engine's better move and gives the final position a verdict in words; the hint count reaches the report and the file; Copy game and Save game write the same text. Driven against the real Stockfish in the pane. |
 | 11 - the review viewer, Keep playing, Play from here | **Complete** 2026-09-13. 323 tests green in 16.3 s. A reviewed game is a viewer: every move is a button, the marked one is in `--mark`, the arrow keys step, the bar follows the position being looked at, and a slip's sentence puts the board where it was played from with the engine's move as a blue arrow beside it. Keep playing and Play from here both work. The board does not change size when row two appears. |
-| 12 - version 1.1.0 | Not started |
+| 12 - version 1.1.0 | **Complete** 2026-09-13, box 12.6 is Nick's. 324 tests green in 9.2 s. Gate 11's finding fixed in `ce0e743`; 1.1.0 in the three files; the installer is 6,898,142 bytes and the shipped window was driven, reviewed and walked at 688 with S16 holding; `docs/acceptance.md` rewritten for version 2; both of Q22's routes documented. |
 
 ## Phase notes
 
@@ -3162,3 +3162,123 @@ reading shapes out of the SVG and which its CLAUDE.md entry describes exactly.
 **Nick's open boxes are unchanged:** 7.8 (publish, Home Screen, aeroplane mode), 8.6
 (the installer walk) and now 12.6 (1.1.0 over 1.0.0). Q22, the deployment choice, is
 still his to make and nothing in the app waits on it.
+
+### Phase 12 - builder notes (2026-09-13)
+
+The session was compacted after phase 11. Everything the chip named was read fresh
+before anything was touched: `CLAUDE.md` all through, spec 17 then 18 and 18.7 then S15,
+the plan's rules and phase 12 and the gate 11 findings, `docs/acceptance.md`,
+`docs/simple-chess-deploy.md`, `docs/testing.md`, `README.md`, and then
+`ui/play-from-replay.ts` and its test, `ui/MoveList.tsx`, `ui/play-context.tsx` and
+`ui/viewer.dom.test.tsx`.
+
+**Two commits, as the chip asks.** `ce0e743` is gate 11's three findings, on its own so a
+bisect can tell the fix from the release; the release is the second.
+
+**12.1, measured.** Before the fix, stepping back through a six-move reviewed game in the
+pane, Play from here was live at ply 0 with "Start a new game from the position on the
+board". After it, the sentence at each ply reads: Nxe5 on, Qxe5+ engine's move, Nc6 on,
+Qh5 engine's move, e5 on, e4 engine's move, and at the start **"This is the start of the
+game. Use New game."** with Back disabled beside it. The start is asked BEFORE the colour,
+because at ply 0 a user playing Black is also facing the engine's move and "Step one move
+on or back" is half wrong there: back is disabled. Mutation-checked: changing `ply <= 0`
+to `ply < 0` in both functions turns two tests red, one string and one DOM, and it was
+reversed with the reverse edit. The `walkable` class is gone from `MoveList` and the class
+list reads `move-list` in the pane; the double blank line in `play-context.tsx` is gone.
+
+**12.3, the build.** `npx tauri build` with `%USERPROFILE%\.cargo\bin` on the path,
+**2 m 29 s** for the Rust half.
+
+| | |
+|---|---|
+| Installer | `src-tauri/target/release/bundle/nsis/Simply Chess_1.1.0_x64-setup.exe`, **6,898,142 bytes** |
+| Executable | `src-tauri/target/release/simply-chess.exe`, **9,150,976 bytes** |
+| Version | 1.1.0 in `package.json`, `tauri.conf.json` and `Cargo.toml`, held by four tests |
+
+**The packaged window, driven over the debugging port.** Title "Simply Chess", inner size
+**1400 by 980**, header "Simply Chess v1.1.0", `__TAURI_INTERNALS__` present,
+`navigator.serviceWorker.getRegistrations()` **empty** and no update bar (S12). The layout
+probe against that real window: board and `cg-board` both **688** at x 68, the bar 24 wide
+at x 24, **all three ending on 852**; the list 167 x 688 at x 780; the side panel 405 at
+x 971; the selector row at y 80.67 and the head row at y 124; `scrollWidth` **1400** =
+`innerWidth` **1400**. S16 holds in the shipped window, and 688 is exactly what phase 9's
+re-measured chrome predicted for this window at a display scale of 1.5.
+
+**The engine and the review both run in the shipped window.** A game seeded into the
+window's own storage and reopened was evaluated to **-6.0** on the bar. Stop and review
+scanned it and produced "A blunder on move 3: Qxe5+ turned "level" into "winning for
+black". The engine preferred 3.Bc4." above the inaccuracy, with "Winning for Black" and
+"Stopped after move 3", the status "Game reviewed", and row two with Keep playing, Play
+from here and the arrows, Forward disabled at the end. Clicking the blunder's sentence
+moved the mark to Nc6, took the bar to **-0.2**, highlighted h5 and e5 (the slip itself,
+computed from the 688 board: 344/86 = e, 602/86 = h, both on rank 5) and drew the blue
+arrow f1-c4 beside it. `window.__cg` is undefined there, which is right: the dev handle is
+`import.meta.env.DEV` gated and this is a production bundle, so the arrow was read from
+the SVG instead.
+
+**The one screenshot** (`packaged-eval.mjs --shot`) was taken on that position and looked
+at: the header at 1.1.0 with Small and Light, the centred Difficulty row, "Playing White
+against 1. Very casual" and "Game reviewed", the 688 board with the bar at -0.2, the two
+green highlight squares and the blue arrow together, Nc6 marked in `--mark` in the list,
+the report with its red and blue slip borders, and both button rows with New game live and
+Undo, Redo and Hint greyed. That is the whole of version 2 in the shipped window.
+
+`node scripts/check-uninstall-hook.mjs` re-run: all four cases behaved, only the ticked
+non-upgrade uninstall removing the folder.
+
+**12.2, the acceptance rewrite.** `docs/acceptance.md` was version 1's walk and parts of
+it had become false: the name, a 1280 by 1000 window, four buttons, a 280 px sidebar and
+257 tests. It is rewritten rather than added to, because it is the record of what was
+checked and a record that describes an app that no longer exists is not one.
+
+- **A new item 8, "Stopping, reviewing and walking a game"**, rather than folding 18.3 to
+  18.5 into items 2 and 6. It is the largest thing version 2 added and item 2 is about
+  playing rather than reading, so they are different questions. The file half of 18.6 did
+  go into item 6, beside the version 1 file it extends, because that item is already about
+  what a saved game contains. Windows and iPad shifted to 9 and 10, tests to 11, docs to
+  12, and the two stale "item 8" cross-references were corrected.
+- Every number in it is either measured in this phase or quoted from the phase note or
+  gate finding that measured it, and says which. Item 1 carries a table of six rows saying
+  where each measurement came from.
+- **All eight of 18.7's items already had tests**, so none had to be written: 12, 13, 17
+  and 19 in `review.dom.test.tsx`, 14, 15 and 16 in `viewer.dom.test.tsx` with
+  `play-from-replay.test.ts` beside it, 18 in `remembered.dom.test.tsx` across two tests,
+  and 19 again in `game-pgn.test.ts` for the file half. The S15 table now runs to nineteen
+  rows, each naming the file and the test.
+- The walk records the two items that found holes rather than confirming them: item 10 in
+  phase 8 (the hint and the outcome were not held), and item 16 at gate 11 (Play from here
+  at the start), which is what 12.1 fixed.
+
+**12.4, the second route.** `docs/simple-chess-deploy.md` gains a table comparing the two
+and a section 3a, Caddy on the LAN: build, `mkcert -install` and a certificate for the
+machine's LAN name, the root certificate trusted once on the iPad in two places (the
+profile AND Certificate Trust Settings, because the first without the second leaves Safari
+refusing the page), a six-line Caddyfile with `try_files` for the single page, the
+firewall on private networks only, and then the same Home Screen steps. Each existing
+section is now labelled with the route it belongs to, and the front of the document says
+the choice changes nothing in the code: the app is the same `dist/` either way and nothing
+in the source reads a URL.
+
+**Decided (and said here rather than guessed at).**
+
+- **The acceptance document keeps spec 17's shape and numbering where it can**, with the
+  two new items inserted rather than the whole list renumbered around them. A reader
+  holding the spec open should be able to follow both.
+- **The bar reading "the engine has not looked yet" on a reopened checkmate is correct**,
+  not a fault, and the acceptance document says so: a mated position has no move to
+  search, so there is no evaluation for it. It looked wrong when the packaged window first
+  opened on a 65-move mated game left by an earlier session's drive.
+
+**Left, and it is all Nick's.**
+
+- **Box 12.6**, which supersedes 8.6: install 1.1.0 (over the interim Simply Chess 1.0.0
+  if it is there, checking the settings and the game survive), open it, play a move, save
+  and load through the real dialogs, close and reopen, stop and review a game, then
+  uninstall with the box ticked and check `%LOCALAPPDATA%\Simply Chess Data` is gone.
+- **Box 7.8**, the iPad, once he chooses a route.
+- **Q22 itself.** Nothing in the code waits on it.
+- The installer was NOT run from this session, and `%LOCALAPPDATA%\Simply Chess Data` was
+  not deleted. The packaged window's own storage did have a game seeded into it for the
+  review drive, over a 65-move game a previous session's drive had left; the seeded game
+  was removed afterwards and the four settings keys left as they were.
+- `../London` and `../Conquest` were not touched.
