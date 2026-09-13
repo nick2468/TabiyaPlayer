@@ -3,9 +3,11 @@
 Version 3, 2026-09-14. Status: **Active.** Version 1 (phases 0 to 8) is built and every
 gate passed by 2026-09-12; its boxes 7.8 and 8.6 are Nick's. Version 2 (phases 9 to 12,
 spec section 18) made the app Simply Chess, a sibling of the trainer's Play screen, and
-shipped as 1.1.0 on 2026-09-13 with every gate passed. **Phase 13 (spec section 19) is
-next**: Nick used 1.1.0 and asked for the report to have the room, so every control moves
-under the board and the report takes the side panel.
+shipped as 1.1.0 on 2026-09-13 with every gate passed. **Phase 13 (spec section 19) landed
+2026-09-14 and passed its gate the same day**: Nick used 1.1.0 and asked for the report
+to have the room, so every control moved under the board and the report took the side
+panel, and the source version is 1.2.0. Nothing is left in the plan but Nick's own three
+boxes.
 
 Read [the specification](simple-chess-spec.md) first. It says what the app does. This
 document says what gets built, in what order, and how we know each part is finished.
@@ -3503,3 +3505,75 @@ new or adapted file.
 - The pane's `localStorage` and `sessionStorage` were cleared after the last drive and the
   dev server was stopped.
 - `../London` and `../Conquest` were not touched.
+
+### Gate 13 findings (orchestrator, 2026-09-14)
+
+**Passed.** One thing for Nick to rule, and it is a trade rather than a defect: see the
+last paragraph.
+
+**Verified from the repo.** `npx vitest run`: 37 files, **324 passed, none skipped, 9.2
+seconds**. `tsc -b` clean, `npx oxlint` exit 0 with no output, `npm run build` clean,
+precache 21 entries. No `midgame`, `repertoire` or `trainee` in any built chunk; no em
+dash under `src/` or `src-tauri/src/`. `../London` and `../Conquest` hold no change of
+ours.
+
+**Mutation-checked, three, each reversed.**
+
+| Mutation | Red |
+|---|---|
+| `CHROME_BELOW` back to 120, the two-row number | 6 of `board-size.test.ts`'s 16 |
+| `SettingsRow` rendered in the side panel instead of the board column | 2 tests, one in `remembered.dom.test.tsx` and one in `viewer.dom.test.tsx` |
+| the report's outcome line given a class of its own again | the report's structural test in `review.dom.test.tsx` |
+
+**Driven in the pane myself at 1400 by 980**, storage cleared first and after.
+
+- **Nothing is left behind.** Zero buttons in the header, zero in the side panel with no
+  report showing, and with one showing the only three are the report's own two slips and
+  Copy game.
+- **The four rows are each exactly the width of the board**, 584 at this viewport, at y
+  763, 813, 863 and 913, which is 38 and a 12 gap four times over. Row two carried Stop
+  and review and Stop and discard before the review and Keep playing, Play from here and
+  the two arrows after it, and **the board stayed 584 across that change**.
+- **The report starts at y 167 with the panel's own top at y 167**, where the chip
+  measured it starting 195.8 px down. All of it is back.
+- **The report reads in the head row's colour, measured in the same load**: every line of
+  it, headings included, is `rgb(200, 204, 210)` at 16 px and weight 400 in the dark
+  theme, and `.play-opening` is the same three values; in the light theme both are
+  `rgb(61, 65, 71)`. The blunder's left edge is still `rgb(224, 122, 111)`, so the
+  meaning-carrying colours were left alone.
+- **"Difficulty" starts on the same pixel as "Simply Chess"**, both x 24.
+- **The probe, light theme, review state**: bar, `.board` and `cg-board` all end at 751,
+  every row 584 wide ending at 947, `scrollWidth` 1400 = `innerWidth`, and
+  `scrollHeight` 980 = `innerHeight`, so the page scrolls in neither direction.
+- **1180 by 820**: the large board is 424 and the small is 416.
+
+**Taken on the builder's account**, and it corrected the chip rather than the other way
+round: the state with the MOST rows is a game in progress, not a report, because the
+review row carries phase 11's -4 px top margin. It measured both and sized the constant
+for the taller. The chip said the opposite and the chip was wrong.
+
+**The one thing for Nick.** The room for the report came out of the board, as the chip
+said it would, and the number is bigger than I guessed: `CHROME_BELOW` went 120 to 224,
+so the large board is **584 at 1400 by 980, or 576 at this machine's display scale**,
+where it was 688. On a landscape iPad it is **424 against the small board's 416**, and at
+a fractional scale there the two are both 416, so the size toggle does nothing on that
+one device. Everything else is unaffected: the small board is 416 as it always was, and
+the upright iPad is still 728 because the width runs out there before the height does.
+If Nick wants the board back, the lever is the number of rows: putting the two view
+toggles back in the header makes it three rows, `CHROME_BELOW` about 174, and the large
+board about 632 in the window and 472 landscape. That is his call, not a fix.
+
+**The 1.2.0 Windows build, made at this gate** (Nick asked for it with the review).
+`npx tauri build` clean in 1 m 59 s. The installer is
+`src-tauri/target/release/bundle/nsis/Simply Chess_1.2.0_x64-setup.exe`, **6,897,503
+bytes**, and the executable is `simply-chess.exe`, 9,150,464 bytes. The window was
+started with its debugging port and read with `scripts/packaged-eval.mjs`: title "Simply
+Chess", "v1.2.0" in the header, inner size 1400 by 980 at a display scale of 1.5, no
+button in the header and none in the side panel, "Difficulty" and "Simply Chess" both at
+x 24, the head row's colour `rgb(200, 204, 210)`, no service worker (S12), and
+`scrollWidth` 1400 against `innerWidth` 1400. The small board is 416 with its four rows
+each 416 wide, and the large board is **576** there, which is `board-size.test.ts`'s own
+number for a scale of 1.5; its four rows are each 576 and the last ends at 937 in a 980
+window, with the bar and `cg-board` ending together at 740. **The engine runs in it**:
+the bar read +0.4 on the opening position. One screenshot was taken and looked at.
+Box 12.6 now has a 1.2.0 installer to point at.
