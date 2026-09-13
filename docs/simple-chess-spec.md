@@ -3,8 +3,9 @@
 Version 2, 2026-09-13 (version 1 shipped 2026-09-12 as 1.0.0). Written by the
 orchestrator session from Nick's brief (`SimpleChess-brief.txt`) and his rulings
 (section 2, then section 18). Sections 1 to 17 specify version 1 and stay true;
-**section 18 specifies version 2, the sibling of the trainer's Play screen, and wins
-where they differ.** The product is now called **Simply Chess**; the earlier sections
+**section 18 specifies version 2, the sibling of the trainer's Play screen, and section
+19 specifies version 1.2.0, which made room for the report. A later section wins over an
+earlier one wherever they differ.** The product is now called **Simply Chess**; the earlier sections
 keep the old name as history.
 
 This document says what the app does and how it is built. The
@@ -1132,3 +1133,98 @@ viewports with S16 holding; a game can be stopped, reviewed, walked, kept playin
 and played from a viewed position; the report names a scripted blunder; the name is
 Simply Chess everywhere a person sees it. The version is 1.1.0 when this section is
 green.
+
+---
+
+## 19. Version 1.2.0: room for the report (ruled 2026-09-14)
+
+Nick's rulings after using 1.1.0. **Where this section and sections 1 to 18 differ,
+this section wins.** Everything it does not mention stands, and 18.4's viewer, 18.5's
+report and 18.3's stopping are untouched in what they DO; only where they sit and how
+they read change.
+
+| # | Question | Ruling |
+|---|---|---|
+| Q23 | Where the controls go | **Every button and toggle goes under the board.** The header keeps the name and the version and nothing else; the side panel keeps no control at all. "Move all the button controls and toggles to under the board in a sensible placement." |
+| Q24 | What the side panel is for | **The report.** It starts at the top of the column, where Play as used to be. The hint sentence stays in the panel, because it is the game talking rather than a control. The panel is empty during a game with no hint showing, and that is allowed. |
+| Q25 | How the report reads | **The head row's font settings**, which is `--text-soft` at the body size and weight. At full `--text` the report "pops a bit too much" in dark mode. |
+| Q26 | The selector row | **Left aligned**, so the Difficulty label lines up under the "Simply Chess" heading. |
+
+### 19.1 The screen, version 1.2.0
+
+```
++------------------------------------------------------------------------------+
+| Simply Chess  v1.2.0                                                         |  header
++------------------------------------------------------------------------------+
+| Difficulty  [4. Club        v]                                               |  selector row
+|                                                                              |
+| Playing White against 4. Club                Your move                       |  head row
+|                                                                              |
+|  ||  +---------------------+   +----------+   +----------------------------+ |
+|  ||  |                     |   | 1. d4 d5 |   | The engine suggests Nf3.   | |
+|  ||  |                     |   | 2. c4 e6 |   |                            | |
+|  ||  |       board         |   |   ...    |   | THE REPORT                 | |
+|  ||  |                     |   |          |   | Your moves                 | |
+|  ||  |                     |   |          |   |   a blunder on move 3...   | |
+|  ||  +---------------------+   +----------+   |   an inaccuracy on move 2..| |
+|      [New game][Undo][Redo][Hint]             |                            | |
+|      [Stop and review][Stop and discard]      | THE FINAL POSITION         | |
+|          or, after review,                    | Winning for Black          | |
+|      [Keep playing][Play from here]  [<][>]   | ===========------          | |
+|      [Save game][Load game]                   | Stopped after move 4       | |
+|      Play as (o) White ( ) Black  [Large][Light]  [Copy game]               | |
++------------------------------------------------------------------------------+
+```
+
+**S19. The four rows under the board, in this order, grouped by what they are for.**
+Nearest the board is what a person reaches for most.
+
+1. **The game**: New game, Undo, Redo, Hint. Unchanged.
+2. **This game**: Stop and review and Stop and discard while a game is going; the same
+   row carries Keep playing, Play from here and the two stepping arrows once a report is
+   showing. The two states are exclusive, so this is one row and never two.
+3. **The file**: Save game, Load game.
+4. **The settings**: Play as, its two radios, then the board size and the theme toggles
+   at the right-hand end of the row, the way the stepping arrows end their row.
+
+The reason for the order: rows 1 and 2 act on the game in front of you, row 3 takes it
+out of the app or brings one in, and row 4 is what you set once and leave. The two view
+toggles are at the far end because they change nothing about the game.
+
+Every row is the width of the board and no wider, at both board sizes. The small board
+is 416 px and row 4 is the widest at 324 px (Play as and its radios 184, the two toggles
+132, one gap), so all four fit; at the large board
+they fit with room to spare. "Applies to the next new game." moves to the Play as
+control's `title`, as the level's two sentences did in phase 9 (18.1): there is no room
+for a sentence under a row and the rule is the same one.
+
+**S20. The report reads in the head row's colour.** `--text-soft` at the body size and
+weight, which is `.play-opening`'s setting, for every line of the report: the headings,
+the slips, the verdict and the outcome. It was `--text`, which in the dark theme is
+`#e6e6e6` against `#c8ccd2` for the head row, and against a dark ground that reads as
+the report shouting. The slips' coloured left edges, the tag colours and the bar are
+untouched: they carry meaning, and this is about the words.
+
+**The selector row is left aligned** (`justify-content: flex-start`), so "Difficulty"
+starts on the same pixel as "Simply Chess". Both sit inside the page's `--pad-left`, so
+nothing else is needed to line them up.
+
+**The fit rule of S2 stands with re-measured chrome.** Two rows have become four under
+the board, so `CHROME_BELOW` in `board-size.ts` grows and the large board loses height
+on a window that was already tight. That is the cost of the change and it is accepted:
+the number is measured at the LARGE board with a report showing, which is the state with
+the most rows, and recorded in the phase notes. Nothing above or beside the board moves,
+so `CHROME_ABOVE` and the two beside constants do not change. S16's two numbers hold as
+before: the bar, `.board` and `cg-board` end on the same pixel and the page never
+scrolls sideways.
+
+### 19.2 Tests and acceptance, added
+
+To S15: (20) every control is under the board and the side panel holds no button, in
+both states of row 2; (21) the report's text takes the head row's colour; (22) the
+Play as radios still change the side of the next new game from their new home, and the
+two toggles still work and are still remembered.
+
+To section 17: the screen is 19.1's at both sizes and both themes at the three
+viewports with S16 holding, and the large board's new size is recorded. The version is
+1.2.0 when this section is green.

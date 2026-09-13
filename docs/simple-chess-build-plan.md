@@ -1,9 +1,11 @@
 # Simple Chess - build plan
 
-Version 2, 2026-09-13. Status: **Active again.** Version 1 (phases 0 to 8) is built and
-every gate passed by 2026-09-12; its boxes 7.8 and 8.6 are Nick's. Version 2 (phases 9
-to 12, spec section 18) makes the app Simply Chess, a sibling of the trainer's Play
-screen. Phase 9 landed 2026-09-13 and awaits its gate; phase 10 is next.
+Version 3, 2026-09-14. Status: **Active.** Version 1 (phases 0 to 8) is built and every
+gate passed by 2026-09-12; its boxes 7.8 and 8.6 are Nick's. Version 2 (phases 9 to 12,
+spec section 18) made the app Simply Chess, a sibling of the trainer's Play screen, and
+shipped as 1.1.0 on 2026-09-13 with every gate passed. **Phase 13 (spec section 19) is
+next**: Nick used 1.1.0 and asked for the report to have the room, so every control moves
+under the board and the report takes the side panel.
 
 Read [the specification](simple-chess-spec.md) first. It says what the app does. This
 document says what gets built, in what order, and how we know each part is finished.
@@ -680,6 +682,39 @@ so that they capture the real thing, and the two platform wrappers come last bec
 they touch only storage and build config (spec S13), which is the reason the trainer
 did it that way too.
 
+---
+
+## Phase 13 - room for the report
+
+**Goal: every button and toggle is under the board, the report has the side panel to
+itself and reads in the head row's colour, and the selector row lines up with the
+heading. Spec section 19.**
+
+Read first: spec section 19 all of it, then 18.1 (the layout it replaces) and S2 (the
+fit rule). `src/ui/App.tsx` (the header and the nav), `src/ui/DifficultyRow.tsx`,
+`src/ui/SidePanel.tsx`, `src/ui/PlayActions.tsx`, `src/ui/PlayControls.tsx`,
+`src/ui/Screen.tsx`, `src/ui/board-size.ts`, `src/ui/app.css` and `src/ui/play.css`.
+
+- [ ] 13.1 The four rows under the board, in S19's order and grouping: the game, this
+      game (the actions or the review row), the file, the settings with the two toggles
+      at the right-hand end. Every row the width of the board at both sizes.
+- [ ] 13.2 The side panel holds the hint sentence and the report, nothing else, and the
+      report starts at the top of the column. `SidePanel.tsx` goes or becomes the row
+      it now is; `PlayActions` moves under the board.
+- [ ] 13.3 "Applies to the next new game." moves into the Play as control's `title`.
+- [ ] 13.4 The report's words take `--text-soft` at the body size and weight (S20). The
+      slips' left edges, the tag colours and the bar are untouched.
+- [ ] 13.5 The selector row is left aligned under the heading (Q26).
+- [ ] 13.6 `CHROME_BELOW` re-measured at the large board with a report showing, which is
+      the state with the most rows, and the new large board size recorded. Nothing else
+      in `board-size.ts` changes.
+- [ ] 13.7 Tests: S15 items 20, 21 and 22; every test that reaches a moved control
+      through the old markup updated rather than deleted.
+- [ ] 13.8 Driven in the pane at the three viewports of 15.2, both sizes, both themes,
+      with the probe: S16's two numbers hold, no row is wider than the board, and the
+      report's colour is the head row's. Both states of row 2.
+- [ ] 13.9 Version 1.2.0 in the three files, the docs swept, the reuse review, commit.
+
 ## Progress
 
 | Phase | State |
@@ -697,6 +732,7 @@ did it that way too.
 | 10 - stop, review, the report | **Complete** 2026-09-13, gate passed the same day. 305 tests green in 14.4 s. A game can be stopped and reviewed or stopped and discarded; the report names each slip with the engine's better move and gives the final position a verdict in words; the hint count reaches the report and the file; Copy game and Save game write the same text. Driven against the real Stockfish in the pane. |
 | 11 - the review viewer, Keep playing, Play from here | **Complete** 2026-09-13. 323 tests green in 16.3 s. A reviewed game is a viewer: every move is a button, the marked one is in `--mark`, the arrow keys step, the bar follows the position being looked at, and a slip's sentence puts the board where it was played from with the engine's move as a blue arrow beside it. Keep playing and Play from here both work. The board does not change size when row two appears. |
 | 12 - version 1.1.0 | **Complete** 2026-09-13, box 12.6 is Nick's. 324 tests green in 9.2 s. Gate 11's finding fixed in `ce0e743`; 1.1.0 in the three files; the installer is 6,898,142 bytes and the shipped window was driven, reviewed and walked at 688 with S16 holding; `docs/acceptance.md` rewritten for version 2; both of Q22's routes documented. |
+| 13 - room for the report | **Not started.** Spec section 19: every control under the board, the report alone in the side panel and reading in the head row's colour, the selector row left aligned, 1.2.0. |
 
 ## Phase notes
 
