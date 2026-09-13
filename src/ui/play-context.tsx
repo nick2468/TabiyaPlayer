@@ -8,16 +8,21 @@ import {
   HINT_MOVETIME,
   PlaySession,
   atAnalysisProfile,
+  buildReport,
   engineHint,
   evaluationOf,
+  scanGame,
+  stoppedAt,
+  type BestMoves,
   type Evaluation,
+  type GameReport,
   type Hint,
 } from '../play'
 import { forgetGame, rememberGame } from '../storage/current-game'
 import { asMessage } from './message'
 
 /**
- * Origin: London src/ui/play-context.tsx, adapted: the game and nothing about reviewing or recording it; setLevel and the remembered game are new; New game keeps the worker; the worker's stop waits out StrictMode.
+ * Origin: London src/ui/play-context.tsx, adapted: the game and its review, with nothing about recording one; setLevel and the remembered game are new; New game keeps the worker; the worker's stop waits out StrictMode.
  * The running game, held above the screen that shows it.
  *
  * A game is not part of a screen; it is a thing the app is doing. So it lives
@@ -49,7 +54,11 @@ export interface PlayGame {
   evaluations: Map<string, Evaluation>
   /** The move being suggested, until something moves the board. */
   hint: Hint | null
-  /** A game exists and has not ended. */
+  /** The report on the game that has been stopped and reviewed (spec 18.5). */
+  report: GameReport | null
+  /** How far the review's scan has got, while it runs (spec 18.3). */
+  scanning: { done: number; total: number } | null
+  /** A game exists, has not ended and has not been reviewed. */
   inProgress: boolean
   /** Whether Hint has anything to answer right now (spec section 8). */
   canHint: boolean
@@ -60,6 +69,14 @@ export interface PlayGame {
   askHint: () => Promise<void>
   /** Changes the level from the engine's next move on (spec S6). */
   setLevel: (level: number) => Promise<void>
+  /** Stop and review: scans the game and builds the report (spec 18.3). */
+  finish: () => Promise<void>
+  /**
+   * Stop and discard: the game goes, and a fresh one starts (spec 18.3). The
+   * options are the fresh game's, because the settings beside the board are
+   * what a new game is played at (spec 5.1).
+   */
+  discard: (options: StartOptions) => void
 }
 
 /**
@@ -95,6 +112,8 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
   const [engineError, setEngineError] = useState<string | null>(null)
   const [evaluations, setEvaluations] = useState<Map<string, Evaluation>>(() => new Map())
   const [hint, setHint] = useState<Hint | null>(null)
+  const [report, setReport] = useState<GameReport | null>(null)
+  const [scanning, setScanning] = useState<{ done: number; total: number } | null>(null)
 
   const engineRef = useRef<Engine | null>(null)
   const sessionRef = useRef<PlaySession | null>(null)
@@ -104,6 +123,14 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
   // from one move would otherwise each start from the map their own render saw,
   // and the second would write the first one out again.
   const evaluationsRef = useRef<Map<string, Evaluation>>(new Map())
+  /**
+   * The engine's move at each position, from the same search as the number, so
+   * a game reviewed after the bar has seen it carries the same facts as one
+   * scanned from scratch. It sits beside the evaluations rather than inside
+   * them so that everything reading a number keeps reading a number. A ref
+   * only: nothing renders from it, and the report takes it at review time.
+   */
+  const bestMovesRef = useRef<BestMoves>(new Map())
   /**
    * Analysis nobody is waiting for: the number undo and redo fetch for the
    * position they land on (ruled at gate 4).
@@ -176,15 +203,14 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
   }, [createEngine])
 
   /**
-   * Origin: London src/ui/play-context.tsx evaluate, adapted: the map holds an Evaluation, sideToMove is the model's, and there is no best move to keep.
+   * Origin: London src/ui/play-context.tsx evaluate, adapted: the map holds an Evaluation and sideToMove is the model's.
    * Evaluates a position for the bar, at the analysis profile (spec 6.3).
    *
    * A position already known is not searched again, which is what makes undo
    * and redo free: every position they land on has been here before.
    *
-   * The trainer also keeps the engine's move from this search, for a report
-   * that names a better move than the one played. There is no report here, so
-   * there is nothing to keep.
+   * The engine's move is kept from the same search, for a report that names
+   * what was better than the move that was played (spec 18.5).
    */
   const evaluate = useCallback(async (running: Engine, fen: string, playing: number) => {
     const key = positionKey(fen)
@@ -199,6 +225,8 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
     const next = new Map(evaluationsRef.current)
     next.set(key, evaluationOf(best.score, sideToMove(fen)))
     evaluationsRef.current = next
+    const move = result.bestMove ?? best.move
+    if (move) bestMovesRef.current.set(key, move)
     setEvaluations(next)
   }, [])
 
@@ -216,6 +244,11 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
    * Nothing awaits this and nothing greys while it runs. A failure is still
    * worth saying: an engine that has stopped answering will say so here before
    * the user finds out by trying to move.
+   *
+   * Both are disabled during a review, as the trainer's are (spec 18.4), and
+   * while a scan runs: the scan is holding the engine at the analysis profile,
+   * and an undo's own evaluation landing in the middle of it would put the
+   * playing level back for the rest of the scan.
    */
   const evaluateLanded = useCallback(
     (running: PlaySession) => {
@@ -234,7 +267,12 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
       setEngineError(null)
       setThinking(true)
       setHint(null)
+      // New game, Load game and a game reopened from storage all come through
+      // here, so all three put a report away: the report is about the game that
+      // has just been replaced.
+      setReport(null)
       evaluationsRef.current = new Map()
+      bestMovesRef.current = new Map()
       setEvaluations(new Map())
       try {
         const profile = strengthProfile(options.level)
@@ -278,7 +316,9 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
     async (from: string, to: string, promotion?: string) => {
       const running = sessionRef.current
       const setup = setupRef.current
-      if (!running || !setup || thinking || running.isFinished()) return
+      // A report locks the board as firmly as an ended game does: the report is
+      // about the game as it stands (spec 18.4).
+      if (!running || !setup || thinking || report || running.isFinished()) return
       const san = sanForMove(running.fen, from, to, promotion)
       if (!san || !running.playUser(san)) return
       // A hint is about the position it was asked in, so it goes with it.
@@ -307,7 +347,7 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
         setThinking(false)
       }
     },
-    [evaluate, refresh, rememberNow, thinking],
+    [evaluate, refresh, rememberNow, report, thinking],
   )
 
   /**
@@ -320,25 +360,25 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
    */
   const undo = useCallback(() => {
     const running = sessionRef.current
-    if (!running || thinking) return
+    if (!running || thinking || report) return
     if (running.undo()) {
       setHint(null)
       rememberNow()
       refresh()
       evaluateLanded(running)
     }
-  }, [evaluateLanded, refresh, rememberNow, thinking])
+  }, [evaluateLanded, refresh, rememberNow, report, thinking])
 
   const redo = useCallback(() => {
     const running = sessionRef.current
-    if (!running || thinking) return
+    if (!running || thinking || report) return
     if (running.redo()) {
       setHint(null)
       rememberNow()
       refresh()
       evaluateLanded(running)
     }
-  }, [evaluateLanded, refresh, rememberNow, thinking])
+  }, [evaluateLanded, refresh, rememberNow, report, thinking])
 
   /**
    * Origin: London src/ui/play-context.tsx askHint, adapted: the engine half only, and the SAN comes from sanForMove.
@@ -377,6 +417,10 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
       const { from, to, promotion } = splitMove(best)
       const san = sanForMove(running.fen, from, to, promotion)
       if (!san) return
+      // Counted where the hint is actually GIVEN, not where it is asked for:
+      // a search that answered nothing left the user no better off, and the
+      // report would be saying a game was played with help it never had.
+      running.hints += 1
       setHint(engineHint(san))
       refresh()
     } catch (error) {
@@ -385,6 +429,95 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
       setThinking(false)
     }
   }, [engine, refresh, thinking])
+
+  /**
+   * Origin: London src/ui/play-context.tsx finish, adapted: no record, no timestamp and no history, and the scan is wrapped in atAnalysisProfile.
+   * Stop and review: scans the game and builds the report (spec 18.3).
+   *
+   * The scan holds the engine while the user waits, and that is why the button
+   * says how far it has got. It is deliberately not behind `quietRef`'s
+   * fire-and-forget path: a report is something the user asked for and is
+   * waiting on, unlike the number undo fetches.
+   *
+   * It does wait for `quietRef` first, though. An undo's evaluation may be in
+   * flight, and its restore would land in the middle of the scan and put the
+   * engine back to the playing level for the rest of it, which would make the
+   * report judge the game's positions by two different standards.
+   *
+   * Nothing is recorded anywhere. This app keeps no history of games played
+   * (Q20): Save game is how a game is kept.
+   */
+  const finish = useCallback(async () => {
+    const running = sessionRef.current
+    const setup = setupRef.current
+    if (!running || !setup) return
+    setThinking(true)
+    setScanning({ done: 0, total: 0 })
+    try {
+      await quietRef.current
+      const live = await engine()
+      // What the bar already worked out is handed over rather than searched
+      // again: the scan is shorter, and the report cannot disagree with the
+      // numbers that were on the screen during the game.
+      const { evaluations: scanned, bestMoves } = await atAnalysisProfile(live, setup.level, () =>
+        scanGame(
+          running.moves,
+          live,
+          ANALYSIS_MOVETIME,
+          (done, total) => setScanning({ done, total }),
+          evaluationsRef.current,
+          bestMovesRef.current,
+        ),
+      )
+      evaluationsRef.current = scanned
+      bestMovesRef.current = bestMoves
+      setEvaluations(scanned)
+      // A hint is about a position, and the screen is about to be about the
+      // whole game. Leaving it up would put advice for move 12 beside a report
+      // on move 19.
+      setHint(null)
+      setReport(
+        buildReport(
+          running.moves,
+          scanned,
+          running.userColour,
+          running.outcome ?? stoppedAt(running.moves),
+          running.hints,
+          bestMoves,
+        ),
+      )
+    } catch (error) {
+      setEngineError(asMessage(error))
+    } finally {
+      setScanning(null)
+      setThinking(false)
+    }
+  }, [engine])
+
+  /**
+   * Stop and discard: the game ends with nothing kept (spec 18.3).
+   *
+   * A fresh game rather than an empty screen, because there is one screen and
+   * nothing else to put on it. No confirmation, for the trainer's reason: New
+   * game already ends a game the same way.
+   *
+   * It is New game plus one line. The remembered game is forgotten FIRST,
+   * before anything can fail: New game leaves that to the fresh game's own
+   * record, written once the fresh game exists, and here the user has asked for
+   * this game to be gone, so an engine that would not start must not leave it
+   * in storage to reopen tomorrow.
+   *
+   * The fresh game's side and level are the caller's, not this game's. They are
+   * the settings, because a discarded game is the next new game and that is
+   * what the side setting applies to (spec 5.1).
+   */
+  const discard = useCallback(
+    (options: StartOptions) => {
+      forgetGame()
+      void start(options)
+    },
+    [start],
+  )
 
   /**
    * A new level, heard by the engine's next move (spec S6).
@@ -436,17 +569,29 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
     engineError,
     evaluations,
     hint,
-    inProgress: session !== null && !session.isFinished(),
+    report,
+    scanning,
+    // A reviewed game is over as far as the board is concerned, whether or not
+    // it ended by itself: the report is about the game exactly as it stands,
+    // and a move played under it would be a move the report does not mention.
+    inProgress: session !== null && report === null && !session.isFinished(),
     // Only on the user's own move, in a game that is still going, with nothing
     // in flight: a hint about a position the engine is about to change is an
     // arrow pointing at the wrong board (spec section 8).
-    canHint: session !== null && !thinking && session.userToMove && !session.isFinished(),
+    canHint:
+      session !== null &&
+      report === null &&
+      !thinking &&
+      session.userToMove &&
+      !session.isFinished(),
     start,
     play,
     undo,
     redo,
     askHint,
     setLevel,
+    finish,
+    discard,
   }
 }
 

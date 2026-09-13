@@ -7,16 +7,26 @@ from one React, TypeScript and Vite code base. The code is copied from those two
 wherever they already do the job, so that a shared library can follow later.
 
 Current state: version 1.0.0 is built and gated, and version 2 is under way (spec
-section 18, which wins over sections 1 to 17). Phase 9 landed 2026-09-13 and awaits
-review: the app is called **Simply Chess** everywhere a person sees it, including the
+section 18, which wins over sections 1 to 17). Phase 10 landed 2026-09-13 and awaits
+review: a game can be **stopped and reviewed** or **stopped and discarded**. The
+review scans the game at the analysis profile, handed everything the bar already
+worked out, and the report in the side panel names each slip with its move number, its
+tag and the engine's preferred move, gives the final position a verdict in words with
+a horizontal bar under it, and says how many hints were used. Copy game and Save game
+write the same text, which now carries the report's comments (spec 18.6); a reviewed
+file still loads back. The move list is still a record and the slips are still
+sentences rather than buttons: the viewer is phase 11.
+
+Phase 9 passed gate 9 on 2026-09-13 (commits `5c5dcf4` and `ce31e55`, with an
+interim installer at `c9f1dde`): the app is called **Simply Chess** everywhere a person sees it, including the
 data folder, the identifier, the package name and the storage keys, and the screen is
 the trainer's Play screen - the difficulty in a selector row under the header, the
 board size toggle beside Light/Dark, a head row with the opening line and the status,
 the move list in its own 167 px column at board height, and a side panel with Play as
 and the file buttons. The window opens at 1400 by 980 and the fit rule's chrome
 constants were re-measured for it (167 above, 120 below, 607 beside). The version
-stays 1.0.0 until phase 12. Phases 10 and 11 bring Stop and review, the report and the
-review viewer.
+stays 1.0.0 until phase 12. Phase 11 brings the review viewer, Keep playing and Play
+from here.
 
 Phase 8 (the Windows app and the installer) landed 2026-09-12 and passed gate 8:
 `src-tauri/` is the trainer's with the names changed, the window keeps its browser
@@ -116,7 +126,13 @@ scale).
   in `ui/message.ts` (something thrown, as a sentence); `Notice` in `ui/Notice.tsx`
   (every message under the board); `openingLine` in `ui/opening-line.ts` (the head
   row's one sentence); `levelTitle` in `ui/DifficultyRow.tsx` (the two sentences
-  about a level, which are now a hover and nowhere else); the `read`, `write`, `oneOf`, `readOneOf`, `useRemembered` and
+  about a level, which are now a hover and nowhere else); `verdictInWords` and
+  `describeSlip` in `play/report.ts` (every verdict and every slip, on screen and in
+  the file's comments alike); `stoppedAt` in the same file (where an unfinished game
+  got to, said by the report and by the PGN); `scanGame` in `play/scan.ts` (the only
+  place a whole game is evaluated); `toClipboard` in `ui/CopyGame.tsx` (the only
+  clipboard); `pgnNow` in `Shell` (the running game as text, for Save game and Copy
+  game, which must write the same one); the `read`, `write`, `oneOf`, `readOneOf`, `useRemembered` and
   `remember*` helpers in `prefs.ts` (every setting; `oneOf` answers "is this one of
   these words" for storage and for the address bar alike, and each key string stays
   in the module that owns it); `scrollToShow` in `ui/keep-in-view.ts` (the only
@@ -173,6 +189,12 @@ scale).
   phase 7, to `updates.ts` and to `App.tsx` and `vite.config.ts`.
 - **The trainer's port is 5175 and its dev server may be running.** Confirm the
   served page shows this app's version before trusting any live check.
+- **The engine can miss its own 20 second start timeout in a hidden pane.** The
+  WASM is 7 MB and compiling it in a background worker took 12 to 15 seconds in
+  phase 10, so the first load after a server start says "the engine did not answer
+  in time" and means nothing is wrong. Reload once; the compiled module is cached
+  and the second load answers. Do not shorten or lengthen the timeout because of
+  this: it is generous on real hardware.
 - **A hidden browser pane throttles React.** A move lands in the session at once and
   the screen catches up a second later. Poll for the DOM to change; do not read once
   and conclude. The trainer met this twice.

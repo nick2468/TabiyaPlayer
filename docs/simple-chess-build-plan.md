@@ -591,26 +591,26 @@ Read first: spec 18.3, 18.5, 18.6; `../London/src/play/report.ts` (`scanForSlips
 `scanning`, `bestMovesRef`), `play.css` (`.report`, `.slips`, `.eval-bar`,
 `.copy-game`, `.play-actions`).
 
-- [ ] 10.1 `src/play/report.ts`: the trainer's, cut to the chess half: `PlayedMove`
+- [x] 10.1 `src/play/report.ts`: the trainer's, cut to the chess half: `PlayedMove`
       stays in `session.ts`; `scanForSlips`, `buildReport` (no deviation), the verdict
       functions, `describeSlip`, `SLIP_THRESHOLDS`, `MoveReview`, `GameReport`. The
       hint count on the session (`hints`), counted in `askHint`.
-- [ ] 10.2 `scanGame` from the trainer's `session.ts`, identical text, in
+- [x] 10.2 `scanGame` from the trainer's `session.ts`, identical text, in
       `src/play/scan.ts`; it takes the bar's evaluations and best moves as `known`.
       The provider keeps `bestMovesRef` from every `evaluate`, as the trainer does.
-- [ ] 10.3 The provider: `finish` (scan, build, set the report), `discard` (a fresh
+- [x] 10.3 The provider: `finish` (scan, build, set the report), `discard` (a fresh
       game, the remembered one forgotten), `scanning`, `report`, `inProgress`. Undo,
       Redo, Hint and the file buttons disabled during a scan.
-- [ ] 10.4 `PlayActions` in the side panel: Stop and review / Review the game, Stop and
+- [x] 10.4 `PlayActions` in the side panel: Stop and review / Review the game, Stop and
       discard, the "Review it" notice for an ended game; `Report` with Your moves and
       The final position; the horizontal `EvalBar`; `CopyGame` with `toClipboard`.
-- [ ] 10.5 `game-pgn.ts` grows the trainer's comments when a report is given; Save game
+- [x] 10.5 `game-pgn.ts` grows the trainer's comments when a report is given; Save game
       and Copy game share it; the hint count in the file and the report.
-- [ ] 10.6 Tests: S15 items 12, 13, 17 and 19; the trainer's `report` tests for the
+- [x] 10.6 Tests: S15 items 12, 13, 17 and 19; the trainer's `report` tests for the
       slips and the verdict bands copied where they apply.
-- [ ] 10.7 Drive in the pane: a game with a deliberate blunder, stopped and reviewed;
+- [x] 10.7 Drive in the pane: a game with a deliberate blunder, stopped and reviewed;
       the slip named; the verdict; Copy game's text; both themes.
-- [ ] 10.8 Reuse review and commit.
+- [x] 10.8 Reuse review and commit.
 
 ---
 
@@ -688,7 +688,7 @@ did it that way too.
 | 7 - the iPad Home Screen app | **Complete** 2026-09-12, gate passed the same day; box 7.8 is Nick's. 250 tests green. The built app has an icon and a manifest, opens with the server stopped and answers a move, and offers a new version in a bar that says it costs nothing. |
 | 8 - the Windows app and the installer | **Complete** 2026-09-12, gate passed the same day; box 8.6 is Nick's. 257 tests green. The window opens at 1280 by 1000 with the engine in it, the installer is 6.6 MB and installs for the current user, and the uninstaller's four cases are proved against a scratch folder. Version 1.0.0. |
 | 9 - Simply Chess, and the trainer's layout | **Complete** 2026-09-13, gate passed the same day. 260 tests green in 7.9 s. The app is Simply Chess everywhere a person sees it; the screen is the trainer's Play screen, measured at three viewports, both sizes and both themes with S16 holding in all twelve rows; the window is 1400 by 980 and the chrome constants are 167, 120 and 607. |
-| 10 - stop, review, the report | Not started |
+| 10 - stop, review, the report | **Complete** 2026-09-13. 305 tests green in 14.4 s. A game can be stopped and reviewed or stopped and discarded; the report names each slip with the engine's better move and gives the final position a verdict in words; the hint count reaches the report and the file; Copy game and Save game write the same text. Driven against the real Stockfish in the pane. |
 | 11 - the review viewer, Keep playing, Play from here | Not started |
 | 12 - version 1.1.0 | Not started |
 
@@ -2692,3 +2692,194 @@ file.
   scratchpad.
 
 - [x] **Review gate 9 passed** (2026-09-13)
+
+### Phase 10 - builder notes (2026-09-13)
+
+Everything the chip named was read fresh before anything was touched: `CLAUDE.md`,
+spec 18 in full and then 5.5, 5.6, 6.3, 7, 8, 9.1 and 14, the plan's rules and phase
+10 and the phase 9 notes with the gate 9 findings, `docs/testing.md`, and then
+`../London/src/play/report.ts`, `session.ts`'s `scanGame`, `game-pgn.ts`,
+`ui/Play.tsx` (`PlayActions`, `Report`, `EvalBar`, `CopyGame`, `toClipboard`),
+`ui/play-context.tsx` and `ui/play.css`.
+
+**Measured.**
+
+- `npx vitest run`: 35 files, **305 tests passed, none skipped, 14.4 seconds** warm.
+  Forty-five are new. `tsc -b` clean, `npx oxlint` silent (exit 0), `npm run build`
+  clean, main chunk 325.96 kB, precache 21 entries. `grep -c midgame` is 0 in every
+  built chunk and `grep -c 'Stop and review'` is 1, so the scenes are still dropped
+  and the new screen is still in.
+- **The suite is 6.5 seconds slower than phase 9's 7.9**, all of it in the new
+  `review.dom.test.tsx`: nine tests that each mount the app, play a game through the
+  board stub and wait for a scan. It is inside the twenty-second rule and the rule is
+  a ceiling rather than a target (`docs/testing.md`), but phase 11 adds more DOM tests
+  to the same screen and should watch it.
+- **Driven in the pane against the real Stockfish**, at 1280 by 980 (the pane caps its
+  width), storage cleared first. A game was seeded through the real record and reopened
+  so the scan would have real work to do: 1.e4 e5 2.Qh5 Nc6 3.Qxe5+?? Nxe5, White
+  hanging the queen, then 4.Nf3 played through the real chessground board by pointer
+  events. Stop and review went **"Scanning 0 of 0..." to "Scanning 3 of 6..." to the
+  report**, and the report read:
+
+  > A blunder on move 3: Qxe5+ turned "level" into "winning for black". The engine
+  > preferred 3.Bc4.
+  > A mistake on move 2: Qh5 turned "slightly better for white" into "slightly better
+  > for black". The engine preferred 2.Nf3.
+  > THE FINAL POSITION: Winning for Black. Stopped after move 4.
+
+  Most recent first, the two tags in `--bad` and `--warn`, and both better moves are
+  the engine's own from the scan's own searches.
+- **The slip's numbers are the bar's.** The report's bar drew White's share at
+  **2.78322%**, and `50 + 50 * tanh(pawns / 3) = 2.78322` is pawns = -5.33, which is
+  exactly the **-5.3** the live bar was showing beside the board at the same moment.
+  The report cannot disagree with the numbers that were watched, because the scan is
+  handed them.
+- **Save game's text, read out of the blob** (the phase 5 method), with the report in
+  it:
+
+  ```
+  [Event "Simply Chess"]
+  [Site "-"]
+  [Date "2026.09.13"]
+  [Round "-"]
+  [White "You"]
+  [Black "Stockfish level 1"]
+  [Result "*"]
+
+  1. e4 e5 2. Qh5
+  {mistake: slightly better for white to slightly better for black; the engine preferred 2.Nf3}
+  2... Nc6 3. Qxe5+ {blunder: level to winning for black; the engine preferred 3.Bc4}
+  3... Nxe5 4. Nf3 c6
+  {Winning for Black. Stopped after move 4. White was played by you at level 1.} *
+  ```
+
+- **Copy game could not be read back in the pane, and said so correctly.** Both paths
+  need a focused document and the pane is hidden, so `navigator.clipboard.writeText`
+  was refused and `execCommand` returned false; the button said "That could not be
+  copied: the browser refused to copy", which is the failure path working rather than
+  a button that lies. That the two texts are the same is held by a DOM test instead
+  (S15 item 17), and by there being one builder: `pgnNow` in `Shell`.
+- **The probe, with the report showing.** The bar, `.board` and `cg-board` end on the
+  same pixel in every row and `scrollWidth` never exceeds `innerWidth`, which is S16.
+
+  | Viewport | Size | Theme | Board | Bar/board/cg bottom | List | Side | scrollWidth / innerWidth |
+  |---|---|---|---|---|---|---|---|
+  | 1280 x 980 | small | dark | 416 | 583 | 167 x 416 | 448.5 | 1280 / 1280 |
+  | 1280 x 980 | small | light | 416 | 583 | 167 x 416 | 448.5 | 1280 / 1280 |
+  | 1280 x 980 | large | dark | 672 | 839 | 167 x 672 | 301 | 1280 / 1280 |
+  | 1280 x 980 | large | light | 672 | 839 | 167 x 672 | 301 | 1280 / 1280 |
+  | 820 x 1180 | small | dark | 416 | 580 | 756.67 x 232 | 756.67 | 805 / 820 |
+
+  **The report does not change the board's size**: 672 large and 416 small at 1280 are
+  the same numbers gate 9 measured on the same viewport with no report. The panel gets
+  taller instead, to 624 with the report against the board's 672, and in the narrow
+  layout to 550 under it, so the page scrolls DOWN, which spec 4.3 allows and the
+  chip's decision rule names.
+- **Looked at.** The light theme at 1280 by 980 with the two-slip report: the head row
+  reading "Playing White against 1. Very casual" and "Game reviewed", Undo, Redo and
+  Hint greyed with New game still live, the two slips with their coloured left borders,
+  the horizontal bar almost entirely black under "Winning for Black", and Copy game
+  under it. The dark theme with a clean report: "Nothing the engine calls an inaccuracy
+  or worse. Well played." and a level bar. Stop and discard on a second game left an
+  empty move list, no report, `simply-chess.game` gone from storage and the two buttons
+  back.
+
+**Decided (code shape).**
+
+- **`stoppedAt` moved from `game-pgn.ts` into `report.ts` and is exported.** The chip
+  asked for one home for it and there are now two callers, the provider building a
+  report and the writer closing a file. It did not go into `outcome.ts`, which is the
+  home of the outcome sentences, because that file is byte-identical to the trainer's
+  and spec S3 says it stays that way.
+- **`scanGame` is `src/play/scan.ts`, not part of `session.ts`.** The trainer keeps it
+  at the bottom of its session file, where it has nothing to do with the class above
+  it. It is a function over a game's moves and an engine, and phase 11's replay will
+  read from it.
+- **The caller sets the analysis profile, not the scan.** The trainer's `finish` sets
+  it and never puts the playing profile back, which is safe there only because its
+  screen throws the game away afterwards. Here Keep playing hands the board back
+  (phase 11), so the whole scan is wrapped in `atAnalysisProfile` and the level is
+  restored in a `finally` (spec 6.3).
+- **`finish` waits for `quietRef` first.** An undo's evaluation may be in flight, and
+  its own restore would land in the middle of the scan and put the playing level back
+  for the rest of it, so the report would judge one game's positions by two standards.
+  It does NOT go behind `quietRef`'s fire-and-forget path: a report is asked for and
+  waited on, which is the chip's own decision rule.
+- **`discard` takes the fresh game's options.** The chip says discard starts a fresh
+  game "at the current side and level", and the provider only knows the RUNNING game's.
+  Spec 5.1 says the side setting applies to the next new game, and a discarded game is
+  the next new game, so the settings win and `Shell` hands them in. It differs from New
+  game by exactly one line: it forgets the stored game FIRST, before anything can fail,
+  because the user asked for this game to be gone and an engine that would not start
+  must not leave it in storage to reopen tomorrow. New game leaves that to the fresh
+  game's own record.
+- **`PlayHead` gained `reviewed` and says "Game reviewed".** Driving it in the pane
+  showed a locked board under "Your move", which is the screen asking for something it
+  will not accept. Neither spec 5.6 nor 18.4 says what the status line reads during a
+  review, so by the chip's rule this was a question for Nick - except that the trainer
+  had already answered it in the file being copied, `Play.tsx`'s own `PlayHead`, with
+  exactly that string. Copied rather than invented, so nothing was asked.
+- **The slips are plain list items, as the chip says**, with a comment naming phase 11.
+  `.slips li .jump` was left out of the stylesheet with them.
+- **`CopyGame` uses `asMessage`** for its failure sentence rather than the trainer's
+  inline `instanceof Error` test, because this app has one home for a thrown thing as a
+  sentence (`ui/message.ts`).
+- **`ReportBar` is a second export from `EvalBar.tsx`** rather than a file of its own.
+  Both are the same bar drawn two ways and both are `evalShare`; oxlint's
+  `only-export-components` does not object to two components in one file, only to a
+  component beside a function.
+
+**A fault in the copy, fixed here and carried back.**
+
+- **The trainer's `gameToPgn` says a checkmate twice.** Its closing comment is
+  `[report.verdict]` and then `report.outcome`, and for a mated game those are the same
+  string, because a mated position has no evaluation and `buildReport` takes the outcome
+  as the verdict. The file then reads "You won by checkmate. You won by checkmate.
+  White was played by you at level 4." This copy pushes the ending only when it is not
+  already the verdict, and a test holds it. `../London` was not touched; this is for the
+  orchestrator to carry over.
+
+**Departures from the chip.**
+
+- **A game played through in the app scans NOTHING.** The chip's progress test assumes
+  a scan with work to do, and the bar has already evaluated every position of a game
+  played move by move, so `scanGame` finds nothing to search and the button reads
+  "Scanning 0 of 0..." for an instant. The scan does real work exactly where the bar has
+  not been: a game reopened from storage or loaded from a file, which is evaluated at
+  its final position only. Both the pane drive and the progress test use a reopened
+  game for that reason, and the test says so. This is the trainer's behaviour too, and
+  it is right: the point of handing the bar's numbers over is that they do not get
+  searched again.
+- **The chip lists `engineError` among `PlayActions`' props**, from the trainer, where
+  the actions block is the only thing at the bottom of the screen. Here the engine error
+  is already a `Notice` under the board (spec 18.1), so passing it again would print it
+  twice. It is not a prop.
+- **`verdictForYou` was not brought across**, as the chip instructs: nothing uses it.
+  `describeAlternatives`, `findDeviation`, `findCourseBookEnd`, `placeDeviation` and
+  `describeDeviation` went with the repertoire.
+
+**Asked of Nick.** Nothing. The one thing a person sees that the spec does not settle,
+the status line during a review, was answered by the file being copied.
+
+**Reuse review.** The four the chip predicted, all found and all closed: "Stopped after
+move N" has one home in `stoppedAt`; the PGN text has one builder, `pgnNow` in `Shell`,
+called by Save game and handed to Copy game; there is one clipboard helper,
+`toClipboard` inside `CopyGame.tsx`; and `.pawns` is read out of the map in one module,
+`report.ts`, which is the only thing that asks the map a question the bar does not.
+`evalShare` draws both bars and `verdictInWords` words every verdict, in the report, in
+the file's comments and as the report bar's accessible name. Every new class in
+`play.css` is used by a component, checked by counting. No em dashes under `src/`, and
+no forbidden word in a new or adapted file outside the one origin line that names what
+was removed.
+
+**Left.**
+
+- **The engine takes longer than its own 20-second start timeout in a hidden pane.**
+  The first load of this session failed three times with "the engine did not answer in
+  time" before the WASM was compiled and cached; a bare worker started by hand took
+  between 12 and 15 seconds to answer `uci`. Nothing in the app is wrong - the timeout
+  is generous on real hardware and the error is honest - but a session driving the pane
+  should expect to reload once before the engine answers. Added to the standing hazards.
+- **Phase 11 turns the slips into buttons and the move list into the viewer.** The
+  markup is already shaped for it: `.slips li` carries the tag class and the ply is the
+  key.

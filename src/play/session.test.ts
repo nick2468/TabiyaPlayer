@@ -178,6 +178,19 @@ describe('a game against the engine', () => {
   })
 })
 
+describe('the hint count', () => {
+  it('starts at nothing on a fresh game', () => {
+    expect(session().hints).toBe(0)
+  })
+
+  it('rises with each hint, because the report says how a game was played', () => {
+    const game = session()
+    game.hints += 1
+    game.hints += 1
+    expect(game.hints).toBe(2)
+  })
+})
+
 describe('fullMove', () => {
   it('numbers plies 0 and 1 as move 1, and 2 as move 2', () => {
     expect(fullMove(0)).toBe(1)

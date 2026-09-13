@@ -1,5 +1,11 @@
 import type { Colour } from '../model/types'
-import { evalBarLayout, numberPlacement, type Evaluation } from '../play'
+import {
+  evalBarLayout,
+  evalShare,
+  numberPlacement,
+  verdictInWords,
+  type Evaluation,
+} from '../play'
 
 /**
  * Origin: London src/ui/Play.tsx LiveEvalBar, adapted: it carries the number (spec S7) and the words are this app's.
@@ -50,6 +56,29 @@ export function EvalBar({
           {evaluation.text}
         </span>
       )}
+    </div>
+  )
+}
+
+/**
+ * Origin: London src/ui/Play.tsx EvalBar, identical.
+ * The report's own bar: the final position, horizontal, under the verdict
+ * (spec 18.5).
+ *
+ * Its accessible name is the verdict in WORDS rather than the number the live
+ * bar carries. The two are read differently: the live bar is watched out of the
+ * corner of an eye during a game, where a number is quicker, and this one is
+ * read with the report, where the words are what the reader can act on (spec
+ * S18). `evalShare` is the same arithmetic behind both.
+ */
+export function ReportBar({ pawns }: { pawns: number }) {
+  return (
+    <div
+      className="eval-bar"
+      role="img"
+      aria-label={`Evaluation: ${verdictInWords(pawns).toLowerCase()}`}
+    >
+      <div className="eval-white" style={{ width: `${evalShare(pawns)}%` }} />
     </div>
   )
 }

@@ -7,8 +7,10 @@ import { Board } from './Board'
 import { EvalBar } from './EvalBar'
 import { MoveList } from './MoveList'
 import { Notice } from './Notice'
+import { PlayActions } from './PlayActions'
 import { PlayControls } from './PlayControls'
 import { PlayHead } from './PlayHead'
+import { Report } from './Report'
 import { PromotionPicker, type PromotionPiece } from './PromotionPicker'
 import { SidePanel, type FileProps, type SettingsProps } from './SidePanel'
 import { usePlay } from './play-context'
@@ -34,12 +36,17 @@ export function Screen({
   settings,
   files,
   notice,
+  pgn,
   onNewGame,
+  onDiscard,
 }: {
   settings: SettingsProps
   files: FileProps
   notice: ScreenNotice | null
+  /** The running game as text, for the report's Copy game (spec 18.6). */
+  pgn: string
   onNewGame: () => void
+  onDiscard: () => void
 }) {
   const game = usePlay()
   const { session, thinking } = game
@@ -63,7 +70,9 @@ export function Screen({
   // before it reports it, and locking changes two of the props it is given, so
   // the position is re-applied and the pawn returns to the square it came from.
   // See the note on the board's own effect.
-  const canMove = !thinking && !session.isFinished() && pending === null
+  // A report locks it too: the report is about the game exactly as it stands,
+  // and a move played under one would be a move it does not mention (spec 18.4).
+  const canMove = !thinking && !session.isFinished() && game.report === null && pending === null
 
   const choose = (piece: PromotionPiece) => {
     if (!pending) return
@@ -77,7 +86,12 @@ export function Screen({
       {/* The level of the RUNNING game, not the setting: the two differ for a
           move after the select is changed (spec S6), and the line says what is
           being played. */}
-      <PlayHead session={session} level={game.level ?? settings.level} thinking={thinking} />
+      <PlayHead
+        session={session}
+        level={game.level ?? settings.level}
+        thinking={thinking}
+        reviewed={game.report !== null}
+      />
 
       <div className="play-body">
         <div className="play-column">
@@ -117,6 +131,7 @@ export function Screen({
 
           <PlayControls
             session={session}
+            reviewing={game.report !== null}
             thinking={thinking}
             canHint={game.canHint}
             onNew={onNewGame}
@@ -134,9 +149,22 @@ export function Screen({
 
         <MoveList moves={session.moves} pixels={pixels} />
 
+        {/* Play as, the file buttons, the hint sentence, and then either what
+            you can do with the game or the report on it (spec 18.1). */}
         <aside className="play-side">
           <SidePanel side={settings.side} onSide={settings.onSide} {...files} />
           {game.hint && <p className="hint-said engine">{game.hint.text}</p>}
+          {game.report ? (
+            <Report report={game.report} pgn={pgn} />
+          ) : (
+            <PlayActions
+              session={session}
+              scanning={game.scanning}
+              thinking={thinking}
+              onFinish={() => void game.finish()}
+              onDiscard={onDiscard}
+            />
+          )}
         </aside>
       </div>
     </>

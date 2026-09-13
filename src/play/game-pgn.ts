@@ -1,9 +1,16 @@
 import { Movetext, pgnTag } from '../model/pgn'
 import { colourName, type Colour } from '../model/types'
-import { fullMove, type PlayedMove } from './session'
+import {
+  numberedMove,
+  stoppedAt,
+  verdictInWords,
+  type GameReport,
+  type MoveReview,
+} from './report'
+import type { PlayedMove } from './session'
 
 /**
- * Origin: London src/play/game-pgn.ts, adapted: there is no report, so the slips, the deviation, the verdict and the hint count all go and one closing comment is left; Site is the standard's "-"; saveFileName is new.
+ * Origin: London src/play/game-pgn.ts, adapted: the deviation comments go with the repertoire that had them, the report is optional because a game can be saved before it is reviewed, Site is the standard's "-", and saveFileName is new.
  * A played game written out as PGN, which is how a game leaves this app
  * (spec 9.1).
  *
@@ -32,6 +39,11 @@ export interface GameForPgn {
   outcome?: string
   /** When the game was written out, as an ISO timestamp. */
   at: string
+  /**
+   * The report, once the game has been reviewed (spec 18.6). Absent for a game
+   * saved before it is reviewed, and then the file is exactly spec 9.1's.
+   */
+  report?: GameReport
 }
 
 /**
@@ -86,20 +98,23 @@ export function pgnResult(outcome: string | undefined, side: Colour): string {
 }
 
 /**
- * Where an unfinished game got to.
- *
- * A game with no moves in it is the one case the trainer never meets, because
- * a trainer game is recorded when it is over. Here Save game is a button on a
- * board that may have just been set up, and "Stopped after move 1" would be a
- * move that was never played.
+ * Origin: London src/play/game-pgn.ts slipComment, identical.
+ * How a slip reads in a comment: short, because it sits inside the moves.
  */
-function stoppedAt(moves: PlayedMove[]): string {
-  if (moves.length === 0) return 'Stopped before the first move'
-  return `Stopped after move ${fullMove(moves.length - 1)}`
+function slipComment(slip: MoveReview): string {
+  const was = verdictInWords(slip.before).toLowerCase()
+  const now = verdictInWords(slip.after).toLowerCase()
+  const said =
+    was === now
+      ? `${slip.tag}: gave up more ground in a position already ${was}`
+      : `${slip.tag}: ${was} to ${now}`
+  return slip.better
+    ? `${said}; the engine preferred ${numberedMove(slip.ply, slip.better)}`
+    : said
 }
 
 export function gameToPgn(game: GameForPgn): string {
-  const { moves, side, level, outcome } = game
+  const { moves, side, level, outcome, report } = game
   const engine = `Stockfish level ${level}`
   const result = pgnResult(outcome, side)
 
@@ -113,19 +128,39 @@ export function gameToPgn(game: GameForPgn): string {
     pgnTag('Result', result),
   ]
 
-  const out = new Movetext()
-  for (const move of moves) out.move(move.san, move.ply)
+  // Keyed by the ply of the move it belongs to, so the writer can ask each move
+  // what the report had to say about it.
+  const slips = new Map((report?.slips ?? []).map((slip) => [slip.ply, slip]))
 
-  // One comment, at the end, saying the two things the moves do not: how the
-  // game stood when it was written out, and who was playing which side against
-  // what. "1-0" does not say whether it was a mate or a resignation, and this
-  // app never resigns, so the outcome is worth saying in words.
-  const closing = [
-    outcome ?? stoppedAt(moves),
-    `${colourName(side)} was played by you at level ${level}`,
-  ]
-  // Full stops between them: the outcome is written without one, because on
-  // screen it has a line of its own.
+  const out = new Movetext()
+  // Before the first move, which is where PGN puts a comment about the game
+  // rather than about a position. A game played with help is a different game
+  // from one played without it, and anyone reading this should know which.
+  if (report?.hints) {
+    out.comment(`Played with ${report.hints} ${report.hints === 1 ? 'hint' : 'hints'}.`)
+  }
+  for (const move of moves) {
+    out.move(move.san, move.ply)
+    const slip = slips.get(move.ply)
+    if (slip) out.comment(slipComment(slip))
+  }
+
+  // One comment at the end, saying what the moves do not: how the game stood
+  // when it was written out, and who was playing which side against what.
+  // "1-0" does not say whether it was a mate or a resignation, and this app
+  // never resigns, so the outcome is worth saying in words. A reviewed game
+  // ends on the verdict as well, so a reader finishes on what the engine made
+  // of it (spec 18.6).
+  const ending = outcome ?? stoppedAt(moves)
+  const closing = report ? [report.verdict] : []
+  // Not twice. A game that ended in a checkmate has the outcome AS its verdict,
+  // because a mated position has no evaluation to put in words, and the
+  // trainer's writer says it in both slots: "You won by checkmate. You won by
+  // checkmate." Carried back to the trainer in the phase notes.
+  if (!closing.includes(ending)) closing.push(ending)
+  closing.push(`${colourName(side)} was played by you at level ${level}`)
+  // Full stops between them: the verdict and the outcome are both written
+  // without one, because on screen each has a line of its own.
   out.comment(`${closing.join('. ')}.`)
   out.token(result)
 

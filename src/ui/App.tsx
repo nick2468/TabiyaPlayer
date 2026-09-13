@@ -128,25 +128,40 @@ export function Shell() {
     void game.setLevel(next)
   }
 
+  /** A fresh game with this one thrown away (spec 18.3). */
+  const discardGame = () => game.discard({ level, side })
+
   /**
-   * The game as a file (spec 9.1).
+   * The running game as text, with the report's comments once it has been
+   * reviewed (spec 9.1, spec 18.6).
+   *
+   * One function, because two things write this game out and they must write
+   * the same one: Save game puts it in a file and Copy game puts it on the
+   * clipboard. Two builders would be two files claiming to be the same game.
    *
    * The side and the level come from the RUNNING game rather than from the
    * settings beside it. They are usually the same, and they are not after a
    * game has been loaded from a file or the level has been changed mid-game,
    * and it is the game that is being written down.
    */
-  const save = async () => {
+  const pgnNow = (at: string): string | null => {
     const running = game.session
-    if (!running) return
-    const at = new Date().toISOString()
-    const text = gameToPgn({
+    if (!running) return null
+    return gameToPgn({
       moves: running.moves,
       side: running.userColour,
       level: game.level ?? level,
       outcome: running.outcome,
+      report: game.report ?? undefined,
       at,
     })
+  }
+
+  /** The game as a file (spec 9.1). */
+  const save = async () => {
+    const at = new Date().toISOString()
+    const text = pgnNow(at)
+    if (text === null) return
     try {
       const { message } = await savePgn(text, saveFileName(at))
       // Null is a cancelled dialog, which needs no comment at all.
@@ -229,7 +244,9 @@ export function Shell() {
             thinking: game.thinking,
           }}
           notice={notice}
+          pgn={pgnNow(new Date().toISOString()) ?? ''}
           onNewGame={newGame}
+          onDiscard={discardGame}
         />
       </main>
 

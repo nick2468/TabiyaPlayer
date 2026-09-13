@@ -52,6 +52,15 @@ test and a bar that depends on a WASM build being present. From phase 2 one DOM 
 puts a recording stub on `globalThis.Worker` and asserts nothing was ever constructed,
 so this cannot rot quietly.
 
+Three fakes are built on `engineByProfile` (`src/test/by-profile.ts`), which tells the
+engine's MOVE from the app's ANALYSIS by the profile set before each search, exactly as
+the real engine sees it. `scriptedEngine` plays a written-out game; `heldEngine` stops
+on a move until the test lets it go, so the screen can be looked at while the engine
+thinks; and `scoredEngine` (phase 10) answers a different number per POSITION, in pawns
+from White's point of view. That last one exists because a slip is a CHANGE of
+evaluation across one move, and against a fake that says the same number everywhere no
+scan can ever produce one.
+
 **The board.** Chessground measures its host with a `ResizeObserver`, and jsdom has no
 layout and no such global, so mounting the real board throws. `src/test/board-stub.tsx`
 (phase 2) stands in: it renders the fen, the last move, and one button per legal move,

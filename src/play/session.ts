@@ -4,7 +4,7 @@ import { outcomeOf } from './outcome'
 import type { Colour } from '../model/types'
 
 /**
- * Origin: London src/play/session.ts, adapted: the engine plays every reply, with no length cap and no hint count; the user's colour is an option; setProfile is new; replayed moves are not a floor; PlayedMove and fullMove come from London src/play/report.ts.
+ * Origin: London src/play/session.ts, adapted: the engine plays every reply, with no length cap; the user's colour is an option; setProfile is new; replayed moves are not a floor; PlayedMove and fullMove come from London src/play/report.ts, and scanGame has gone to scan.ts.
  * A game of chess against the engine.
  *
  * The user's colour is an option, White unless told otherwise. When the user
@@ -73,6 +73,12 @@ export class PlaySession {
   private profile: StrengthProfile
   /** What undo took off, latest removed at the top, for redo to put back. */
   private readonly undone: PlayedMove[] = []
+  /**
+   * How many hints were asked for. Counted on the game rather than the screen
+   * because it is a fact about how the game was played, and the report says
+   * it: a game played with the answers on is a different game.
+   */
+  hints = 0
   /** Set when the game ends by itself: checkmate, stalemate, a draw. */
   outcome?: string
 

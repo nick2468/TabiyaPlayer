@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { parsePgn } from '../model/pgn'
 import { playedMoves } from '../test/played-moves'
 import { gameToPgn, pgnDate, pgnResult, saveFileName, type GameForPgn } from './game-pgn'
+import { loadPgn } from './load-pgn'
 
 /**
  * The game as text, which is how it leaves the app (spec 9.1).
@@ -85,6 +86,95 @@ describe('gameToPgn', () => {
     // Every move but the last carries no comment at all.
     const played = parsePgn(text).games[0].moves
     expect(played.slice(0, -1).map((move) => move.comment)).toEqual([null, null, null, null, null])
+  })
+})
+
+/**
+ * What the report adds to the file, once a game has been reviewed (spec 18.6).
+ * A game saved before it is reviewed is untouched by any of this, which is what
+ * the describe above holds.
+ */
+describe('a reviewed game', () => {
+  /** The report the provider would have built for `moves`, with e3 the slip. */
+  const reviewed: GameForPgn = {
+    ...game,
+    report: {
+      slips: [
+        {
+          ply: 4,
+          san: 'e3',
+          before: 0.5,
+          after: -2.5,
+          loss: 3,
+          tag: 'blunder',
+          better: 'Nf3',
+        },
+      ],
+      verdict: 'Winning for Black',
+      finalEval: -2.5,
+      outcome: undefined,
+      hints: 2,
+    },
+  }
+
+  it('says how many hints were used, before the first move', () => {
+    expect(parsePgn(gameToPgn(reviewed)).games[0].intro).toBe('Played with 2 hints.')
+  })
+
+  it('counts one hint in the singular', () => {
+    const text = gameToPgn({ ...reviewed, report: { ...reviewed.report!, hints: 1 } })
+    expect(parsePgn(text).games[0].intro).toBe('Played with 1 hint.')
+  })
+
+  it('says nothing about hints when there were none', () => {
+    const text = gameToPgn({ ...reviewed, report: { ...reviewed.report!, hints: undefined } })
+    expect(parsePgn(text).games[0].intro).toBeNull()
+    expect(text).not.toContain('hint')
+  })
+
+  it('comments the move that was the slip, and no other', () => {
+    const played = parsePgn(gameToPgn(reviewed)).games[0].moves
+    expect(played[4].comment).toBe(
+      'blunder: slightly better for white to winning for black; the engine preferred 3.Nf3',
+    )
+    expect(played.slice(0, 4).map((move) => move.comment)).toEqual([null, null, null, null])
+  })
+
+  it('ends on the verdict as well as where the game got to', () => {
+    expect(parsePgn(gameToPgn(reviewed)).games[0].moves.at(-1)?.comment).toBe(
+      'Winning for Black. Stopped after move 3. White was played by you at level 4.',
+    )
+  })
+
+  /**
+   * A mated position has no evaluation, so the report takes the outcome as its
+   * verdict. The trainer's writer then prints it twice, once as the verdict and
+   * once as the outcome: "You won by checkmate. You won by checkmate."
+   */
+  it('does not say a checkmate twice', () => {
+    const text = gameToPgn({
+      ...reviewed,
+      outcome: 'You won by checkmate',
+      report: {
+        ...reviewed.report!,
+        verdict: 'You won by checkmate',
+        outcome: 'You won by checkmate',
+        finalEval: undefined,
+      },
+    })
+    expect(parsePgn(text).games[0].moves.at(-1)?.comment).toBe(
+      'You won by checkmate. White was played by you at level 4.',
+    )
+  })
+
+  it('still loads back as the same game, because the reader ignores comments', () => {
+    const result = parsePgn(gameToPgn(reviewed))
+    expect(result.errors).toEqual([])
+    expect(result.games[0].moves.map((move) => move.san)).toEqual(moves.map((move) => move.san))
+
+    // And through the app's own loader, which is what Load game calls (S8).
+    const loaded = loadPgn(gameToPgn(reviewed))
+    expect(loaded).toEqual({ sans: moves.map((move) => move.san), side: 'white', level: 4 })
   })
 })
 

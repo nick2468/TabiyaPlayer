@@ -13,6 +13,7 @@ import type { PlaySession } from '../play'
  */
 export function PlayControls({
   session,
+  reviewing,
   thinking,
   canHint,
   onNew,
@@ -21,6 +22,8 @@ export function PlayControls({
   onHint,
 }: {
   session: PlaySession
+  /** A report is showing, so the game is not the board's any more (spec 18.4). */
+  reviewing: boolean
   thinking: boolean
   canHint: boolean
   onNew: () => void
@@ -37,10 +40,12 @@ export function PlayControls({
       <button type="button" onClick={onNew} disabled={thinking}>
         New game
       </button>
-      <button type="button" onClick={onUndo} disabled={thinking || !session.canUndo()}>
+      {/* Both greyed during a review, as the trainer's are: the game the report
+          is about must still be the game when it is read. */}
+      <button type="button" onClick={onUndo} disabled={thinking || reviewing || !session.canUndo()}>
         Undo
       </button>
-      <button type="button" onClick={onRedo} disabled={thinking || !session.canRedo()}>
+      <button type="button" onClick={onRedo} disabled={thinking || reviewing || !session.canRedo()}>
         Redo
       </button>
       <button type="button" onClick={onHint} disabled={!canHint}>

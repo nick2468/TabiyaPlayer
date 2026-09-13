@@ -332,6 +332,97 @@
   color: var(--notice-bad-text);
 }
 
+/* Origin: London src/ui/play.css .play-actions, .play-extend, .report h3, .report
+   h4, .report p, .slips, .slips li and its three tags, .hint-count, .eval-bar,
+   .eval-white and .copy-game, identical; .slips li .jump is gone with the
+   buttons it styled, which arrive in phase 11.
+
+   The last thing in the side panel: what you can do with the game (spec 18.3),
+   and then the report on it (spec 18.5). */
+.play-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.play-extend {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.report h3 {
+  font-size: 1.05rem;
+  margin: 0 0 12px;
+}
+
+.report h4 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-faint);
+  margin: 20px 0 6px;
+}
+
+.report p {
+  margin: 0 0 8px;
+  max-width: 56ch;
+}
+
+.hint-count {
+  color: var(--text-dim);
+}
+
+.slips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.slips li {
+  border-left: 3px solid var(--line-strong);
+  padding: 4px 0 4px 12px;
+  margin-bottom: 8px;
+  max-width: 56ch;
+}
+
+.slips li.blunder {
+  border-left-color: var(--bad);
+}
+
+.slips li.mistake {
+  border-left-color: var(--warn);
+}
+
+.slips li.inaccuracy {
+  border-left-color: var(--link);
+}
+
+/* The report's own bar: horizontal, under the verdict. The one beside the board
+   is `.live-eval` and is a different shape for a different job (spec 18.5). */
+.eval-bar {
+  height: 10px;
+  width: 100%;
+  max-width: 320px;
+  background: var(--piece-black);
+  border: 1px solid var(--line-strong);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.eval-white {
+  height: 100%;
+  background: var(--piece-white);
+}
+
+.copy-game {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+
 /* The narrow layout: an iPad held upright, or a narrow window (spec 18.1). The
    three columns stack in order, board, move list, side panel, and each takes
    the full width. Nothing is hidden; it only moves.

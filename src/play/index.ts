@@ -25,6 +25,22 @@ export { loadPgn, type LoadResult, type LoadedGame } from './load-pgn'
 export { endingFromMoves, isCheckmateOutcome, outcomeOf } from './outcome'
 export { canReplayMoves } from './replay'
 export {
+  SLIP_THRESHOLDS,
+  buildReport,
+  describeSlip,
+  numberedMove,
+  scanForSlips,
+  stoppedAt,
+  verdictBand,
+  verdictInWords,
+  type BestMoves,
+  type Evaluations,
+  type GameReport,
+  type MoveReview,
+  type MoveTag,
+} from './report'
+export { scanGame } from './scan'
+export {
   PlaySession,
   fullMove,
   type PlayedMove,
