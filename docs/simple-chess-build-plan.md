@@ -688,7 +688,7 @@ did it that way too.
 | 7 - the iPad Home Screen app | **Complete** 2026-09-12, gate passed the same day; box 7.8 is Nick's. 250 tests green. The built app has an icon and a manifest, opens with the server stopped and answers a move, and offers a new version in a bar that says it costs nothing. |
 | 8 - the Windows app and the installer | **Complete** 2026-09-12, gate passed the same day; box 8.6 is Nick's. 257 tests green. The window opens at 1280 by 1000 with the engine in it, the installer is 6.6 MB and installs for the current user, and the uninstaller's four cases are proved against a scratch folder. Version 1.0.0. |
 | 9 - Simply Chess, and the trainer's layout | **Complete** 2026-09-13, gate passed the same day. 260 tests green in 7.9 s. The app is Simply Chess everywhere a person sees it; the screen is the trainer's Play screen, measured at three viewports, both sizes and both themes with S16 holding in all twelve rows; the window is 1400 by 980 and the chrome constants are 167, 120 and 607. |
-| 10 - stop, review, the report | **Complete** 2026-09-13. 305 tests green in 14.4 s. A game can be stopped and reviewed or stopped and discarded; the report names each slip with the engine's better move and gives the final position a verdict in words; the hint count reaches the report and the file; Copy game and Save game write the same text. Driven against the real Stockfish in the pane. |
+| 10 - stop, review, the report | **Complete** 2026-09-13, gate passed the same day. 305 tests green in 14.4 s. A game can be stopped and reviewed or stopped and discarded; the report names each slip with the engine's better move and gives the final position a verdict in words; the hint count reaches the report and the file; Copy game and Save game write the same text. Driven against the real Stockfish in the pane. |
 | 11 - the review viewer, Keep playing, Play from here | Not started |
 | 12 - version 1.1.0 | Not started |
 
@@ -2883,3 +2883,61 @@ was removed.
 - **Phase 11 turns the slips into buttons and the move list into the viewer.** The
   markup is already shaped for it: `.slips li` carries the tag class and the ply is the
   key.
+
+### Gate 10 findings (orchestrator, 2026-09-13)
+
+- **Verified from the repo.** `npx vitest run`: 35 files, 305 passed, nothing skipped,
+  14.8 seconds, inside the twenty-second rule. `tsc -b` clean, `npx oxlint` silent,
+  `npm run build` clean. The built assets carry no `midgame`, no `repertoire` and no
+  `deviation`, and one "Stop and review". No browser global in the pure folders, no
+  colour in a `.ts` or `.tsx`, and the one pixel number is the trainer's own
+  off-screen textarea inside the copied clipboard helper. Every file the forbidden-word
+  grep flags says the word in an origin line or a comment explaining what was removed,
+  which is what S3 asks for; `course-switch` is the deliberate shared class name.
+  `../London` and `../Conquest` untouched.
+- **Mutation-checked.** Raising the blunder threshold out of reach turns three
+  `scanForSlips` tests red, naming the grading, the Black subtraction and the order.
+  Restored from git. The builder's own are taken on its account.
+- **Driven in the pane at 1280 by 980 against the real Stockfish.** A seeded game
+  hanging the queen (1.e4 e5 2.Qh5 Nc6 3.Qxe5+ Nxe5 4.Nf3 d6) reopened from storage,
+  so the scan had real work: the button went through "Scanning 4 of 8..." to the
+  report, which read "A blunder on move 3: Qxe5+ turned "level" into "winning for
+  black". The engine preferred 3.Bc4." above "An inaccuracy on move 2: Qh5 gave up
+  more ground in a position already level. The engine preferred 2.Nf3." Most recent
+  first, the two tag classes on the list items, "Winning for Black" under THE FINAL
+  POSITION with the horizontal bar at 1.74 percent white, and Copy game under it. The
+  status read "Game reviewed", the board was locked, and Undo, Redo and Hint were
+  greyed with New game still live.
+- **The report's numbers are the bar's.** The report bar's 1.74068 percent inverts to
+  -6.0 pawns, which is exactly what the live bar was reading beside the board. That is
+  the point of handing the scan what the bar already knew, demonstrated rather than
+  asserted. (My run graded move 2 an inaccuracy where the builder's graded it a
+  mistake: the same position at 150 ms either side of a band edge, not a fault.)
+- **The report does not resize the board.** With it showing, the small board is still
+  416 and everything still ends on 580; the side panel grows to 549.9 instead and the
+  page needs no scroll at all at that size. `scrollWidth` 1280 against 1280.
+- **Stop and discard leaves nothing**: no report, no stored game, an empty list, the
+  two buttons back and "Your move".
+- **The profile restore is real.** `finish` awaits `quietRef.current` first and wraps
+  the whole scan in `atAnalysisProfile`, so the level the game was being played at is
+  restored in a `finally`. The trainer leaves the engine at level 8 there, which is
+  safe only because its screen then throws the game away; this app hands the board
+  back at phase 11, so the builder was right to close it now rather than then.
+- **A fault in the trainer, found by copying it.** Its `gameToPgn` writes a checkmate
+  twice, as the verdict and again as the outcome, because a mated position has no
+  evaluation and the verdict falls back to the outcome. This copy pushes the ending
+  only when it is not already the verdict, and a test holds it. **Carried back to the
+  trainer**, with the two faults from version 1, for a London session.
+- **The builder's departures are accepted.** A game played move by move scans nothing,
+  because the bar has already evaluated every position, so the pane drive and the
+  progress test both use a reopened game; that is the trainer's behaviour and the
+  reason the scan is handed the bar's numbers. `engineError` is not a `PlayActions`
+  prop here because the notice already sits under the board. "Game reviewed" came from
+  the trainer's own `PlayHead` rather than being invented, which is why nothing was
+  asked.
+- **One thing to watch, not a fault.** The suite is 6.5 seconds slower, all of it in
+  the nine new DOM tests that mount the app and wait for a scan. Phase 11 adds more
+  tests to the same screen. If it crosses twenty seconds, the answer is fewer
+  full-app mounts rather than a higher ceiling.
+
+- [x] **Review gate 10 passed** (2026-09-13)
