@@ -23,7 +23,14 @@ export { engineHint, type Hint } from './hint'
 export { levelOrNull } from './level'
 export { loadPgn, type LoadResult, type LoadedGame } from './load-pgn'
 export { endingFromMoves, isCheckmateOutcome, outcomeOf } from './outcome'
-export { canReplayMoves } from './replay'
+export {
+  canReplayMoves,
+  clampPly,
+  moveAtPly,
+  plyAfterMove,
+  plyBeforeMove,
+  positionAtPly,
+} from './replay'
 export {
   SLIP_THRESHOLDS,
   buildReport,

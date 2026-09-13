@@ -625,24 +625,24 @@ and its tests, `Play.tsx` (`MoveList` with `activePly`, `PlayControls` row two,
 (`replayPly`, `resume`, `canResume`), `play.css` (`.move-step`, `.play-review-row`,
 `.play-steps`, `.step-arrow`, `.jump`).
 
-- [ ] 11.1 `src/play/replay.ts` gains the trainer's `positionAtPly`, `moveAtPly`,
+- [x] 11.1 `src/play/replay.ts` gains the trainer's `positionAtPly`, `moveAtPly`,
       `clampPly`, `plyBeforeMove`, `plyAfterMove`, identical text.
-- [ ] 11.2 The provider holds `replayPly`, cleared with the report; `resume` (Keep
+- [x] 11.2 The provider holds `replayPly`, cleared with the report; `resume` (Keep
       playing) and `canResume`; a path for Play from here that starts a new game from
       the viewed position with the same side and level and forgets the old game.
-- [ ] 11.3 `MoveList` with `activePly`: buttons after the review, the marked row,
+- [x] 11.3 `MoveList` with `activePly`: buttons after the review, the marked row,
       scrolling itself; the slip buttons in the report jump the board.
-- [ ] 11.4 `PlayControls` row two: Keep playing, Play from here with the trainer's
+- [x] 11.4 `PlayControls` row two: Keep playing, Play from here with the trainer's
       `whyNotPlayable` reasons, the two arrows; the arrow-key effect, never with a
       text field focused.
-- [ ] 11.5 `preferredShapes`: the better move as a blue arrow on a slip's position; the
+- [x] 11.5 `preferredShapes`: the better move as a blue arrow on a slip's position; the
       trainer's last-move highlight rule.
-- [ ] 11.6 Tests: S15 items 14, 15, 16; the trainer's replay and play-from-replay tests
+- [x] 11.6 Tests: S15 items 14, 15, 16; the trainer's replay and play-from-replay tests
       copied where they apply.
-- [ ] 11.7 Drive in the pane: review a game, click moves, step with the keys, Keep
+- [x] 11.7 Drive in the pane: review a game, click moves, step with the keys, Keep
       playing, Play from here; the probe with the review row showing (the board size
       must not change); both themes.
-- [ ] 11.8 Reuse review and commit.
+- [x] 11.8 Reuse review and commit.
 
 ---
 
@@ -689,7 +689,7 @@ did it that way too.
 | 8 - the Windows app and the installer | **Complete** 2026-09-12, gate passed the same day; box 8.6 is Nick's. 257 tests green. The window opens at 1280 by 1000 with the engine in it, the installer is 6.6 MB and installs for the current user, and the uninstaller's four cases are proved against a scratch folder. Version 1.0.0. |
 | 9 - Simply Chess, and the trainer's layout | **Complete** 2026-09-13, gate passed the same day. 260 tests green in 7.9 s. The app is Simply Chess everywhere a person sees it; the screen is the trainer's Play screen, measured at three viewports, both sizes and both themes with S16 holding in all twelve rows; the window is 1400 by 980 and the chrome constants are 167, 120 and 607. |
 | 10 - stop, review, the report | **Complete** 2026-09-13, gate passed the same day. 305 tests green in 14.4 s. A game can be stopped and reviewed or stopped and discarded; the report names each slip with the engine's better move and gives the final position a verdict in words; the hint count reaches the report and the file; Copy game and Save game write the same text. Driven against the real Stockfish in the pane. |
-| 11 - the review viewer, Keep playing, Play from here | Not started |
+| 11 - the review viewer, Keep playing, Play from here | **Complete** 2026-09-13. 323 tests green in 16.3 s. A reviewed game is a viewer: every move is a button, the marked one is in `--mark`, the arrow keys step, the bar follows the position being looked at, and a slip's sentence puts the board where it was played from with the engine's move as a blue arrow beside it. Keep playing and Play from here both work. The board does not change size when row two appears. |
 | 12 - version 1.1.0 | Not started |
 
 ## Phase notes
@@ -2941,3 +2941,145 @@ was removed.
   full-app mounts rather than a higher ceiling.
 
 - [x] **Review gate 10 passed** (2026-09-13)
+
+### Phase 11 - builder notes (2026-09-13)
+
+The session was compacted after phase 10. Everything the chip named was read fresh
+before anything was touched: `CLAUDE.md`, spec 18.4 word for word and then 5.4, 7 and
+14, the plan's rules and phase 11 and the gate 10 findings, `docs/testing.md`, and then
+`../London/src/play/replay.ts` and its test, `src/ui/play-from-replay.ts` and its test,
+`src/ui/Play.tsx` (`MoveList` with `activePly`, `PlayControls` row two,
+`preferredShapes`, the highlight rule, the arrow-key effect), `src/ui/play-context.tsx`
+(`replayPly`, `resume`, `canResume`) and `src/ui/play.css`.
+
+**Measured.**
+
+- `npx vitest run`: 37 files, **323 tests passed, none skipped, 16.3 seconds** warm.
+  Eighteen are new. `tsc -b` clean, `npx oxlint` silent (exit 0), `npm run build` clean,
+  main chunk 329.15 kB, precache 21 entries. No `midgame` in any built chunk.
+- **The suite is 1.5 seconds slower than phase 10's 14.8**, and the new DOM file is
+  three mounts rather than the six its tests would naturally want. The chip's rule was
+  fewer mounts rather than a higher ceiling, so the walking tests share one mount, Keep
+  playing and Play from here share a second (the first puts the report away, the second
+  builds it again), and the finished-game cases share a third.
+- **Driven in the pane at 1280 by 980 against the real Stockfish**, storage cleared
+  first, both themes. The gate 10 game was seeded and reopened so the scan had work:
+  1.e4 e5 2.Qh5 Nc6 3.Qxe5+ Nxe5 4.Nf3 d6 at level 1 as White.
+  - **The list, the mark and the bar.** Clicking Nc6 put the board on the position
+    after it, moved the mark to Nc6 and took the bar from **-5.8 to -0.3**, which is
+    the position before the queen went. Stepping with the keys walked it one move at a
+    time, the bar reading -0.3, then +0.3 at e5, then +0.3 at e4.
+  - **The keys, and where they do not listen.** Three ArrowLefts pressed with the page
+    focused stepped three moves. The same two keys dispatched at the difficulty select
+    with it focused moved nothing: the mark stayed on e4. (Two keys fired in ONE
+    synchronous tick step only once, because both read the `ply` of the render they
+    were dispatched in. A person cannot do that; key repeat arrives frames apart. The
+    trainer's effect has the same shape.)
+  - **The slip's own position.** Clicking "A blunder on move 3: Qxe5+..." put the
+    board on the position it was played from, marked Nc6, and drew the engine's
+    **3.Bc4 as a blue arrow from f1 to c4 with the played move Qh5-e5 still
+    highlighted underneath**, which is spec 18.4's "both on the board at once". Looked
+    at in the light theme and again in the dark.
+  - **Keep playing** put the report away from a board standing at the slip, and handed
+    back the game's OWN final position (`__cg.getFen()` equal to `__game.fen`), with
+    "Your move", row two gone and Undo and Hint live again.
+  - **Play from here** was on at the end of the game, off one step back with "It is
+    the engine's move here. Step one move on or back." in its tooltip, and on again a
+    step after that. Pressed there, it started a game whose moves are exactly the six
+    of the prefix, on the same position, with no report, no row two and the new game in
+    storage in place of the old eight-move one. A move played on it was answered by the
+    engine, so it is a game rather than a picture of one.
+- **The one thing no test can hold: the list scrolls ITSELF.** A twenty-move game
+  (`?scene=midgame`) reviewed, then move 1 clicked from the bottom of the list: the
+  list's `scrollTop` went **304 to 0** while the board's y stayed **167**, `main`'s
+  `scrollTop` stayed 0 and the window's `scrollY` stayed 0. That is spec 18.4's
+  "scrolling itself and nothing above it" and the phase 6 rule, measured.
+- **The probe, with the report and row two showing.** The bar, `.board` and `cg-board`
+  end on the same pixel in every row, and `scrollWidth` never exceeds `innerWidth`.
+
+  | Viewport | Size | Theme | Board | Bar/board/cg bottom | Row 1 y | Row 2 y | Side | scrollWidth / innerWidth |
+  |---|---|---|---|---|---|---|---|---|
+  | 1280 x 980 | small | dark | 416 | 580 | 592 | 637 | 448.5 | 1280 / 1280 |
+  | 1280 x 980 | small | light | 416 | 580 | 592 | 637 | 448.5 | 1280 / 1280 |
+  | 1280 x 980 | large | light | 672 | 836 | 848 | 894 | 301 | 1280 / 1280 |
+  | 1280 x 980 | small | dark, 20 moves | 416 | 583 | 595 | 641 | 448.5 | 1280 / 1280 |
+
+  **The board does not change size when row two appears**: 416 small and 672 large at
+  1280 are gate 10's own numbers on the same viewport with only row one showing. Phase
+  9's `CHROME_BELOW = 120` already counted a second row that did not exist yet, which
+  is exactly what that was for. Nothing in `board-size.ts` was touched. Both rows span
+  the board exactly, x 68 to 484 against a board of 68 to 484, with the two arrows at
+  the right-hand end. (The last row is at a display scale of 1 after a navigation and
+  the others at 1.5, which is the standing hazard, not a difference in the layout.)
+
+**Decided (code shape).**
+
+- **`ReplayedGame` is `{ moves }` and nothing else.** The trainer's carries a course, a
+  chapter, a level and the record's date, and every one of those is for
+  `requestFromReplay`, which this app does not have. `moveAtPlyLabel`,
+  `requestFromReplay` and `playedDay` were not copied: gate 2 ruled that unused code
+  goes, and Play from here here is `start` with a prefix rather than a request object.
+- **Play from here is `start({ level, side, startMoves })`**, the path a loaded game
+  already takes, so Save, Load and Undo work on the new game for nothing and the PGN
+  needs no `SetUp` or `FEN` tag. The side and the level are the RUNNING game's rather
+  than the settings', so a game reviewed after a mid-game level change is carried on at
+  the level it was actually played at.
+- **`keepInView` in `MoveList` now takes an `HTMLElement` and finds its list with
+  `closest('ol')`.** It was typed to the row and read `parentElement`, which is right
+  for a record's `li` and wrong for a viewer's marked button, two levels down. One
+  function still, because it is one question: bring this node into view by scrolling the
+  list and nothing else.
+- **The trainer's `scrollIntoView` was not copied**, as the chip instructs. Its
+  `MoveList` still calls it on the marked move, which is the phase 6 fault waiting on
+  the same screen: it scrolls every scrollable ancestor, and above 900 by 700 this
+  shell's `main` is one of them. Carried back to the trainer below.
+- **The arrow-key effect lives in `Screen.tsx`**, where the report is composed. This app
+  has one screen, so there is no second handler to fight with; the trainer has to keep
+  two screens from both listening.
+- **`.move-step` and `.jump` share their reset.** The trainer writes the same eight
+  declarations twice and this app writes them once, with only the `border-radius` and
+  the two hovers kept apart. That is the reuse review's one find (below).
+
+**A fault in the trainer, not copied, to carry back.**
+
+- **`MoveList`'s marked move calls `scrollIntoView({ block: 'nearest' })`.** The trainer
+  met exactly this in its own list once and fixed the newest-move case; the viewer's
+  marked-move case still has it. On a window where an ancestor scrolls, stepping through
+  a reviewed game will scroll the board out from under the reader. This app uses
+  `scrollToShow` on the list's own `scrollTop` for both cases, which is `keep-in-view.ts`
+  and was proved again in the pane above.
+
+**Not a fault, and it cost an hour: the hidden pane suspends `requestAnimationFrame`.**
+
+Chessground redraws behind `requestAnimationFrame` (`debounceRedraw` in its
+`chessground.ts`), and a hidden browser pane suspends that entirely. So `svg.cg-shapes`
+sat empty while `__cg.state.drawable.autoShapes` already held the right arrow, and an
+arrow the app had CLEARED stayed drawn after Play from here. Both times the app's state
+was correct and only the frame was missing: `redrawAll()` or a screenshot paints it at
+once, and the screenshots above show the arrow appearing and disappearing correctly.
+I misread the first of these as a fault and changed `Board.tsx` to carry the shapes
+through `set()` instead of `setAutoShapes`; when the real cause turned up I reversed the
+edit and `git diff src/ui/Board.tsx` is empty. **`Board.tsx` is untouched by this
+phase.** Added to CLAUDE.md's standing hazards beside the React-throttling one, because
+it is the same hazard one layer down and it reads as a broken feature.
+
+**Asked of Nick.** Nothing. Spec 18.4 settles every sentence on the screen, and the two
+tooltips are the trainer's own words with the record it keeps and this app does not
+taken out of them.
+
+**Reuse review.** The three the chip predicted: there is no second "position at a ply"
+loop, `positionAtPly` is the only one and both `play-from-replay.ts` and `Screen.tsx`
+call it; `squaresOf` is still the one function in `Screen.tsx` and all three shape
+callers go through `squaresForSan`, so it did not need moving; and the second
+`.jump`-style button reset was real and is now one rule shared with `.move-step`.
+`.nav-link` in `app.css` keeps its own, because it is a nav control with padding, a
+bottom border and a hover background rather than a sentence. Every new class in
+`play.css` is used by a component, checked by counting. No em dashes under `src/`, no
+forbidden word in any new or adapted file.
+
+**Left.**
+
+- **Phase 12** is the version bump to 1.1.0, `npx tauri build`, the acceptance walk
+  extended with 18.7's items, and the deploy document. Nothing in this phase is
+  waiting on anything.
+- **`../London` and `../Conquest` were read for copying and not written.**

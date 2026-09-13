@@ -61,6 +61,34 @@
   margin-left: var(--board-inset);
 }
 
+/* Origin: London src/ui/play.css .play-review-row, .play-controls .play-steps
+   and .play-controls .step-arrow, identical.
+
+   The second row, and there are two because one will not fit. The small board
+   is 416px and row one already reaches most of it, so Keep playing, Play from
+   here and the arrows beside them would wrap into a ragged second line rather
+   than a deliberate one. The column's own 12px gap is the space between them,
+   so this needs nothing but the same left edge, which it inherits. */
+.play-review-row {
+  margin-top: -4px;
+}
+
+/* The row spans exactly the board: the buttons from its left edge, the two
+   stepping arrows ending at its right. `auto` on the arrows is what pushes
+   them there, so the row needs no width of its own. */
+.play-controls .play-steps {
+  margin-left: auto;
+  display: flex;
+  gap: 6px;
+}
+
+/* An arrow needs the same box as a word next to it, not a narrower one. */
+.play-controls .step-arrow {
+  min-width: 38px;
+  line-height: 1.2;
+  text-align: center;
+}
+
 .play-column > .notice {
   margin-left: var(--board-inset);
 }
@@ -185,6 +213,48 @@
 
 .move-number {
   color: var(--text-faint);
+}
+
+/* Origin: London src/ui/play.css .move-step and .jump, adapted: the trainer
+   writes the same eight declarations twice and this app writes them once, so
+   the two rules below carry only what actually differs between them.
+
+   A button that is really text. Two things on this screen are controls without
+   looking like one: a move in a reviewed game and the sentence describing a
+   slip (spec 18.4). Both would read as a toolbar if they kept a button's frame,
+   and a row of twenty framed buttons is not a game. */
+.move-step,
+.jump {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* The corner the mark below is drawn with. */
+.move-step {
+  border-radius: 3px;
+}
+
+.move-step:hover {
+  color: var(--link);
+}
+
+/* Origin: London src/ui/play.css .move-step.here, identical.
+   The move the board is standing on, in `--mark`. Its padding is given back as
+   a negative margin, so the mark bleeds into the 4px the list already has each
+   side rather than shifting the column. */
+
+.move-step.here {
+  background: var(--mark);
+  color: var(--text);
+  font-weight: 600;
+  padding: 0 4px;
+  margin: 0 -4px;
 }
 
 /* The bar beside the board. Board height, so it reads as the board's own
@@ -397,6 +467,22 @@
 
 .slips li.inaccuracy {
   border-left-color: var(--link);
+}
+
+/* Origin: London src/ui/play.css .jump:hover and .slips li .jump, identical;
+   the reset the trainer repeats here is shared with `.move-step` above.
+
+   The slip's own words, which put the board on the position the move was played
+   from (spec 18.4). The underline on hover is what says it does something.
+   `block` inside a slip so the whole sentence is the target rather than its
+   first line. */
+.jump:hover {
+  color: var(--link);
+  text-decoration: underline;
+}
+
+.slips li .jump {
+  display: block;
 }
 
 /* The report's own bar: horizontal, under the verdict. The one beside the board

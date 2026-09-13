@@ -1,8 +1,17 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { squaresForSan } from '../model/moves'
 import { isPromotion, legalDests, sideToMove } from '../model/position'
 import type { Shape } from '../model/types'
-import { shownEvaluation, type Hint, type PlayedMove } from '../play'
+import {
+  clampPly,
+  moveAtPly,
+  plyBeforeMove,
+  positionAtPly,
+  shownEvaluation,
+  type GameReport,
+  type Hint,
+  type PlayedMove,
+} from '../play'
 import { Board } from './Board'
 import { EvalBar } from './EvalBar'
 import { MoveList } from './MoveList'
@@ -13,6 +22,7 @@ import { PlayHead } from './PlayHead'
 import { Report } from './Report'
 import { PromotionPicker, type PromotionPiece } from './PromotionPicker'
 import { SidePanel, type FileProps, type SettingsProps } from './SidePanel'
+import { whyNotPlayable } from './play-from-replay'
 import { usePlay } from './play-context'
 import { useBoardPixels } from './use-board-pixels'
 import './play.css'
@@ -39,6 +49,7 @@ export function Screen({
   pgn,
   onNewGame,
   onDiscard,
+  onPlayFrom,
 }: {
   settings: SettingsProps
   files: FileProps
@@ -47,9 +58,10 @@ export function Screen({
   pgn: string
   onNewGame: () => void
   onDiscard: () => void
+  onPlayFrom: (sans: string[]) => void
 }) {
   const game = usePlay()
-  const { session, thinking } = game
+  const { session, report, thinking } = game
   // Measured before the early return below, because a hook cannot be called
   // conditionally and how big the board is drawn does not depend on there
   // being a game to draw on it.
@@ -60,9 +72,53 @@ export function Screen({
   // what makes it a move (spec 5.3).
   const [pending, setPending] = useState<{ from: string; to: string } | null>(null)
 
+  // The viewer's arithmetic, above the early return for the same reason the
+  // board's size is. A report nobody has walked yet shows its end, which is the
+  // final position (spec 18.4).
+  // The session is one mutable object whose `moves` array is pushed into, so it
+  // only becomes a different list when a different game starts. That is what
+  // keeps the key handler below from being rebuilt on every render.
+  const moves = useMemo(() => session?.moves ?? [], [session])
+  const atEnd = moves.length
+  const ply = report !== null && game.replayPly !== null ? clampPly(moves, game.replayPly) : atEnd
+  const setReplayPly = game.setReplayPly
+  const step = useCallback(
+    (to: number) => setReplayPly(clampPly(moves, to)),
+    [moves, setReplayPly],
+  )
+
+  /**
+   * The arrow keys step the viewer, and only while a report is showing.
+   *
+   * On `window` rather than on the list, because the thing being stepped is the
+   * board and nobody clicks the list first. This app has one screen, so there
+   * is no second handler to fight with; the trainer puts the same effect on two
+   * screens and has to be careful that only one is ever mounted.
+   *
+   * A key typed into a field is a key typed into a field: the file name box in
+   * a save dialog is not on this page, but a select is, and a left arrow inside
+   * one changes the level rather than the position.
+   */
+  useEffect(() => {
+    if (!report) return
+    const onKey = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null
+      if (target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) return
+      if (event.key === 'ArrowLeft') step(ply - 1)
+      else if (event.key === 'ArrowRight') step(ply + 1)
+      else return
+      event.preventDefault()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [ply, report, step])
+
   if (!session) return game.engineError ? <Notice message={game.engineError} bad /> : null
 
-  const fen = session.fen
+  // What the board is actually showing. During a game it is the game; during a
+  // review it is wherever the reader has walked to, which is the same position
+  // whenever they have not walked anywhere.
+  const fen = (report ? positionAtPly(moves, ply) : null) ?? session.fen
   // Locked while the engine thinks, once the game is over (spec 5.2), and while
   // the picker is open: that pawn is mid-move and a second move would strand it.
   //
@@ -72,7 +128,7 @@ export function Screen({
   // See the note on the board's own effect.
   // A report locks it too: the report is about the game exactly as it stands,
   // and a move played under one would be a move it does not mention (spec 18.4).
-  const canMove = !thinking && !session.isFinished() && game.report === null && pending === null
+  const canMove = !thinking && !session.isFinished() && report === null && pending === null
 
   const choose = (piece: PromotionPiece) => {
     if (!pending) return
@@ -80,6 +136,24 @@ export function Screen({
     setPending(null)
     void game.play(move.from, move.to, piece)
   }
+
+  /**
+   * Standing on the position a slip was played from, the highlight is the slip
+   * ITSELF, the move about to be played, so that it and the engine's blue arrow
+   * are on the board together: what was done and what the engine would have
+   * done (spec 18.4). Anywhere else it is the move that led here, as it always
+   * was.
+   */
+  const slipHere = report?.slips.find((slip) => slip.ply === ply && slip.better)
+  const highlight = report
+    ? squaresOf(slipHere ? (moves[ply] ?? null) : moveAtPly(moves, ply))
+    : squaresOf(session.moves.at(-1) ?? null)
+
+  // Why Play from here is off where the board is standing, or '' when it is on.
+  const playFromWhy = report ? whyNotPlayable({ moves }, ply, session.userColour) : null
+
+  const onBack = () => step(ply - 1)
+  const onForward = () => step(ply + 1)
 
   return (
     <>
@@ -90,7 +164,7 @@ export function Screen({
         session={session}
         level={game.level ?? settings.level}
         thinking={thinking}
-        reviewed={game.report !== null}
+        reviewed={report !== null}
       />
 
       <div className="play-body">
@@ -98,6 +172,9 @@ export function Screen({
           {/* The bar and the board in one box, so the bar is stretched to the
               board's own height rather than given a height of its own. */}
           <div className="play-board">
+            {/* The position being LOOKED AT during a review, not the game's own
+                (spec 18.4). Every position of a reviewed game has an entry,
+                because the scan filled them. */}
             <EvalBar
               evaluation={shownEvaluation(fen, session.moves, game.evaluations)}
               userColour={session.userColour}
@@ -108,8 +185,8 @@ export function Screen({
               turnColor={sideToMove(fen)}
               movableColor={canMove ? session.userColour : undefined}
               dests={canMove ? legalDests(fen) : undefined}
-              lastMove={squaresOf(session.moves.at(-1) ?? null)}
-              shapes={hintShapes(game.hint, fen)}
+              lastMove={highlight}
+              shapes={report ? preferredShapes(report, ply, fen) : hintShapes(game.hint, fen)}
               onMove={(from, to) => {
                 // A promotion is not played here: it is held until the picker is
                 // answered, so the engine is never asked about a move the user
@@ -131,13 +208,18 @@ export function Screen({
 
           <PlayControls
             session={session}
-            reviewing={game.report !== null}
+            reviewing={report !== null}
             thinking={thinking}
             canHint={game.canHint}
+            canResume={game.canResume}
+            replay={report ? { ply, count: atEnd, onBack, onForward } : null}
+            playFromWhy={playFromWhy}
             onNew={onNewGame}
             onUndo={game.undo}
             onRedo={game.redo}
             onHint={() => void game.askHint()}
+            onResume={game.resume}
+            onPlayFrom={() => onPlayFrom(moves.slice(0, ply).map((move) => move.san))}
           />
 
           {/* Under the buttons, where something that has just happened belongs.
@@ -147,15 +229,24 @@ export function Screen({
           {notice && <Notice message={notice.text} bad={notice.bad} />}
         </div>
 
-        <MoveList moves={session.moves} pixels={pixels} />
+        <MoveList
+          moves={session.moves}
+          pixels={pixels}
+          activePly={report ? ply : null}
+          onSelect={step}
+        />
 
         {/* Play as, the file buttons, the hint sentence, and then either what
             you can do with the game or the report on it (spec 18.1). */}
         <aside className="play-side">
           <SidePanel side={settings.side} onSide={settings.onSide} {...files} />
           {game.hint && <p className="hint-said engine">{game.hint.text}</p>}
-          {game.report ? (
-            <Report report={game.report} pgn={pgn} />
+          {report ? (
+            <Report
+              report={report}
+              pgn={pgn}
+              onJump={(movePly) => step(plyBeforeMove(movePly))}
+            />
           ) : (
             <PlayActions
               session={session}
@@ -179,6 +270,22 @@ function squaresOf(move: PlayedMove | null): [string, string] | undefined {
   if (!move) return undefined
   const squares = squaresForSan(move.fen, move.san)
   return squares ? [squares.from, squares.to] : undefined
+}
+
+/**
+ * Origin: London src/ui/Play.tsx preferredShapes, identical.
+ * The engine's preferred move as a blue arrow, while the viewer is standing on
+ * the position a slip was played from. The move that was played stays
+ * highlighted as the last move, so both are on the board at once: what was done
+ * and what the engine would have done. Blue is the engine hint's colour,
+ * because it is the same kind of answer.
+ */
+function preferredShapes(report: GameReport, ply: number, fen: string): Shape[] {
+  const slip = report.slips.find((entry) => entry.ply === ply && entry.better)
+  if (!slip?.better) return []
+  const squares = squaresForSan(fen, slip.better)
+  if (!squares) return []
+  return [{ orig: squares.from, dest: squares.to, brush: 'blue' }]
 }
 
 /**

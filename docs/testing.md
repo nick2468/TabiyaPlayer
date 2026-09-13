@@ -135,6 +135,14 @@ fetching it from the dev server, so the file is what runs rather than a copy of 
 eval(await (await fetch('/scripts/probes/layout.js')).text())
 ```
 
+Two more things live only here. **Whether the move list scrolls ITSELF** to keep the
+marked move in view (spec 18.4) is a question about layout, and every rectangle in jsdom
+is zero, so `scrollToShow` always answers 0 there: it is measured in the pane by
+comparing the list's `scrollTop` against the board's `y` before and after a jump. And
+**whether an arrow is drawn** cannot be read from the SVG in a hidden pane at all,
+because chessground redraws behind `requestAnimationFrame`; read `window.__cg.state`
+or look at a screenshot (CLAUDE.md, standing hazards).
+
 Two numbers have to hold at every viewport, both board sizes and both themes (S16):
 the bar, `.board` and `cg-board` end on the same pixel, and `scrollWidth` never
 exceeds `innerWidth`. Every UI-affecting phase records the table in its notes.

@@ -132,6 +132,22 @@ export function Shell() {
   const discardGame = () => game.discard({ level, side })
 
   /**
+   * Play from here: a new game from the position being looked at (spec 18.4).
+   *
+   * It is `start` with a prefix of the old game's moves, which is the path a
+   * loaded game already takes. A position handed over as a FEN would need a
+   * `SetUp` tag in the file and would leave Undo with nothing behind it; handed
+   * over as the moves that reach it, Save, Load and Undo all work on the new
+   * game for nothing.
+   *
+   * The side and the level are the RUNNING game's, so a game reviewed after a
+   * mid-game level change is carried on at the level it was being played at,
+   * not the one the select happens to show.
+   */
+  const playFrom = (sans: string[]) =>
+    void game.start({ level: game.level ?? level, side: game.side ?? side, startMoves: sans })
+
+  /**
    * The running game as text, with the report's comments once it has been
    * reviewed (spec 9.1, spec 18.6).
    *
@@ -247,6 +263,7 @@ export function Shell() {
           pgn={pgnNow(new Date().toISOString()) ?? ''}
           onNewGame={newGame}
           onDiscard={discardGame}
+          onPlayFrom={playFrom}
         />
       </main>
 

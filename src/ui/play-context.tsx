@@ -56,6 +56,17 @@ export interface PlayGame {
   hint: Hint | null
   /** The report on the game that has been stopped and reviewed (spec 18.5). */
   report: GameReport | null
+  /**
+   * Where a reviewed game's viewer is standing, as a count of moves played, or
+   * null when nobody has stepped it and it shows the end (spec 18.4).
+   *
+   * View state only: it never touches the session's moves. It lives here rather
+   * than on the screen so that every path which puts the report away can clear
+   * it in the same breath, and no path can leave the viewer pointing into a
+   * game that is gone.
+   */
+  replayPly: number | null
+  setReplayPly: (ply: number | null) => void
   /** How far the review's scan has got, while it runs (spec 18.3). */
   scanning: { done: number; total: number } | null
   /** A game exists, has not ended and has not been reviewed. */
@@ -71,6 +82,13 @@ export interface PlayGame {
   setLevel: (level: number) => Promise<void>
   /** Stop and review: scans the game and builds the report (spec 18.3). */
   finish: () => Promise<void>
+  /**
+   * True when a reviewed game can be carried on: it was stopped rather than
+   * ended. A checkmate or a draw has nothing to play.
+   */
+  canResume: boolean
+  /** Keep playing: puts the report away and hands the board back (spec 18.4). */
+  resume: () => void
   /**
    * Stop and discard: the game goes, and a fresh one starts (spec 18.3). The
    * options are the fresh game's, because the settings beside the board are
@@ -113,6 +131,7 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
   const [evaluations, setEvaluations] = useState<Map<string, Evaluation>>(() => new Map())
   const [hint, setHint] = useState<Hint | null>(null)
   const [report, setReport] = useState<GameReport | null>(null)
+  const [replayPly, setReplayPly] = useState<number | null>(null)
   const [scanning, setScanning] = useState<{ done: number; total: number } | null>(null)
 
   const engineRef = useRef<Engine | null>(null)
@@ -267,10 +286,13 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
       setEngineError(null)
       setThinking(true)
       setHint(null)
-      // New game, Load game and a game reopened from storage all come through
-      // here, so all three put a report away: the report is about the game that
-      // has just been replaced.
+      // New game, Load game, Play from here and a game reopened from storage
+      // all come through here, so all of them put a report away: the report is
+      // about the game that has just been replaced. The viewer's position goes
+      // with it, because a ply counted in the old game means nothing in this
+      // one (spec 18.4).
       setReport(null)
+      setReplayPly(null)
       evaluationsRef.current = new Map()
       bestMovesRef.current = new Map()
       setEvaluations(new Map())
@@ -476,6 +498,8 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
       // whole game. Leaving it up would put advice for move 12 beside a report
       // on move 19.
       setHint(null)
+      // A report nobody has walked yet shows its end, and null is what says so.
+      setReplayPly(null)
       setReport(
         buildReport(
           running.moves,
@@ -493,6 +517,24 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
       setThinking(false)
     }
   }, [engine])
+
+  /**
+   * Origin: London src/ui/play-context.tsx resume, adapted: no record and no cap, so putting the report away is the whole of it.
+   * Keep playing: puts the report away and hands the board back (spec 18.4).
+   *
+   * The session is untouched, so the game carries on from where it stopped
+   * rather than from wherever the reader has walked to while looking at the
+   * report. Walking is a way of LOOKING; playing on from an earlier position is
+   * Play from here, which is a different button because it throws moves away.
+   *
+   * The engine is still running and the evaluation map is kept, so nothing
+   * already worked out is searched again.
+   */
+  const resume = useCallback(() => {
+    if (!sessionRef.current || sessionRef.current.outcome) return
+    setReport(null)
+    setReplayPly(null)
+  }, [])
 
   /**
    * Stop and discard: the game ends with nothing kept (spec 18.3).
@@ -518,6 +560,7 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
     },
     [start],
   )
+
 
   /**
    * A new level, heard by the engine's next move (spec S6).
@@ -570,6 +613,8 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
     evaluations,
     hint,
     report,
+    replayPly,
+    setReplayPly,
     scanning,
     // A reviewed game is over as far as the board is concerned, whether or not
     // it ended by itself: the report is about the game exactly as it stands,
@@ -591,6 +636,11 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
     askHint,
     setLevel,
     finish,
+    // Only a game that was STOPPED can be carried on. A checkmate or a draw
+    // has nothing to play, and `outcome` is the one field that tells the two
+    // apart: it is what `stoppedAt` falls back from when building the report.
+    canResume: session !== null && report !== null && !session.outcome,
+    resume,
     discard,
   }
 }

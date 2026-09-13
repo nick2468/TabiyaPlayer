@@ -7,15 +7,27 @@ from one React, TypeScript and Vite code base. The code is copied from those two
 wherever they already do the job, so that a shared library can follow later.
 
 Current state: version 1.0.0 is built and gated, and version 2 is under way (spec
-section 18, which wins over sections 1 to 17). Phase 10 landed 2026-09-13 and awaits
-review: a game can be **stopped and reviewed** or **stopped and discarded**. The
+section 18, which wins over sections 1 to 17). Phase 11 landed 2026-09-13 and awaits
+review: **a reviewed game is a viewer** (spec 18.4). Every move in the list is a
+button, the one the board is standing on is marked in `--mark`, the left and right
+arrow keys step (never with a text field focused), and the list scrolls itself to keep
+the mark in view. The bar follows the position being looked at. Standing where a slip
+was played from, the move that was played is the highlight and the engine's better move
+is a blue arrow, both at once; a slip's sentence in the report is the button that puts
+the board there. Row two of the buttons holds **Keep playing** (a game that was stopped,
+handed back at its final position), **Play from here** (a new game from the viewed
+position, at the same side and level, disabled with the trainer's reasons where the
+engine is to move or the game is over) and the two stepping arrows. The board does not
+change size when row two appears, because phase 9's chrome already counted it.
+
+Phase 10 passed gate 10 on 2026-09-13 (commits `fe794fd` and `445e175`): a game can be
+**stopped and reviewed** or **stopped and discarded**. The
 review scans the game at the analysis profile, handed everything the bar already
 worked out, and the report in the side panel names each slip with its move number, its
 tag and the engine's preferred move, gives the final position a verdict in words with
 a horizontal bar under it, and says how many hints were used. Copy game and Save game
 write the same text, which now carries the report's comments (spec 18.6); a reviewed
-file still loads back. The move list is still a record and the slips are still
-sentences rather than buttons: the viewer is phase 11.
+file still loads back.
 
 Phase 9 passed gate 9 on 2026-09-13 (commits `5c5dcf4` and `ce31e55`, with an
 interim installer at `c9f1dde`): the app is called **Simply Chess** everywhere a person sees it, including the
@@ -25,8 +37,7 @@ board size toggle beside Light/Dark, a head row with the opening line and the st
 the move list in its own 167 px column at board height, and a side panel with Play as
 and the file buttons. The window opens at 1400 by 980 and the fit rule's chrome
 constants were re-measured for it (167 above, 120 below, 607 beside). The version
-stays 1.0.0 until phase 12. Phase 11 brings the review viewer, Keep playing and Play
-from here.
+stays 1.0.0 until phase 12, which bumps it to 1.1.0 and ships section 18.
 
 Phase 8 (the Windows app and the installer) landed 2026-09-12 and passed gate 8:
 `src-tauri/` is the trainer's with the names changed, the window keeps its browser
@@ -130,8 +141,14 @@ scale).
   `describeSlip` in `play/report.ts` (every verdict and every slip, on screen and in
   the file's comments alike); `stoppedAt` in the same file (where an unfinished game
   got to, said by the report and by the PGN); `scanGame` in `play/scan.ts` (the only
-  place a whole game is evaluated); `toClipboard` in `ui/CopyGame.tsx` (the only
-  clipboard); `pgnNow` in `Shell` (the running game as text, for Save game and Copy
+  place a whole game is evaluated); `positionAtPly`, `moveAtPly`, `clampPly`,
+  `plyBeforeMove` and `plyAfterMove` in `play/replay.ts` (all the arithmetic of
+  walking a finished game; nothing else indexes `moves` by a ply);
+  `canPlayFromPly` and `whyNotPlayable` in `ui/play-from-replay.ts` (whether a
+  viewed position can be played on from, and the sentence saying why not);
+  `keepInView` in `ui/MoveList.tsx` (the only thing that scrolls the list, for
+  both the newest row and the marked move); `toClipboard` in `ui/CopyGame.tsx`
+  (the only clipboard); `pgnNow` in `Shell` (the running game as text, for Save game and Copy
   game, which must write the same one); the `read`, `write`, `oneOf`, `readOneOf`, `useRemembered` and
   `remember*` helpers in `prefs.ts` (every setting; `oneOf` answers "is this one of
   these words" for storage and for the address bar alike, and each key string stays
@@ -198,6 +215,14 @@ scale).
 - **A hidden browser pane throttles React.** A move lands in the session at once and
   the screen catches up a second later. Poll for the DOM to change; do not read once
   and conclude. The trainer met this twice.
+- **A hidden pane suspends `requestAnimationFrame`, and chessground redraws behind
+  one.** Its `debounceRedraw` queues every redraw on a frame, so the board's drawn
+  layers can lag the app's state for as long as the pane stays hidden: in phase 11 the
+  blue arrow for a slip's better move was set in `__cg.state.drawable.autoShapes` and
+  not in `svg.cg-shapes`, and an arrow the app had already cleared stayed drawn. The
+  app was right both times. Read `window.__cg.state` rather than the SVG, or call
+  `__cg.redrawAll()`, or take a screenshot, which paints. This reads exactly like a
+  broken feature and is not one: do not change `Board.tsx` for it.
 - **Chessground needs `ResizeObserver`**, which jsdom lacks. DOM tests mock the board
   with `src/test/board-stub.tsx`; `rig.dom.test.tsx` pins the throw.
 - **Headless Edge is not a screenshot tool on this machine.** Started with a fresh

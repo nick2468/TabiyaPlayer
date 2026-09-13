@@ -3,7 +3,7 @@ import { CopyGame } from './CopyGame'
 import { ReportBar } from './EvalBar'
 
 /**
- * Origin: London src/ui/Play.tsx Report, adapted: "The repertoire" is gone, because this app has none, and the slips are not buttons until phase 11.
+ * Origin: London src/ui/Play.tsx Report, adapted: "The repertoire" is gone, because this app has none.
  * The report, after the game (spec 18.5).
  *
  * Two headings: what the engine thought of the user's moves, and what it makes
@@ -13,10 +13,13 @@ import { ReportBar } from './EvalBar'
 export function Report({
   report,
   pgn,
+  onJump,
 }: {
   report: GameReport
   /** The whole game as text, for the copy button. */
   pgn: string
+  /** Puts the board on the position a slip was played from (spec 18.4). */
+  onJump: (movePly: number) => void
 }) {
   return (
     <div className="report">
@@ -31,15 +34,15 @@ export function Report({
       {report.slips.length === 0 ? (
         <p>Nothing the engine calls an inaccuracy or worse. Well played.</p>
       ) : (
-        /* Plain list items, not the trainer's buttons. The trainer's jump the
-           board to the position a slip was played from, and the board that
-           would jump is the review viewer, which is phase 11. A control that
-           does nothing is worse than no control, so until then these are what
-           they look like: sentences. */
+        /* Each sentence is a button that puts the board on the position the
+           move was played from, which is the only place the alternative it
+           names can be seen. */
         <ul className="slips">
           {report.slips.map((slip) => (
             <li key={slip.ply} className={slip.tag}>
-              {describeSlip(slip)}
+              <button type="button" className="jump" onClick={() => onJump(slip.ply)}>
+                {describeSlip(slip)}
+              </button>
             </li>
           ))}
         </ul>
