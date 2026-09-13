@@ -1072,8 +1072,10 @@ After the report is built the screen is a viewer, as the trainer's is:
   than ended: puts the report away and hands the board back at the final position,
   not at the position being looked at), **Play from here** (a new game from the
   position being looked at, with the same side and level; disabled with the trainer's
-  reasons in its tooltip when the position is the engine's move or the start), and
-  the two stepping arrows.
+  reasons in its tooltip when the position is the engine's move or the game is over,
+  and with "This is the start of the game. Use New game." at the start, which the
+  trainer has no rule for because a trainer game can begin anywhere and this one always
+  begins at ply 0), and the two stepping arrows.
 - New game, Load game and Play from here end the review. Undo and Redo are disabled
   during it, as the trainer's are.
 

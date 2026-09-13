@@ -650,14 +650,20 @@ and its tests, `Play.tsx` (`MoveList` with `activePly`, `PlayControls` row two,
 
 **Goal: everything section 18 asks for is built, checked and shipped.**
 
-- [ ] 12.1 The acceptance walk (`docs/acceptance.md`) extended with 18.7's items and
+- [ ] 12.1 The three findings of gate 11, which land before the version bump.
+      **Play from here is off at the start of the game**, which spec 18.4 asks for and
+      the trainer has no rule for: `whyNotPlayable` answers "This is the start of the
+      game. Use New game." at ply 0, with a test for it and the DOM test's ply-0 case.
+      The dead `walkable` class goes from `MoveList`. The double blank line in
+      `play-context.tsx` goes.
+- [ ] 12.2 The acceptance walk (`docs/acceptance.md`) extended with 18.7's items and
       re-checked where earlier items changed (the screen, the file).
-- [ ] 12.2 Version 1.1.0 in the three files; `npx tauri build`; the packaged window
+- [ ] 12.3 Version 1.1.0 in the three files; `npx tauri build`; the packaged window
       driven again with the probe and the one screenshot; the installer's path and size.
-- [ ] 12.3 The deploy document updated for whichever of Q22's options Nick chooses,
+- [ ] 12.4 The deploy document updated for whichever of Q22's options Nick chooses,
       when he chooses. Until then it documents both.
-- [ ] 12.4 Docs sweep (spec, plan, testing, deploy, README, CLAUDE.md) and commit.
-- [ ] 12.5 Nick: install 1.1.0 over 1.0.0 (the settings and the game survive), play,
+- [ ] 12.5 Docs sweep (spec, plan, testing, deploy, README, CLAUDE.md) and commit.
+- [ ] 12.6 Nick: install 1.1.0 over 1.0.0 (the settings and the game survive), play,
       review a game. Record the date here.
 
 ---
@@ -3083,3 +3089,76 @@ forbidden word in any new or adapted file.
   extended with 18.7's items, and the deploy document. Nothing in this phase is
   waiting on anything.
 - **`../London` and `../Conquest` were read for copying and not written.**
+
+### Gate 11 findings (orchestrator, 2026-09-13)
+
+**Verified from the repo.** `npx vitest run`: 37 files, **323 passed, none skipped,
+15.4 seconds**, inside the twenty-second rule. `tsc -b` clean, `npx oxlint` exit 0 with
+no output, `npm run build` clean. The built assets carry no `midgame`, `repertoire`,
+`deviation` or `trainee`; "Keep playing" and "Play from here" appear once each and the
+two arrow names twice each, which is their `aria-label` and their `title`. `Board.tsx`
+and `board-size.ts` are untouched by this phase, as the notes claim. `../London` and
+`../Conquest` hold no change of ours.
+
+**Mutation-checked, four, each reversed with the reverse edit.**
+
+| Mutation | Red |
+|---|---|
+| `clampPly` stops clamping at the top | 3 tests, across `replay.test.ts` and the viewer |
+| `plyBeforeMove` answers the position AFTER the move | 3 tests, both files |
+| the marked move is `entry.ply` rather than `entry.ply + 1` | the mark test |
+| `canResume` forgets `!session.outcome` | the finished-game test |
+
+**Driven in the pane myself at 1280 by 980**, storage cleared first and after, both
+themes, against the real engine.
+
+- **The viewer.** The 20-move scene reviewed: clicking a move moved the board and the
+  mark, the bar followed the position looked at (+0.8 at the end, +0.3 after 1.e4,
+  +0.4 at the start), the arrows disabled at each end, and the board stayed locked.
+- **The list scrolls itself** (the one thing no test can hold). From a list scrolled to
+  the top, clicking the last move took the list's `scrollTop` 0 to 304 while `main`'s
+  stayed 0, the window's `scrollY` stayed 0 and the board's y stayed 167.
+- **The slip's position, both marks at once.** On the blunder: `lastMove` h5-e5, which
+  is Qxe5+ itself, with one blue arrow f1-c4, which is the engine's 3.Bc4. One step on,
+  the arrow is gone and the bar drops -0.3 to -6.1. The inaccuracy reads the same way,
+  d1-h5 with a blue d2-d4. Seen drawn in the light theme in a screenshot, and the mark
+  computes to `--mark` in both themes (#c9e2cc light, #3a5b3f dark).
+- **Keep playing** from a board standing at ply 2 handed back the game's OWN final
+  position (`__cg.getFen()` equal to `__game.fen`), report gone, row two gone, no move
+  buttons left in the list, Undo and Hint live, status "Your move".
+- **Play from here** started a game that the engine then played: e4 answered by c5,
+  the bar +0.3, the new game in storage in place of the old.
+- **The probe with the report and row two showing.** Small: board 416, bar, `.board`
+  and `cg-board` all ending at 583, row two spanning x 68 to 484 against a board of 68
+  to 484. Large: board 672, all three ending at 836, row two 68 to 740 against 68 to
+  740, its own bottom 930.7 in a 980 window. `scrollWidth` 1280 = `innerWidth` in both,
+  `scrollHeight` 980 = `innerHeight`. **416 and 672 are gate 10's own numbers on this
+  viewport with only row one showing, so the board does not change size when row two
+  appears.** Below the board: 94.7 px used of `CHROME_BELOW`'s 120.
+
+**One finding that needs a fix, and it is mine rather than the builder's.** Spec 18.4
+says Play from here is "disabled ... when the position is the engine's move **or the
+start**". The chip said "the trainer's `whyNotPlayable` reasons" and left the second
+half out, and the trainer has no rule for the start, because a trainer game can begin
+from a Study position where the start is a real position to practise. Here it never is:
+ply 0 is always the opening position, so Play from here there is New game with a
+different name that also throws the reviewed game away. Measured: at ply 0 with the
+user as White the button is live, its tooltip says "Start a new game from the position
+on the board", and pressing it starts an empty game. (As Black it is already off, with
+the engine's-move sentence.) Nothing breaks; it is a duplicate control the spec asked
+us not to offer. **Ruling: `whyNotPlayable` answers "This is the start of the game. Use
+New game." at ply 0**, which is the shape of its other two sentences, a statement and
+what to do instead. Box 12.1.
+
+**Two small ones, same box.** `MoveList` sets a `walkable` class that no rule in this
+app or the trainer uses; gate 2's rule is that unused code goes, and the builder
+applied it to three trainer functions, so it applies here too. And `play-context.tsx`
+gained a double blank line where `discard` used to follow `finish`.
+
+**Taken on the builder's account.** Its own pane measurements, its light-theme and
+dark-theme walk, and the `requestAnimationFrame` finding, which I met myself while
+reading shapes out of the SVG and which its CLAUDE.md entry describes exactly.
+
+**Nick's open boxes are unchanged:** 7.8 (publish, Home Screen, aeroplane mode), 8.6
+(the installer walk) and now 12.6 (1.1.0 over 1.0.0). Q22, the deployment choice, is
+still his to make and nothing in the app waits on it.

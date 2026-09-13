@@ -7,8 +7,8 @@ from one React, TypeScript and Vite code base. The code is copied from those two
 wherever they already do the job, so that a shared library can follow later.
 
 Current state: version 1.0.0 is built and gated, and version 2 is under way (spec
-section 18, which wins over sections 1 to 17). Phase 11 landed 2026-09-13 and awaits
-review: **a reviewed game is a viewer** (spec 18.4). Every move in the list is a
+section 18, which wins over sections 1 to 17). Phase 11 passed gate 11 on 2026-09-13
+(commits `2502c88` and the gate's own): **a reviewed game is a viewer** (spec 18.4). Every move in the list is a
 button, the one the board is standing on is marked in `--mark`, the left and right
 arrow keys step (never with a text field focused), and the list scrolls itself to keep
 the mark in view. The bar follows the position being looked at. Standing where a slip
@@ -18,7 +18,10 @@ the board there. Row two of the buttons holds **Keep playing** (a game that was 
 handed back at its final position), **Play from here** (a new game from the viewed
 position, at the same side and level, disabled with the trainer's reasons where the
 engine is to move or the game is over) and the two stepping arrows. The board does not
-change size when row two appears, because phase 9's chrome already counted it.
+change size when row two appears, because phase 9's chrome already counted it. One
+thing is left for phase 12's box 12.1: Play from here is still live at the START of a
+game, where spec 18.4 says it is off, because the trainer it was copied from has no
+rule for the start.
 
 Phase 10 passed gate 10 on 2026-09-13 (commits `fe794fd` and `445e175`): a game can be
 **stopped and reviewed** or **stopped and discarded**. The
