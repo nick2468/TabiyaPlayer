@@ -171,5 +171,15 @@ describe('the two ways on from a report', () => {
     await user.click(button('Back one move'))
     await vi.waitFor(() => expect(button('Play from here').disabled).toBe(false))
     expect(screen.queryByRole('button', { name: 'Keep playing' })).toBeNull()
+
+    // And two more, to the start, where it goes off again: ply 0 is the opening
+    // position in every game here, so playing from it is New game with a
+    // different name (spec 18.4). Back is disabled there, which is the other
+    // reason the engine's-move sentence would be the wrong one to show.
+    await user.click(button('Back one move'))
+    await user.click(button('Back one move'))
+    await vi.waitFor(() => expect(button('Play from here').disabled).toBe(true))
+    expect(button('Play from here').title).toBe('This is the start of the game. Use New game.')
+    expect(button('Back one move').disabled).toBe(true)
   })
 })

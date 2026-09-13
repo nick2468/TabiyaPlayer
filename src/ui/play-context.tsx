@@ -561,7 +561,6 @@ function usePlayValue(createEngine: CreateEngine): PlayGame {
     [start],
   )
 
-
   /**
    * A new level, heard by the engine's next move (spec S6).
    *

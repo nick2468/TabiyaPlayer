@@ -3,7 +3,7 @@ import { fullMove, type PlayedMove } from '../play'
 import { scrollToShow } from './keep-in-view'
 
 /**
- * Origin: London src/ui/Play.tsx MoveList, adapted: its height is the board's rather than a row count, and the marked move is brought into view by scrollToShow rather than scrollIntoView.
+ * Origin: London src/ui/Play.tsx MoveList, adapted: its height is the board's rather than a row count, the marked move is brought into view by scrollToShow rather than scrollIntoView, and the trainer's `walkable` class is not set, because no rule in either app uses it.
  * The moves of the game, numbered, White and Black side by side.
  *
  * `activePly` is null during a game: the list is a record then (spec 5.7), and
@@ -67,7 +67,7 @@ export function MoveList({
 
   return (
     <ol
-      className={activePly === null ? 'move-list' : 'move-list walkable'}
+      className="move-list"
       style={{ '--board-pixels': `${pixels}px` } as CSSProperties}
     >
       {pairs.map((pair, index) => (

@@ -19,11 +19,26 @@ describe('which positions can be played from', () => {
   const g = game(['d4', 'd5', 'Bf4', 'Nf6'])
 
   it('says yes where it is the user move', () => {
-    // White's game: even plies are White to move.
-    expect(canPlayFromPly(g, 0, 'white')).toBe(true)
+    // White's game: even plies are White to move. Ply 0 is even too and is the
+    // one exception, below.
     expect(canPlayFromPly(g, 2, 'white')).toBe(true)
     expect(canPlayFromPly(g, 4, 'white')).toBe(true)
     expect(whyNotPlayable(g, 2, 'white')).toBe('')
+  })
+
+  /**
+   * The start is New game with a different name, and one that also throws the
+   * reviewed game away (spec 18.4). The trainer allows it because a trainer
+   * game can begin from a Study position; here ply 0 is always the opening.
+   */
+  it('says no at the start of the game, whichever side the user has', () => {
+    expect(canPlayFromPly(g, 0, 'white')).toBe(false)
+    expect(whyNotPlayable(g, 0, 'white')).toBe('This is the start of the game. Use New game.')
+    // A user playing Black faces the engine's move at ply 0 as well, and
+    // "step one move back" is not available there, so the start wins.
+    const asBlack = game(['e4', 'c6', 'd4', 'd5'])
+    expect(canPlayFromPly(asBlack, 0, 'black')).toBe(false)
+    expect(whyNotPlayable(asBlack, 0, 'black')).toBe('This is the start of the game. Use New game.')
   })
 
   it('says no where the engine is to move, with a step to take', () => {
