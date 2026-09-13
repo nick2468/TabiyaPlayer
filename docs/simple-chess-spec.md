@@ -1136,25 +1136,27 @@ green.
 
 ---
 
-## 19. Version 1.2.0: room for the report (ruled 2026-09-14)
+## 19. Versions 1.2.0 and 1.2.1: room for the report (ruled 2026-09-14)
 
-Nick's rulings after using 1.1.0. **Where this section and sections 1 to 18 differ,
-this section wins.** Everything it does not mention stands, and 18.4's viewer, 18.5's
+Nick's rulings after using 1.1.0, and then Q27 after using 1.2.0. **Where this section
+and sections 1 to 18 differ, this section wins**, and where Q27 and Q23 differ, Q27
+wins: the diagram and S19 below are 1.2.1's and are the ones to build to. Everything it does not mention stands, and 18.4's viewer, 18.5's
 report and 18.3's stopping are untouched in what they DO; only where they sit and how
 they read change.
 
 | # | Question | Ruling |
 |---|---|---|
-| Q23 | Where the controls go | **Every button and toggle goes under the board.** The header keeps the name and the version and nothing else; the side panel keeps no control at all. "Move all the button controls and toggles to under the board in a sensible placement." |
+| Q23 | Where the controls go | **Every button goes under the board.** The side panel keeps no control at all. "Move all the button controls and toggles to under the board in a sensible placement." **Corrected by Q27 on the same day**: the two view toggles were not part of what he meant and go back to the header. |
 | Q24 | What the side panel is for | **The report.** It starts at the top of the column, where Play as used to be. The hint sentence stays in the panel, because it is the game talking rather than a control. The panel is empty during a game with no hint showing, and that is allowed. |
 | Q25 | How the report reads | **The head row's font settings**, which is `--text-soft` at the body size and weight. At full `--text` the report "pops a bit too much" in dark mode. |
 | Q26 | The selector row | **Left aligned**, so the Difficulty label lines up under the "Simply Chess" heading. |
+| Q27 | The three placements 1.2.0 got wrong | Ruled after using 1.2.0, and each one is a pairing rather than a preference. **The board size and theme toggles go back to the header**, at the right of the name, where they were in 1.1.0: "I liked them where they were." **New game moves down beside Play as**, "since they are associated" - the side you pick is the side the next new game is played at, so the two belong on one row. **The two stepping arrows move up** to the Undo, Redo and Hint row, right justified, so they sit at the bottom right corner of the board. |
 
-### 19.1 The screen, version 1.2.0
+### 19.1 The screen, as 1.2.1 leaves it
 
 ```
 +------------------------------------------------------------------------------+
-| Simply Chess  v1.2.0                                                         |  header
+| Simply Chess  v1.2.1                                   [ Large ]  [ Light ]  |  header
 +------------------------------------------------------------------------------+
 | Difficulty  [4. Club        v]                                               |  selector row
 |                                                                              |
@@ -1167,36 +1169,50 @@ they read change.
 |  ||  |                     |   |          |   | Your moves                 | |
 |  ||  |                     |   |          |   |   a blunder on move 3...   | |
 |  ||  +---------------------+   +----------+   |   an inaccuracy on move 2..| |
-|      [New game][Undo][Redo][Hint]             |                            | |
-|      [Stop and review][Stop and discard]      | THE FINAL POSITION         | |
-|          or, after review,                    | Winning for Black          | |
-|      [Keep playing][Play from here]  [<][>]   | ===========------          | |
-|      [Save game][Load game]                   | Stopped after move 4       | |
-|      Play as (o) White ( ) Black  [Large][Light]  [Copy game]               | |
+|      [Undo][Redo][Hint]                [<][>] | THE FINAL POSITION         | |
+|      [Stop and review][Stop and discard]      | Winning for Black          | |
+|          or, after review,                    | ===========------          | |
+|      [Keep playing][Play from here]           | Stopped after move 4       | |
+|      [Save game][Load game]                   | [Copy game]                | |
+|      [New game]  Play as (o) White ( ) Black  |                            | |
 +------------------------------------------------------------------------------+
 ```
 
 **S19. The four rows under the board, in this order, grouped by what they are for.**
-Nearest the board is what a person reaches for most.
+Nearest the board is the position in front of you; furthest is the game you have not
+started yet. As corrected by Q27.
 
-1. **The game**: New game, Undo, Redo, Hint. Unchanged.
-2. **This game**: Stop and review and Stop and discard while a game is going; the same
-   row carries Keep playing, Play from here and the two stepping arrows once a report is
-   showing. The two states are exclusive, so this is one row and never two.
+1. **This position**: Undo, Redo, Hint, and then the two stepping arrows at the
+   right-hand end, which puts them at the bottom right corner of the board. All five act
+   on the position showing, and the arrows are the two that CHANGE which position that
+   is, so they end the row the way the toggles used to. They are there only while a
+   report is showing, as they always were.
+2. **This game**: Stop and review and Stop and discard while a game is going; Keep
+   playing and Play from here once a report is showing. The two states are exclusive, so
+   this is one row and never two.
 3. **The file**: Save game, Load game.
-4. **The settings**: Play as, its two radios, then the board size and the theme toggles
-   at the right-hand end of the row, the way the stepping arrows end their row.
+4. **The next game**: New game, then Play as and its two radios. They are one pairing,
+   not two settings: the side chosen is the side the next new game is played at, so the
+   button and the choice it reads belong on one row (Q27). New game keeps the left edge
+   every other row starts on, so the buttons still line up down the column.
 
-The reason for the order: rows 1 and 2 act on the game in front of you, row 3 takes it
-out of the app or brings one in, and row 4 is what you set once and leave. The two view
-toggles are at the far end because they change nothing about the game.
+The reason for the order: row 1 is the position, row 2 is the game it belongs to, row 3
+takes that game out of the app or brings one in, and row 4 starts the next one.
 
 Every row is the width of the board and no wider, at both board sizes. The small board
-is 416 px and row 4 is the widest at 324 px (Play as and its radios 184, the two toggles
-132, one gap), so all four fit; at the large board
-they fit with room to spare. "Applies to the next new game." moves to the Play as
-control's `title`, as the level's two sentences did in phase 9 (18.1): there is no room
-for a sentence under a row and the rule is the same one.
+is 416 px and the widest row is the fourth at about 294 px (New game 102, Play as and
+its radios 184, one gap), so all four fit; at the large board they fit with room to
+spare. "Applies to the next new game." moves to the Play as control's `title`, as the
+level's two sentences did in phase 9 (18.1): there is no room for a sentence under a row
+and the rule is the same one.
+
+**The board size and the theme toggles are in the header** (Q27), at the right of the
+name, in the trainer's `theme-toggle` style, the size one first so the theme toggle
+keeps the end of the row it has always had. That is 18.1's header and it is restored
+exactly, styling included. They are not controls of the game: they change how the page
+is drawn and nothing about the position, the game or the file, which is why they sit
+with the name rather than under the board.
+
 
 **S20. The report reads in the head row's colour.** `--text-soft` at the body size and
 weight, which is `.play-opening`'s setting, for every line of the report: the headings,
@@ -1211,7 +1227,9 @@ nothing else is needed to line them up.
 
 **The fit rule of S2 stands with re-measured chrome.** Two rows have become four under
 the board, so `CHROME_BELOW` in `board-size.ts` grows and the large board loses height
-on a window that was already tight. That is the cost of the change and it is accepted:
+on a window that was already tight. **Q27 gives none of it back**, and that is worth
+saying plainly: the toggles leaving the fourth row does not remove the row, because New
+game arrives in it as they go. Four rows is four rows, and the constant counts rows. That is the cost of the change and it is accepted:
 the number is measured at the LARGE board with a report showing, which is the state with
 the most rows, and recorded in the phase notes. Nothing above or beside the board moves,
 so `CHROME_ABOVE` and the two beside constants do not change. S16's two numbers hold as
@@ -1220,11 +1238,13 @@ scrolls sideways.
 
 ### 19.2 Tests and acceptance, added
 
-To S15: (20) every control is under the board and the side panel holds no button, in
-both states of row 2; (21) the report's text takes the head row's colour; (22) the
-Play as radios still change the side of the next new game from their new home, and the
-two toggles still work and are still remembered.
+To S15: (20) every control except the two view toggles is under the board and the side
+panel holds no button, in both states of row 2; (21) the report's text takes the head
+row's colour; (22) the Play as radios still change the side of the next new game from
+their new home, and the two toggles still work and are still remembered from the header;
+(23) the stepping arrows are in the first row under the board and the two view toggles
+are in the header, which is Q27's three placements held where a test can see them.
 
 To section 17: the screen is 19.1's at both sizes and both themes at the three
 viewports with S16 holding, and the large board's new size is recorded. The version is
-1.2.0 when this section is green.
+1.2.0 when this section is green, and **1.2.1 when Q27's three placements are**.

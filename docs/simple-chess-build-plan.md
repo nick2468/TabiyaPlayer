@@ -3,11 +3,11 @@
 Version 3, 2026-09-14. Status: **Active.** Version 1 (phases 0 to 8) is built and every
 gate passed by 2026-09-12; its boxes 7.8 and 8.6 are Nick's. Version 2 (phases 9 to 12,
 spec section 18) made the app Simply Chess, a sibling of the trainer's Play screen, and
-shipped as 1.1.0 on 2026-09-13 with every gate passed. **Phase 13 (spec section 19) landed
-2026-09-14 and passed its gate the same day**: Nick used 1.1.0 and asked for the report
-to have the room, so every control moved under the board and the report took the side
-panel, and the source version is 1.2.0. Nothing is left in the plan but Nick's own three
-boxes.
+shipped as 1.1.0 on 2026-09-13 with every gate passed. Phase 13 (spec section 19) landed 2026-09-14 and
+passed its gate the same day: Nick used 1.1.0 and asked for the report to have the room,
+so every control moved under the board and the report took the side panel, and 1.2.0 was
+built and its installer made. **Phase 14 is next**: Nick used 1.2.0 and corrected three
+placements (spec Q27), which is version 1.2.1.
 
 Read [the specification](simple-chess-spec.md) first. It says what the app does. This
 document says what gets built, in what order, and how we know each part is finished.
@@ -717,6 +717,34 @@ fit rule). `src/ui/App.tsx` (the header and the nav), `src/ui/DifficultyRow.tsx`
       report's colour is the head row's. Both states of row 2.
 - [x] 13.9 Version 1.2.0 in the three files, the docs swept, the reuse review, commit.
 
+---
+
+## Phase 14 - the three placements, corrected
+
+**Goal: the two view toggles are back in the header, New game sits with Play as, and the
+stepping arrows end the first row under the board. Spec Q27 and the S19 it corrects.**
+
+Read first: spec section 19, all of it, and Q27 in particular; then 18.1, whose header
+this restores. `src/ui/App.tsx`, `src/ui/SettingsRow.tsx`, `src/ui/PlayControls.tsx`,
+`src/ui/app.css`, `src/ui/play.css`, and the same files at `fccab21`, which is the
+commit before phase 13 and holds the header this brings back.
+
+- [ ] 14.1 The board size and theme toggles return to the header, in the trainer's
+      `theme-toggle` style, restored from `fccab21` rather than rewritten: `.app-nav`,
+      `.nav-link`, `.nav-link:hover` and `.theme-toggle` come back to `app.css`, and the
+      nav markup to `App.tsx`.
+- [ ] 14.2 New game moves from row one to row four, at its left edge, beside Play as.
+- [ ] 14.3 The two stepping arrows move from row two to row one, right justified, so
+      they end at the board's bottom right corner. The `margin-left: auto` rule already
+      does this and is not rewritten.
+- [ ] 14.4 Tests: S15 item 23, and items 20 and 22 updated to say "every control except
+      the two view toggles". Nothing else about them changes.
+- [ ] 14.5 Driven in the pane at 1400 by 980, both sizes, both themes, both states of
+      row two, with the probe: S16's two numbers hold, no row wider than the board, and
+      the board is the SAME size as 1.2.0's, because the row count has not changed.
+- [ ] 14.6 Version 1.2.1 in the three files, docs swept, reuse review, commit, and the
+      installer built.
+
 ## Progress
 
 | Phase | State |
@@ -735,6 +763,7 @@ fit rule). `src/ui/App.tsx` (the header and the nav), `src/ui/DifficultyRow.tsx`
 | 11 - the review viewer, Keep playing, Play from here | **Complete** 2026-09-13. 323 tests green in 16.3 s. A reviewed game is a viewer: every move is a button, the marked one is in `--mark`, the arrow keys step, the bar follows the position being looked at, and a slip's sentence puts the board where it was played from with the engine's move as a blue arrow beside it. Keep playing and Play from here both work. The board does not change size when row two appears. |
 | 12 - version 1.1.0 | **Complete** 2026-09-13, box 12.6 is Nick's. 324 tests green in 9.2 s. Gate 11's finding fixed in `ce0e743`; 1.1.0 in the three files; the installer is 6,898,142 bytes and the shipped window was driven, reviewed and walked at 688 with S16 holding; `docs/acceptance.md` rewritten for version 2; both of Q22's routes documented. |
 | 13 - room for the report | **Complete** 2026-09-14. 324 tests green in 9.1 s. Every button and toggle is under the board in the four rows of S19; the side panel is the hint sentence and the report, which starts at the top of the column and reads in the head row's colour; the selector row lines up under the heading. `CHROME_BELOW` is 224 and the large board 584 at 1400 by 980. Version 1.2.0 in the three files; no window built at it. |
+| 14 - the three placements, corrected | **Not started.** Spec Q27: the two view toggles back in the header, New game beside Play as, the stepping arrows ending the first row under the board. Version 1.2.1. |
 
 ## Phase notes
 
