@@ -6,8 +6,11 @@ spec section 18) made the app Simply Chess, a sibling of the trainer's Play scre
 shipped as 1.1.0 on 2026-09-13 with every gate passed. Phase 13 (spec section 19) landed 2026-09-14 and
 passed its gate the same day: Nick used 1.1.0 and asked for the report to have the room,
 so every control moved under the board and the report took the side panel, and 1.2.0 was
-built and its installer made. **Phase 14 is next**: Nick used 1.2.0 and corrected three
-placements (spec Q27), which is version 1.2.1.
+built and its installer made. **Phase 14 landed 2026-09-14 and passed its gate the same
+day**: Nick used 1.2.0 and corrected three placements (spec Q27), so the two view toggles
+went back to the header, New game joined Play as and the stepping arrows moved to the
+board's bottom right corner. 1.2.1 is built and its installer made. **Nothing is left in
+the plan but Nick's own three boxes.**
 
 Read [the specification](simple-chess-spec.md) first. It says what the app does. This
 document says what gets built, in what order, and how we know each part is finished.
@@ -763,7 +766,7 @@ commit before phase 13 and holds the header this brings back.
 | 11 - the review viewer, Keep playing, Play from here | **Complete** 2026-09-13. 323 tests green in 16.3 s. A reviewed game is a viewer: every move is a button, the marked one is in `--mark`, the arrow keys step, the bar follows the position being looked at, and a slip's sentence puts the board where it was played from with the engine's move as a blue arrow beside it. Keep playing and Play from here both work. The board does not change size when row two appears. |
 | 12 - version 1.1.0 | **Complete** 2026-09-13, box 12.6 is Nick's. 324 tests green in 9.2 s. Gate 11's finding fixed in `ce0e743`; 1.1.0 in the three files; the installer is 6,898,142 bytes and the shipped window was driven, reviewed and walked at 688 with S16 holding; `docs/acceptance.md` rewritten for version 2; both of Q22's routes documented. |
 | 13 - room for the report | **Complete** 2026-09-14. 324 tests green in 9.1 s. Every button and toggle is under the board in the four rows of S19; the side panel is the hint sentence and the report, which starts at the top of the column and reads in the head row's colour; the selector row lines up under the heading. `CHROME_BELOW` is 224 and the large board 584 at 1400 by 980. Version 1.2.0 in the three files; no window built at it. |
-| 14 - the three placements, corrected | **Complete** 2026-09-14. 325 tests green in 9.0 s. The two view toggles are back in the header, restored from `fccab21`; New game is in row four with Play as; the arrows end row one at the board's bottom right corner. The board is unchanged at 584 (576 at 1.5), because four rows are still four rows. Version 1.2.1 in the three files, and its installer built at 6,897,569 bytes. |
+| 14 - the three placements, corrected | **Complete** 2026-09-14. 325 tests green in 9.0 s. The two view toggles are back in the header, restored from `fccab21`; New game is in row four with Play as; the arrows end row one at the board's bottom right corner. The board is unchanged at 584 (576 at 1.5), because four rows are still four rows. Version 1.2.1 in the three files, and its installer built at 6,897,569 bytes, rebuilt at the gate as 6,897,286 (an NSIS bundle carries build timestamps, so two builds of one commit differ slightly; the file on disk is the gate's). |
 
 ## Phase notes
 
