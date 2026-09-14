@@ -5,7 +5,7 @@ orchestrator session from Nick's brief (`SimpleChess-brief.txt`) and his rulings
 (section 2, then section 18). Sections 1 to 17 specify version 1 and stay true;
 **section 18 specifies version 2, the sibling of the trainer's Play screen, section 19
 specifies versions 1.2.0 and 1.2.1, which made room for the report, section 20 specifies
-1.3.0, where the window matches the board, and section 21 specifies 1.3.1, which gives
+1.3.0, where the window matches the board, and section 21 specifies 1.3.1 and 1.3.2, which give
 that window the room the layout actually needs. A later section wins over an earlier one
 wherever they differ.** The product is now called **Simply Chess**; the earlier sections
 keep the old name as history.
@@ -1325,11 +1325,12 @@ The version is 1.3.0 when this section is green.
 
 ---
 
-## 21. Version 1.3.1: the window the layout actually needs (ruled 2026-09-14)
+## 21. Versions 1.3.1 and 1.3.2: the window the layout actually needs (ruled 2026-09-14)
 
 | # | Question | Ruling |
 |---|---|---|
 | Q29 | The report after an automatic resize | **It stays beside the move list.** Nick, using 1.3.0: "In both auto size cases the post game review drops to under the board, I really want it alongside the move list which is the natural place." The window the toggle asks for must have room for the three columns of 19.1 with a report in the third, not merely for the board. |
+| Q30 | The horizontal scrollbar after a review | **The window is wider again.** Nick, using 1.3.1: "the width for small size needs to be a little wider so as not to trigger the horizontal scroll bar", and the trigger was "load a game, stop and review". 1.3.1 allowed for the scrollbar and nothing more, which left the side panel squeezed to the pixel where its own contents round past it. |
 
 ### 21.1 What went wrong, measured
 
@@ -1380,11 +1381,47 @@ is the layout degrading as it is meant to and the app cannot both honour the siz
 chose and refuse to use it. The toggle is what promises a window that fits, and that
 promise is what this section makes true.
 
-### 21.3 Tests and acceptance, added
+### 21.3 The pixel the panel rounds by, and S24
+
+1.3.1 allowed for the scrollbar exactly and nothing else, so the side panel came out at
+**309.67 px** at BOTH automatic sizes. At a display scale of 1.5 its full-width children
+round up past that: `scrollWidth` 311 against a box of 309.67. One pixel is a horizontal
+scrollbar across the bottom of the page, and that is what Nick met after loading a game
+and reviewing it. His own file, a 23-move game with ten slips, is what made it show:
+the report is then tall enough for `main` to scroll, the vertical scrollbar takes its 15
+px, and what is left squeezes the panel onto the pixel where it rounds.
+
+Measured in the shipped 1.3.1 window, with that report on screen and the window widened a
+step at a time:
+
+| Side panel | Its `scrollWidth` | The page |
+|---|---|---|
+| 311 | 312 | scrolls sideways |
+| 319 | 320 | scrolls sideways |
+| **327** | 327 | **does not**, and never did again above it |
+
+**S24. The window's allowance covers the scrollbar AND the panel's breathing room.**
+It is 64: the scrollbar's 15, plus enough to put the side panel at 349 px, which is 22
+clear of the 327 where the rounding stops. One number serves both board sizes, because
+the board and the move list grow together and the panel is what is left over - it was
+309.67 in each. The small window becomes **1087 by 807** and the large one, on a screen
+with room for the full board, **1503 by 1223**.
+
+The height is still the layout's exact figure. It has never been the short one.
+
+**Why not hide the pixel instead.** `overflow-x: clip` on the row would end this class of
+fault at every window size, including one the user drags to the boundary themselves. It
+is not done here because it hides real overflow as readily as a rounding artefact, and
+the app has twice now been told something true by a scrollbar it did not want. Giving the
+layout room is the fix that leaves the page honest.
+
+### 21.4 Tests and acceptance, added
 
 To S15: (26) the window a board asks for is wider than the layout's bare minimum by at
-least a scrollbar, held in the same pure test as S21's other arithmetic.
+least a scrollbar AND the room the side panel needs over its own minimum, held as a
+property rather than as the number, in the same pure test as S21's other arithmetic.
 
 To section 17: on Windows, a game reviewed after either automatic resize has its report
-beside the move list, with `main` not scrolling. The version is 1.3.1 when this section
-is green.
+beside the move list, with `main` not scrolling; and a LOADED game of two dozen moves,
+reviewed, leaves the page scrolling in neither direction. The version is 1.3.1 for the
+first half of this section and **1.3.2 for S24**.

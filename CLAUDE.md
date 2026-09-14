@@ -18,8 +18,11 @@ panel under the board - without changing `document.documentElement.clientWidth`,
 the page reported no scrollbar at all while behaving as though one was there. The fix
 is one number, `SCROLLBAR_ALLOWANCE` in `ui/board-size.ts`, added to the WIDTH only in
 `innerSizeForBoard` and deliberately not to the chrome constants, which describe what
-the layout truly needs. The two automatic sizes are now **1047 by 807** and, on this
-machine, 1463 by 1223.
+the layout truly needs. The allowance grew again in 1.3.2 (spec S24): 24 covered the
+scrollbar and left the side panel on 309.67 px, where its own contents round a pixel past
+it and the page scrolls sideways, which is what a LOADED game reviewed at either
+automatic size did. It is 64, the panel sits at 349.67, and the two automatic sizes are
+**1087 by 807** and, on this machine, **1503 by 1223**.
 
 Phase 15 landed 2026-09-14, after Nick shrank the window and found the Small/Large
 toggle inert (spec Q28, section 20): **the board size toggle now sets the Windows

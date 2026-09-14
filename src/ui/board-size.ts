@@ -72,35 +72,41 @@ const CHROME_BESIDE_WIDE = 607
 const CHROME_BESIDE_NARROW = 92
 
 /**
- * Room for the scrollbar the window cannot see, in CSS pixels (spec S23).
+ * Room the window asks for beyond the layout's own minimum, in CSS pixels
+ * (spec S23, widened by S24).
  *
- * `main` is the scrolling element in any window at least 900 by 700
- * (`app.css`), so its vertical scrollbar takes width out of the three columns
- * WITHOUT changing `document.documentElement.clientWidth`. The page therefore
- * reports no scrollbar at all while behaving as though one is there:
- * `innerWidth - clientWidth` reads 0 either way.
+ * Two things need it and neither is visible from inside the page.
  *
- * Phase 15 asked for the layout's exact minimum, so the layout fitted its
- * window by one pixel and the scrollbar pushed the side panel onto the next
- * line, where it landed under the board with the report in it. Measured in the
- * shipped 1.3.0 window, with a report showing:
+ * ONE, the scrollbar. `main` is the scrolling element in any window at least
+ * 900 by 700 (`app.css`), so its vertical scrollbar takes 15 px out of the
+ * three columns WITHOUT changing `document.documentElement.clientWidth`. The
+ * page therefore reports no scrollbar at all while behaving as though one is
+ * there: `innerWidth - clientWidth` reads 0 either way. It appears whenever the
+ * report is long enough to make the panel taller than the board column, which
+ * is an ordinary game rather than an unusual one.
  *
- *   Small, 1024 by 808: the columns got 961 and needed 975.
- *   Large, 1440 by 1224: the columns got 1377 and needed 1391.
+ * TWO, the side panel's own breathing room. With only the scrollbar allowed
+ * for, the panel is squeezed to 309.67 px, and at a display scale of 1.5 its
+ * full-width children round up one pixel past it: `scrollWidth` 311 against a
+ * box of 309.67. One pixel is a horizontal scrollbar across the bottom of the
+ * page, which is what Nick met on 1.3.1 after loading a 23-move game and
+ * reviewing it. Measured in the shipped window by widening it a step at a time
+ * with the same report on screen:
  *
- * Both are 14 px short at a display scale of 1.5, and 15 in the pane at a
- * scale of 1, which is the same scrollbar measured two ways. A scrollbar is a
- * physical thing, so a scale of 1 is the worst case in CSS pixels: 24 clears
- * the 15 with room to spare and is a round number rather than a number that
- * only works on one machine. Giving the same window 21 px more was proved to
- * put the panel back beside the board (spec 21.1).
+ *   panel 311 and 319: scrollWidth one pixel over, the page scrolls sideways.
+ *   panel 327 and up: scrollWidth exact, and it never came back.
+ *
+ * So the allowance is the scrollbar's 15 plus enough to keep the panel clear of
+ * the 327 where the rounding stops, and 64 puts it at 349 at BOTH board sizes,
+ * 22 px clear. It is one number for both because the board and the move list
+ * grow together: the panel is what is left, and it was 309.67 in each.
  *
  * It is NOT part of the chrome constants, on purpose. Those describe what the
  * layout truly needs, and the fit rule of S2 uses them to answer honestly
  * about a window the user sized; an allowance buried in them would take pixels
  * off the board on every screen, for a scrollbar that is only sometimes there.
  */
-const SCROLLBAR_ALLOWANCE = 24
+const WINDOW_ALLOWANCE = 64
 
 /**
  * The inner size a window needs to show a board of this size (spec S21, S23).
@@ -115,15 +121,16 @@ const SCROLLBAR_ALLOWANCE = 24
  * way to reach the narrow layout is a work area smaller than the window's own
  * minimum, and there the work-area clamp answers before this does.
  *
- * The width carries the scrollbar allowance and the height does not, because
- * the height was never short: with the panel beside the board the page fits
- * its window, and it was only the wrap that ever made it tall.
+ * The width carries the allowance and the height does not, because the height
+ * was never short: with the panel beside the board the page fits its window,
+ * and it was only the wrap that ever made it tall.
  *
- * The small board therefore needs 1047 by 807, where spec 20.2 quoted 1023.
+ * The small board therefore needs 1087 by 807, where spec 20.2 quoted 1023 and
+ * 1.3.1 asked for 1047.
  */
 export function innerSizeForBoard(board: number): { width: number; height: number } {
   return {
-    width: board + CHROME_BESIDE_WIDE + SCROLLBAR_ALLOWANCE,
+    width: board + CHROME_BESIDE_WIDE + WINDOW_ALLOWANCE,
     height: board + CHROME_ABOVE + CHROME_BELOW,
   }
 }

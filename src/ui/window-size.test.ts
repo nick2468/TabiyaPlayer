@@ -50,15 +50,21 @@ function screen1080(over: Partial<WindowNow> = {}): WindowNow {
 }
 
 describe('the window a board needs', () => {
-  it('is 1047 by 807 for the small board', () => {
-    // 416 + 607 beside + 24 for the scrollbar, and 416 + 167 above + 224
-    // below. The width was 1023 until phase 16: spec 20.2 asked for the
-    // layout's exact minimum, and `main`'s scrollbar then took 15 px of it and
-    // wrapped the side panel under the board (spec S23). The height is
-    // unchanged, because the height was never short.
+  it('is 1087 by 807 for the small board', () => {
+    // 416 + 607 beside + the 64 of S24, and 416 + 167 above + 224 below.
+    //
+    // The width has moved twice. Spec 20.2 asked for the layout's exact
+    // minimum, 1023, and `main`'s scrollbar took 15 px of it and wrapped the
+    // side panel under the board (S23). 1047 allowed for the scrollbar and no
+    // more, which left the panel at 309.67 px, where its full-width children
+    // round one pixel past it and the page scrolls sideways (S24). 64 puts the
+    // panel at 349, clear of the 327 where the rounding stops.
+    //
+    // The height is unchanged through all three, because the height was never
+    // short.
     const target = windowForBoard('small', screen1080())
     expect(target.board).toBe(416)
-    expect(target.inner).toEqual({ width: 1047, height: 807 })
+    expect(target.inner).toEqual({ width: 1087, height: 807 })
   })
 
   it('is the board the work area allows, plus the chrome, for the large one', () => {
@@ -66,12 +72,12 @@ describe('the window a board needs', () => {
     // 224 leaves 602, so the board is 600. The width would have allowed far
     // more, as it does in every window this app opens.
     //
-    // 1231 is 600 + 607 + the 24 of S23, where phase 15 asked for 1207. The
-    // BOARD is unaffected by the allowance: it is worked out from the work
-    // area, not from the window the allowance asks for.
+    // 1271 is 600 + 607 + the 64 of S24, where phase 15 asked for 1207 and
+    // phase 16 for 1231. The BOARD is unaffected by the allowance: it is worked
+    // out from the work area, not from the window the allowance asks for.
     const target = windowForBoard('large', screen1080())
     expect(target.board).toBe(600)
-    expect(target.inner).toEqual({ width: 1231, height: 991 })
+    expect(target.inner).toEqual({ width: 1271, height: 991 })
   })
 
   it('asks for the board the screen can show, not the one the window can', () => {
@@ -84,11 +90,12 @@ describe('the window a board needs', () => {
 
   it('gives the full 832 on a screen with room for it', () => {
     const tall = screen1080({ workArea: { x: 0, y: 0, width: 2560, height: 1392 } })
-    // 832 + 607 + 24: this is Nick's own machine's large window, which read
-    // 1439 wide in 1.3.0 and wrapped its report under the board there.
+    // 832 + 607 + 64: this is Nick's own machine's large window. It read 1439
+    // in 1.3.0, where the report wrapped under the board, and 1463 in 1.3.1,
+    // where the panel was squeezed to 309.67 and the page scrolled sideways.
     const target = windowForBoard('large', tall)
     expect(target.board).toBe(832)
-    expect(target.inner).toEqual({ width: 1463, height: 1223 })
+    expect(target.inner).toEqual({ width: 1503, height: 1223 })
   })
 
   it('steps the board down so the squares land on whole device pixels', () => {
@@ -111,9 +118,15 @@ describe('the window a board needs', () => {
  * the difference between two targets is the difference between two boards, and
  * what is left over in either is the chrome and the allowance together.
  */
-describe('the room for the scrollbar', () => {
-  /** A vertical scrollbar in CSS pixels at a display scale of 1, the worst case. */
+describe('the room beyond the layout itself', () => {
+  /** `main`'s vertical scrollbar, measured at a display scale of 1 and of 1.5. */
   const SCROLLBAR = 15
+  /**
+   * What the side panel needs beyond its 300 px minimum before its full-width
+   * children stop rounding a pixel past it (spec S24, measured in the shipped
+   * window at a display scale of 1.5: 311 and 319 overflowed, 327 did not).
+   */
+  const PANEL_ROOM = 327 - 300
 
   it('asks for more width than the layout itself needs', () => {
     const small = windowForBoard('small', screen1080()).inner
@@ -125,9 +138,13 @@ describe('the room for the scrollbar', () => {
     const besideLarge = large.width - 600
     expect(besideSmall).toBe(besideLarge)
 
-    // 607 is what the three columns of spec 19.1 need. Anything above it is
-    // the allowance, and it has to cover a scrollbar.
-    expect(besideSmall - 607).toBeGreaterThanOrEqual(SCROLLBAR)
+    // 607 is what the three columns of spec 19.1 need, and it counts the side
+    // panel at its 300 px minimum. Anything above it is the allowance, and the
+    // allowance has to cover BOTH the scrollbar that takes width from the row
+    // and the room the panel needs on top of its minimum. Held as a property
+    // rather than as 64, so an allowance that looks plausible and is too small
+    // cannot pass.
+    expect(besideSmall - 607).toBeGreaterThanOrEqual(SCROLLBAR + PANEL_ROOM)
   })
 
   it('leaves the height exactly as the layout needs it', () => {
@@ -140,14 +157,14 @@ describe('the room for the scrollbar', () => {
 
 describe('the clamps', () => {
   it('never asks for more than the work area holds', () => {
-    // A 1280 by 800 screen: the small target is 1047 by 807 and the height
+    // A 1280 by 800 screen: the small target is 1087 by 807 and the height
     // does not fit, so the height is the work area less the frame. The board
     // is then 416 in a window 46 px short of the room it wants, which is what
     // every version before this one already did. The width fits, allowance
-    // and all, because 1047 is well inside 1280.
+    // and all, because 1087 is well inside 1280.
     const small = screen1080({ workArea: { x: 0, y: 0, width: 1280, height: 800 } })
     const target = windowForBoard('small', small)
-    expect(target.inner.width).toBe(1047)
+    expect(target.inner.width).toBe(1087)
     expect(target.inner.height).toBe(800 - FRAME.height)
   })
 
@@ -175,12 +192,12 @@ describe('staying inside the screen', () => {
   })
 
   it('moves a window at the right edge back inside, by the least that does it', () => {
-    // The window's outer width becomes 1231 + 16 = 1247, and 1920 - 1247 is
-    // 673, so an x of 900 comes back to 673 and no further. The y is left
+    // The window's outer width becomes 1271 + 16 = 1287, and 1920 - 1287 is
+    // 633, so an x of 900 comes back to 633 and no further. The y is left
     // alone, because at the top of the screen there is room for the height.
-    // It was 697 before S23's allowance widened the window by 24.
+    // It was 697 before any allowance and 673 with S23's 24.
     const target = windowForBoard('large', screen1080({ position: { x: 900, y: 0 } }))
-    expect(target.position).toEqual({ x: 673, y: 0 })
+    expect(target.position).toEqual({ x: 633, y: 0 })
   })
 
   it('moves a window at the bottom edge up, and leaves x alone', () => {

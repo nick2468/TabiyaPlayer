@@ -296,6 +296,13 @@ the Rust half 1 m 50 s):
   | Small, light | 1048 by 808 | 1000 | x 699, y 164, beside the board |
   | Small, dark | 1048 by 808 | 1000 | the same |
 
+  **Those two window sizes are 1.3.1's.** 1.3.2 widened them to 1088 by 808 and 1504 by
+  1224, because 1.3.1's allowance left the side panel at 309.67 px where its own contents
+  round a pixel past it (spec S24). Re-driven there with Nick's own 23-move file loaded
+  and reviewed, at both automatic sizes: the panel is 349.67 wide, beside the board at
+  y 164, and `main.scrollWidth` equals `main.clientWidth`, which is the sideways scrolling
+  gone.
+
   In 1.3.0 the same two windows were 1440 and 1024 wide, gave the columns 1377 and 961
   against the 1391 and 975 they need, and put the panel under the board at y 803.
 - **S16 still holds at both sizes** in the wider windows: 416 ending on 580 with
@@ -506,7 +513,7 @@ of 19.2, both of 20.3 and the one 21.3 adds:
 | 21. The report's text takes the head row's colour | `ui/review.dom.test.tsx`, "names a blunder with its move number, its tag and the better move", holds that no line carries a colour of its own; the colour itself is measured in the pane, because jsdom applies no stylesheet |
 | 22. The Play as radios and the two toggles work and are remembered, the radios from under the board and the toggles from the header | `ui/remembered.dom.test.tsx`, "remembers the level, the side, the board size and the theme" and "lets the engine open, and turns the board the other way up"; `ui/shell.dom.test.tsx` for the theme's own storage key |
 | 23. The arrows are in the first row under the board and the two toggles are in the header | `ui/viewer.dom.test.tsx`, "clicks, steps and marks, with the board still locked", for the arrows and for row two holding none; `ui/remembered.dom.test.tsx`, "puts every control but the two toggles under the board" for the header and "puts New game in the same row as Play as" for the third of Q27's placements |
-| 24. The window a board needs is worked out by a pure function, with the work-area clamp, the minimum-size clamp and the move back inside | `ui/window-size.test.ts`, fifteen tests: the 1047 by 807 small target, the large target from the work area, both clamps, the minimum read out of `tauri.conf.json` itself, and the four cases of moving or not moving |
+| 24. The window a board needs is worked out by a pure function, with the work-area clamp, the minimum-size clamp and the move back inside | `ui/window-size.test.ts`, fifteen tests: the 1087 by 807 small target, the large target from the work area, both clamps, the minimum read out of `tauri.conf.json` itself, and the four cases of moving or not moving |
 | 25. On the web the toggle changes the board and resizes nothing, and no test starts a Tauri call | `ui/remembered.dom.test.tsx`, "changes the board and resizes nothing on the web"; `ui/window-size.test.ts`, "does nothing, and imports no Tauri, where there is no window", which holds the second half with a mock whose factory would run if anything imported the Tauri window API |
 | 26. The window is wider than the layout's bare minimum by at least a scrollbar | `ui/window-size.test.ts`, "asks for more width than the layout itself needs", which reconstructs the chrome from two answers of the same function rather than importing a private constant, and "leaves the height exactly as the layout needs it" for the other half of spec S23 |
 

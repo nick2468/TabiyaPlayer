@@ -15,7 +15,11 @@ the window should change to match the board (spec section 20). It does, both way
 **1.3.0 is built with its installer**. **Phase 16 landed 2026-09-14 and passed its gate the same day**: the window it
 asked for was a scrollbar short of what the layout needs, so the report landed under the
 board after an automatic resize; it now carries the allowance of spec S23 and the report
-stays beside the move list. **1.3.1 is built with its installer.** Every phase in the plan is complete and the only open boxes are Nick's.
+stays beside the move list. **1.3.1 is built with its installer.** **Phase 17 landed 2026-09-14**: 1.3.1's window
+allowed for the scrollbar and nothing else, so the side panel was squeezed onto the pixel
+where its own contents round past it and a LOADED game, reviewed, scrolled the page
+sideways. The allowance is now 64 (spec S24) and **1.3.2 is built with its installer**.
+Every phase in the plan is complete and the only open boxes are Nick's.
 
 Read [the specification](simple-chess-spec.md) first. It says what the app does. This
 document says what gets built, in what order, and how we know each part is finished.
@@ -803,6 +807,26 @@ Read first: spec section 21 all of it, then S21 and S2. `src/ui/board-size.ts`
       and `scrollWidth` equals `innerWidth`. Both themes.
 - [x] 16.4 Version 1.3.1 in the three files, docs swept, reuse review, commit, installer.
 
+---
+
+## Phase 17 - the pixel the panel rounds by
+
+**Goal: a loaded game, reviewed, does not scroll the page sideways. Spec S24.**
+
+Done in the orchestrator session at Nick's request ("fix it here, in this session"),
+which is the one departure from the rule that this session builds nothing substantial.
+It is one constant, its comment, six test numbers and a property.
+
+- [x] 17.1 `WINDOW_ALLOWANCE` in `board-size.ts` is 64 where `SCROLLBAR_ALLOWANCE` was
+      24, renamed because it is no longer only the scrollbar, with the measurements in
+      its comment.
+- [x] 17.2 The six numbers in `window-size.test.ts` that the allowance moves, each with
+      its reason; S15 item 26 strengthened to hold the scrollbar AND the panel's room
+      over its minimum, as a property rather than as 64.
+- [x] 17.3 Version 1.3.2 in the three files.
+- [x] 17.4 Proved in the shipped window with Nick's own file.
+- [x] 17.5 Docs swept, committed, installer built.
+
 ## Progress
 
 | Phase | State |
@@ -824,6 +848,7 @@ Read first: spec section 21 all of it, then S21 and S2. `src/ui/board-size.ts`
 | 14 - the three placements, corrected | **Complete** 2026-09-14. 325 tests green in 9.0 s. The two view toggles are back in the header, restored from `fccab21`; New game is in row four with Play as; the arrows end row one at the board's bottom right corner. The board is unchanged at 584 (576 at 1.5), because four rows are still four rows. Version 1.2.1 in the three files, and its installer built at 6,897,569 bytes, rebuilt at the gate as 6,897,286 (an NSIS bundle carries build timestamps, so two builds of one commit differ slightly; the file on disk is the gate's). |
 | 15 - the window matches the board | **Complete** 2026-09-14. 339 tests green in 9.5 s. The board size toggle sets the Windows window to the size that board needs, both ways: driven in the shipped 1.3.0 window, a window shrunk into the dead band grew to 1439 by 1223 with an 832 board on Large and went back to 1023 by 807 with a 416 board on Small, a maximised one un-maximised first, and one in the bottom right corner was moved back inside rather than left hanging off. Nothing resizes on the web. Version 1.3.0 in the three files, and its installer built at 6,902,858 bytes, rebuilt at the gate as 6,902,111 (NSIS build timestamps; the file on disk is the gate's). |
 | 16 - the window the layout actually needs | **Complete** 2026-09-14. 341 tests green in 9.7 s. `innerSizeForBoard` adds a 24 px scrollbar allowance to the WIDTH only, so the two automatic windows are 1047 by 807 and 1463 by 1223 rather than 1023 and 1439. Driven in the shipped 1.3.1 window with a real reviewed game at both automatic sizes and in both themes: the side panel is beside the board at y 164 in all four, `main` does not scroll, and `scrollWidth` equals `innerWidth`. Version 1.3.1, installer 6,902,247 bytes, rebuilt at the gate as 6,902,478 (NSIS build timestamps; the file on disk is the gate's). |
+| 17 - the pixel the panel rounds by | **Complete** 2026-09-14, done in the orchestrator session. The allowance is 64 rather than 24, so the side panel sits at 349 px instead of 309.67 and its full-width children no longer round a pixel past it. The automatic windows are 1087 by 807 and 1503 by 1223. Version 1.3.2. |
 
 ## Phase notes
 
