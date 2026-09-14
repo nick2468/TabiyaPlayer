@@ -1200,8 +1200,8 @@ The reason for the order: row 1 is the position, row 2 is the game it belongs to
 takes that game out of the app or brings one in, and row 4 starts the next one.
 
 Every row is the width of the board and no wider, at both board sizes. The small board
-is 416 px and the widest row is the fourth at about 294 px (New game 102, Play as and
-its radios 184, one gap), so all four fit; at the large board they fit with room to
+is 416 px and the widest row is the fourth at 324 px, measured (New game 102, the Play
+as group 214, one gap), so all four fit with 92 px to spare; at the large board they fit with room to
 spare. "Applies to the next new game." moves to the Play as control's `title`, as the
 level's two sentences did in phase 9 (18.1): there is no room for a sentence under a row
 and the rule is the same one.

@@ -3770,3 +3770,73 @@ forbidden word in a changed file.
   modified in `git status` with an empty diff and are byte-identical to `HEAD`. It is the
   same stale stat cache phase 13 recorded; neither was touched or staged.
 - `../London` and `../Conquest` were not touched.
+
+### Gate 14 findings (orchestrator, 2026-09-14)
+
+**Passed, with nothing outstanding.** All three of Q27's placements are on screen, in the
+dev build and in the shipped window, and the board did not move.
+
+**Verified from the repo.** `npx vitest run`: 37 files, **325 passed, none skipped, 10.6
+seconds**. `tsc -b` clean, `npx oxlint` exit 0 with no output, `npm run build` clean.
+`board-size.ts` is untouched and `CHROME_BELOW` is still 224, which is what 14.5 asks.
+`../London` and `../Conquest` hold no change of ours.
+
+**The header is the bytes it was.** `.app-nav`, `.nav-link` and `.theme-toggle` diffed
+against `fccab21` rule by rule: identical. The nav markup diffed the same way: identical
+but for four words added to its comment to say Q27 restored it. That is what 14.1 asked
+for and it is the reason Nick gets back exactly what he liked.
+
+**Mutation-checked, three, each reversed.**
+
+| Mutation | Red |
+|---|---|
+| New game put back in row one | 5 tests in `remembered.dom.test.tsx` |
+| the two arrows put back in row two | the viewer's stepping test |
+| the two toggles rendered under the board | the placement test |
+
+**Driven in the pane myself at 1400 by 980**, storage cleared first and after, both
+sizes, both themes, both states of row two.
+
+- **The toggles are in the header**, `nav-link theme-toggle`, the nav's right edge at
+  x 1376 against the header's own right edge at x 1376.
+- **The arrows are in row ZERO** with Undo, Redo and Hint, and the forward arrow's right
+  edge is x 652 with the board's right edge at x 652 (484 and 484 at the small board).
+  That is the board's bottom right corner, which is what Q27 asks for.
+- **Row two is Keep playing and Play from here** and nothing else; **row four is New game
+  and the two radios**.
+- **The board is 584 large and 416 small**, which are 1.2.0's own numbers at this
+  viewport: the row count did not change, so the board did not either.
+- Bar, `.board` and `cg-board` all end at 751 large and 580 small; every row is exactly
+  the board's width; `scrollWidth` 1400 = `innerWidth` and `scrollHeight` 980 =
+  `innerHeight`.
+
+**The shipped 1.2.1 window, driven over its debugging port.** "v1.2.1" in the header,
+1400 by 980 at a display scale of 1.5, the header's two buttons Small and Light with the
+nav ending at x 1376, no button in the side panel, no service worker (S12). The four rows
+read "UndoRedoHint", "Stop and reviewStop and discard", "Save gameLoad game" and "New
+gamePlay asWhiteBlack", each the board's own width. A game seeded into the window's own
+storage was scanned by the real engine into two slips; with the report showing, row one
+read "UndoRedoHint" plus the arrows with the group ending on the board's right edge, row
+two was Keep playing and Play from here, and the report started at the panel's own top.
+The seeded game was removed afterwards and the four settings keys left as they were. One
+screenshot taken, looked at and sent to Nick.
+
+**The installer, built at this gate.**
+
+| | |
+|---|---|
+| Installer | `src-tauri/target/release/bundle/nsis/Simply Chess_1.2.1_x64-setup.exe`, **6,897,286 bytes** |
+| Executable | `src-tauri/target/release/simply-chess.exe`, 9,150,464 bytes |
+
+The builder's own build of the same commit recorded 6,897,569 bytes. **Neither number is
+wrong**: an NSIS bundle carries build timestamps, so two builds of one commit differ by a
+few hundred bytes. The file on disk now is this gate's, and it is the one Nick installs.
+
+**One number corrected in the spec, not in the code.** S19 said the fourth row was "about
+294 px" at the small board. The builder measured 324 and said so: the Play as group is
+214 rather than the 184 the chip carried forward, because of the label's upper case and
+letter spacing. The spec now carries the measured number. The row still fits 416 with 92
+px to spare, so nothing about the layout changes.
+
+**Nick's three boxes are all that is left**: 7.8 (publish, Home Screen, aeroplane mode),
+8.6 and 12.6, now against the 1.2.1 installer.
