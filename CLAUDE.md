@@ -7,7 +7,20 @@ from is Q22 and undecided),
 from one React, TypeScript and Vite code base. The code is copied from those two apps
 wherever they already do the job, so that a shared library can follow later.
 
-Current state: **version 1.2.1 is built, and it is the whole of the specification.**
+Current state: **version 1.3.0 is built, and it is the whole of the specification.**
+Phase 15 landed 2026-09-14, after Nick shrank the window and found the Small/Large
+toggle inert (spec Q28, section 20): **the board size toggle now sets the Windows
+window to the size that board needs, both ways.** Small is the 416 board, so the
+window becomes 1023 by 807; Large is the biggest board the screen can show, worked
+out against the monitor's work area rather than the window, so the window is never
+sized for a board that will not be drawn. A maximised window is un-maximised first,
+and a window that would hang off the screen is moved back inside by the least that
+does it rather than centred. On the web nothing resizes, because a page cannot resize
+a window it did not open. The arithmetic is pure and tested (`ui/window-size.ts`); the
+Tauri half is imported lazily behind `isDesktop()` and fails quietly. The capability
+gained three permissions for it (spec S22). In a window with the room, the large board
+is now the full **832**, which this app had never drawn before.
+
 Phase 14 landed 2026-09-14, after Nick used 1.2.0 and corrected three placements (spec
 Q27, which wins over Q23): **the board size and theme toggles are back in the header**,
 restored from the commit before phase 13 so they read exactly as they did in 1.1.0;
@@ -197,7 +210,12 @@ scale).
   is also in `src-tauri/src/lib.rs` and `installer-hooks.nsh` because neither can
   import it, with `storage/local-folder.test.ts` holding the three together); the
   chrome constants in `ui/board-size.ts` (the only pixel numbers in a `.ts` or
-  `.tsx`).
+  `.tsx`), with `innerSizeForBoard` in that same file the one way to ask what a
+  board needs around it; `windowForBoard` and `matchWindowToBoard` in
+  `ui/window-size.ts` (all the arithmetic of making the Windows window match the
+  board, and the only place anything resizes or moves that window), with the
+  window's declared minimum written there and in `tauri.conf.json` and held
+  together by `ui/window-size.test.ts`.
   Never fork a second copy, and give any new repeated snippet a single home the
   moment it appears twice.
 - Copied files are byte-identical to their origin plus one `Origin:` line; adapted

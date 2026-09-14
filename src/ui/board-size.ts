@@ -72,6 +72,29 @@ const CHROME_BESIDE_WIDE = 607
 const CHROME_BESIDE_NARROW = 92
 
 /**
+ * The inner size a window needs to show a board of this size (spec S21).
+ *
+ * The chrome constants above are the only pixel numbers this app writes in a
+ * `.ts` file, and they stay in this one. Phase 15 needed them outside it, to
+ * work out how big the Windows window has to be for the board the user has
+ * just chosen, so it asks for the answer rather than for the numbers.
+ *
+ * The wide chrome, always. A window this app runs in is never narrow: its
+ * declared minimum is 960 and the narrow layout starts below 900, so the only
+ * way to reach the narrow layout is a work area smaller than the window's own
+ * minimum, and there the work-area clamp answers before this does.
+ *
+ * The small board therefore needs 1023 by 807, which is the number spec 20.2
+ * quotes.
+ */
+export function innerSizeForBoard(board: number): { width: number; height: number } {
+  return {
+    width: board + CHROME_BESIDE_WIDE,
+    height: board + CHROME_ABOVE + CHROME_BELOW,
+  }
+}
+
+/**
  * The board size that actually fits, which is the rule on every platform
  * (spec S2, as corrected at gate 2 and again by Nick on 2026-09-12).
  *

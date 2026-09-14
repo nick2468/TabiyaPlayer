@@ -16,8 +16,8 @@ the phases and their progress.
 
 ## Status
 
-**Version 1.2.1 is built, and it is the whole of the specification** (section 19 for
-this version, 18 for version 2, sections 1 to 17 for version 1). The game plays, saves
+**Version 1.3.0 is built, and it is the whole of the specification** (sections 19 and
+20 for this version, 18 for version 2, sections 1 to 17 for version 1). The game plays, saves
 and loads, remembers itself, is a Home Screen app that works with no internet, and
 installs on Windows. A game can be stopped and reviewed: the engine scans every
 position of it and the report names each slip with the move it would have played
@@ -25,7 +25,10 @@ instead, and the move list becomes a viewer you can click and step through with 
 arrow keys. Version 1.2.0 gave the report the side panel to itself and put every
 button under the board, which is what the board gives up height for; 1.2.1 put the two
 view toggles back in the header and paired New game with Play as and the stepping
-arrows with Undo, Redo and Hint.
+arrows with Undo, Redo and Hint. In 1.3.0 the board size toggle takes the Windows
+window with it, both ways: Large sets the window to the size the biggest board the
+screen can show needs, and Small puts it back to 1023 by 807. The toggle used to look
+dead in a window with no room in it, which is what Nick found.
 
 Three things are left and all are Nick's, because they need his machine, his accounts
 and his iPad: running the installer, publishing the site, and playing a move in

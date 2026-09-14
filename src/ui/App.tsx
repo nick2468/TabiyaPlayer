@@ -5,13 +5,14 @@ import { canReplayMoves, gameToPgn, loadPgn, saveFileName } from '../play'
 import { recallGame } from '../storage/current-game'
 import { openPgn, savePgn } from '../storage/files'
 import { isDesktop } from '../storage/paths'
-import { useBoardSize, useLevel, useSide } from '../storage/prefs'
+import { useBoardSize, useLevel, useSide, type BoardSizeName } from '../storage/prefs'
 import { DifficultyRow } from './DifficultyRow'
 import { asMessage } from './message'
 import { PlayProvider, usePlay } from './play-context'
 import { Screen, type ScreenNotice } from './Screen'
 import { useTheme } from './theme'
 import { UpdateWatch } from './UpdateWatch'
+import { matchWindowToBoard } from './window-size'
 import './app.css'
 
 /**
@@ -32,8 +33,8 @@ import './app.css'
  * The four settings are read here, once, and handed down (spec 10). This is
  * also the one place that knows what each one does to the running game, so no
  * control has to know: the level reaches the engine at once, the side waits for
- * the next new game, and the board size and the theme touch nothing but pixels
- * and colours.
+ * the next new game, the theme touches nothing but colours, and the board size
+ * takes the Windows window with it (spec S21).
  */
 
 export function App() {
@@ -135,6 +136,19 @@ export function Shell() {
     void game.setLevel(next)
   }
 
+  /**
+   * A new board size: remembered, and the window changed to match (spec S21).
+   *
+   * The two halves belong together the way the level's do, and neither belongs
+   * in the toggle. The setting is written first, because it is the setting that
+   * decides the board: the window follows it, and on the web there is no window
+   * to follow, so `matchWindowToBoard` returns having done nothing.
+   */
+  const chooseBoardSize = (next: BoardSizeName) => {
+    setBoardSize(next)
+    void matchWindowToBoard(next)
+  }
+
   /** A fresh game with this one thrown away (spec 18.3). */
   const discardGame = () => game.discard({ level, side })
 
@@ -231,7 +245,7 @@ export function Shell() {
           <button
             type="button"
             className="nav-link theme-toggle"
-            onClick={() => setBoardSize(boardSize === 'small' ? 'large' : 'small')}
+            onClick={() => chooseBoardSize(boardSize === 'small' ? 'large' : 'small')}
             title={switchSize}
             aria-label={switchSize}
           >

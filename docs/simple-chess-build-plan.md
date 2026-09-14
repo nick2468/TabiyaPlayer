@@ -9,9 +9,11 @@ so every control moved under the board and the report took the side panel, and 1
 built and its installer made. **Phase 14 landed 2026-09-14 and passed its gate the same
 day**: Nick used 1.2.0 and corrected three placements (spec Q27), so the two view toggles
 went back to the header, New game joined Play as and the stepping arrows moved to the
-board's bottom right corner. 1.2.1 is built and its installer made. **Phase 15 is next**: Nick shrank the window, found the
-board size toggle inert, and ruled that the window should change to match the board
-(spec section 20), which is version 1.3.0.
+board's bottom right corner. 1.2.1 is built and its installer made. **Phase 15 landed
+2026-09-14**: Nick shrank the window, found the board size toggle inert, and ruled that
+the window should change to match the board (spec section 20). It does, both ways, and
+**1.3.0 is built with its installer**. Every phase in the plan is now complete and the
+only open boxes are Nick's.
 
 Read [the specification](simple-chess-spec.md) first. It says what the app does. This
 document says what gets built, in what order, and how we know each part is finished.
@@ -761,22 +763,22 @@ imported lazily) and 11.4 (the capability). `src/ui/board-size.ts`,
 `src/ui/use-board-pixels.ts`, `src/ui/App.tsx`, `src/storage/paths.ts` for how a Tauri
 API is reached today, and `src-tauri/capabilities/default.json`.
 
-- [ ] 15.1 A pure function that answers the window size a board needs, with the work
+- [x] 15.1 A pure function that answers the window size a board needs, with the work
       area, the window frame, the minimum size and the move back inside all in it, and
       its test. No browser and no Tauri in it.
-- [ ] 15.2 The desktop half: read the monitor, the frame and whether the window is
+- [x] 15.2 The desktop half: read the monitor, the frame and whether the window is
       maximised; un-maximise if it is; set the size; move the window back inside the
       work area if it now hangs off. Imported lazily behind `isDesktop()`.
-- [ ] 15.3 The toggle calls it, on both sizes, and does nothing extra on the web.
-- [ ] 15.4 The capability gains `core:window:allow-set-size`,
+- [x] 15.3 The toggle calls it, on both sizes, and does nothing extra on the web.
+- [x] 15.4 The capability gains `core:window:allow-set-size`,
       `core:window:allow-unmaximize` and `core:window:allow-set-position`, and its
       description says what they are for.
-- [ ] 15.5 Tests: S15 items 24 and 25. No test starts a Tauri call.
-- [ ] 15.6 Driven in the pane (nothing resizes, the toggle still works) and then in the
+- [x] 15.5 Tests: S15 items 24 and 25. No test starts a Tauri call.
+- [x] 15.6 Driven in the pane (nothing resizes, the toggle still works) and then in the
       packaged window: shrink into the dead band, press Large, watch the window grow and
       the board become large; press Small and watch it go back to 1023 by 807. Both from
       a maximised window too.
-- [ ] 15.7 Version 1.3.0 in the three files, docs swept, reuse review, commit, installer.
+- [x] 15.7 Version 1.3.0 in the three files, docs swept, reuse review, commit, installer.
 
 ## Progress
 
@@ -797,7 +799,7 @@ API is reached today, and `src-tauri/capabilities/default.json`.
 | 12 - version 1.1.0 | **Complete** 2026-09-13, box 12.6 is Nick's. 324 tests green in 9.2 s. Gate 11's finding fixed in `ce0e743`; 1.1.0 in the three files; the installer is 6,898,142 bytes and the shipped window was driven, reviewed and walked at 688 with S16 holding; `docs/acceptance.md` rewritten for version 2; both of Q22's routes documented. |
 | 13 - room for the report | **Complete** 2026-09-14. 324 tests green in 9.1 s. Every button and toggle is under the board in the four rows of S19; the side panel is the hint sentence and the report, which starts at the top of the column and reads in the head row's colour; the selector row lines up under the heading. `CHROME_BELOW` is 224 and the large board 584 at 1400 by 980. Version 1.2.0 in the three files; no window built at it. |
 | 14 - the three placements, corrected | **Complete** 2026-09-14. 325 tests green in 9.0 s. The two view toggles are back in the header, restored from `fccab21`; New game is in row four with Play as; the arrows end row one at the board's bottom right corner. The board is unchanged at 584 (576 at 1.5), because four rows are still four rows. Version 1.2.1 in the three files, and its installer built at 6,897,569 bytes, rebuilt at the gate as 6,897,286 (an NSIS bundle carries build timestamps, so two builds of one commit differ slightly; the file on disk is the gate's). |
-| 15 - the window matches the board | **Not started.** Spec section 20: the board size toggle sets the window to the size that board needs, both ways, on Windows. Version 1.3.0. |
+| 15 - the window matches the board | **Complete** 2026-09-14. 339 tests green in 9.5 s. The board size toggle sets the Windows window to the size that board needs, both ways: driven in the shipped 1.3.0 window, a window shrunk into the dead band grew to 1439 by 1223 with an 832 board on Large and went back to 1023 by 807 with a 416 board on Small, a maximised one un-maximised first, and one in the bottom right corner was moved back inside rather than left hanging off. Nothing resizes on the web. Version 1.3.0 in the three files, and its installer built at 6,902,858 bytes. |
 
 ## Phase notes
 
@@ -3873,4 +3875,157 @@ letter spacing. The spec now carries the measured number. The row still fits 416
 px to spare, so nothing about the layout changes.
 
 **Nick's three boxes are all that is left**: 7.8 (publish, Home Screen, aeroplane mode),
-8.6 and 12.6, now against the 1.2.1 installer.
+8.6 and 12.6, now against the 1.3.0 installer.
+
+### Phase 15 - builder notes (2026-09-14)
+
+Everything the chip named was read fresh before anything was touched: `CLAUDE.md`, spec
+section 20 in full, S2, S14 and 11.4, the plan's rules and phase 15's boxes, the gate 13
+findings, then `board-size.ts`, `use-board-pixels.ts`, `App.tsx`, `storage/paths.ts`,
+`storage/files.ts` for how a Tauri import is done here, `capabilities/default.json` and
+`tauri.conf.json`.
+
+**Measured.**
+
+- `npx vitest run`: 38 files, **339 tests passed, none skipped, 9.5 seconds** warm (268
+  string in 26 files, 71 DOM in 12). Fourteen tests are new. `tsc -b` clean, `npx oxlint`
+  silent, `npm run build` clean, no em dashes under `src/` or `src-tauri/src/`.
+- **The pane, at 1322 by 1274, v1.3.0 confirmed in the header first.** Pressing Large
+  took the board from 416 to 712 and pressing Small took it back, with `innerWidth` and
+  `innerHeight` the same 1322 by 1274 in all three readings and the setting written to
+  storage each time. Nothing was fetched from the Tauri chunk: a check of
+  `performance.getEntriesByType('resource')` for anything matching `tauri` came back
+  empty, which is S14 held live rather than asserted. The layout probe read bar, `.board`
+  and `cg-board` all ending on 583, four rows each 416 wide, `scrollWidth` 1322 =
+  `innerWidth`. No console error. Storage cleared afterwards, 0 and 0.
+- **The packaged 1.3.0 window, which is where this phase lives.** Read over
+  `--remote-debugging-port=9333` with `scripts/packaged-eval.mjs`: title "Simply Chess",
+  "v1.3.0" in the header, `__TAURI_INTERNALS__` present, display scale 1.5, monitor
+  3840 by 2160 physical with a work area of 3840 by 2088, which is **2560 by 1392
+  logical**.
+
+  | Step | Window, inner logical | Position | Board |
+  |---|---|---|---|
+  | shrunk to the dead band | 1000 by 780 | x 572.67, y 190.67 | 416 |
+  | Large | **1439.33 by 1223.33** | x 572.67, y 131.33 | **832** |
+  | Small | **1023.33 by 807.33** | unchanged | 416 |
+  | maximised | 2560 by 1369.33 | x -7.33, y -7.33 | 832 |
+  | Small, from maximised | 1023.33 by 807.33 | the restored position | 416 |
+  | small, in the bottom right corner | 1023.33 by 807.33 | x 1522, y 547.33, edges 2560 and 1392 | 416 |
+  | Large, from that corner | 1439.33 by 1223.33 | **x 1106.67, y 132** | 832 |
+
+  The corner case is the one worth reading twice. The window was on the bottom right
+  corner of the work area and the large window is 416 wider and 416 taller than it, so
+  leaving it where it was would have hung it 415 px off two edges. It came back to
+  x 1106.67, y 132, whose right and bottom edges are 2560.67 and 1392.67 against the work
+  area's 2560 and 1392: inside, to within the two-thirds of a pixel that a logical
+  reading at a scale of 1.5 rounds by. It was not centred, which is the rule.
+  In the Large step of the first table the x was left exactly where it was and only the y
+  moved, which is "by the least that puts it there" doing its job on one axis.
+- **S16 in the shipped window at both sizes.** 416 ending on 580 with `scrollWidth` 1024
+  of `innerWidth` 1024, and **832 ending on 996** with 1440 of 1440, with the four rows
+  the width of the board in both. One screenshot of the 832 board was taken, looked at
+  and sent to Nick: the full large board with the bar level with it, the toggles reading
+  Small and Light in the header, and the four rows under it.
+- **The installer, 15.7.** `npx tauri build` with `%USERPROFILE%\.cargo\bin` on the path,
+  **2 m 4 s**, the Rust half 1 m 49 s.
+
+  | | |
+  |---|---|
+  | Installer | `src-tauri/target/release/bundle/nsis/Simply Chess_1.3.0_x64-setup.exe`, **6,902,858 bytes** |
+  | Executable | `src-tauri/target/release/simply-chess.exe`, **9,156,096 bytes** |
+  | Version | 1.3.0 in `package.json`, `tauri.conf.json` and `Cargo.toml`, held by four tests |
+
+**Checked rather than assumed, which the chip asked for by name.**
+
+- **`setSize` sets the INNER size.** Asked for 1439 by 1223 logical, the window read back
+  an inner size of 1439.33 by 1223.33 and an outer size of 1454 by 1260.67. The
+  difference, 14.67 by 37.33, is exactly the frame measured before the call, so the frame
+  is added when deciding whether the window fits the screen and never subtracted from the
+  size being set. Getting that backwards would have been a window a title bar too short
+  every time, so it was read off the real window before anything depended on it.
+- **The three new permissions were enough and none was refused.** Every read the phase
+  needs was already in `core:window:default`; `set-size`, `unmaximize` and `set-position`
+  were the three missing and all three answered in the shipped build.
+
+**Decided (code shape), and why.**
+
+- **One new file, `src/ui/window-size.ts`, holding both halves.** The pure
+  `windowForBoard` and the thin `matchWindowToBoard` around it. They are one subject and
+  splitting them would have put two files a letter apart in the same folder; the Tauri
+  import is inside the function, so a string test importing the module pulls in nothing.
+- **The chrome constants did not move.** `board-size.ts` gained `innerSizeForBoard`,
+  which is the one way to ask what a board needs around it, so 607, 167 and 224 are still
+  written in exactly one file and this phase never mentions them.
+- **The window's minimum, 960 by 720, is written in one more place than it was**, because
+  the arithmetic cannot read `tauri.conf.json` at runtime. It is held the way the data
+  folder's name is held across its three files: a test reads the configuration and
+  asserts both numbers, so a minimum changed in one place fails the suite.
+- **The minimum wins over the work-area clamp**, in that order: a target too big for the
+  screen is cut to the screen, and a target under the minimum is then raised to it,
+  because Windows would raise it anyway and an answer that lies about that is worse than
+  no answer.
+- **The large board is asked of the WORK AREA, not the window.** That is the fix rather
+  than an optimisation: asking the window is what made the toggle inert, because a window
+  with no room in it answers 416 however many times it is asked.
+- **`matchWindowToBoard` fails quietly**, and the setting is written before it is called,
+  so a window that will not resize still changes the board. The catch has a comment in
+  it saying so.
+
+**Tests.**
+
+- **S15 item 24** is `ui/window-size.test.ts`, thirteen tests with no browser and no
+  Tauri in them: the 1023 by 807 small target, the large target worked out from the work
+  area, the full 832 on a screen with the room, the step down to 592 at a scale of 1.5,
+  both clamps, the minimum read out of `tauri.conf.json` itself, and four cases of moving
+  or not moving, including a second monitor at a negative x so that "the corner" is not
+  quietly the origin.
+- **S15 item 25** is held in both projects. In `remembered.dom.test.tsx`, "changes the
+  board and resizes nothing on the web" widens jsdom's viewport to 1600 by 1280, presses
+  the toggle both ways and reads the board off the move list's `--board-pixels`: 416,
+  832, 416. In `window-size.test.ts`, "does nothing, and imports no Tauri, where there is
+  no window" calls the function twice in node and asserts a mock's factory never ran. The
+  mock is the point: it is the only way to say "no test started a Tauri call" as an
+  assertion rather than as a hope, because without the guard the import resolves and the
+  call fails quietly, which would have passed.
+- **Mutation-checked, four, each reversed with the reverse edit.**
+
+  | Mutation | Red |
+  |---|---|
+  | the frame ADDED to the work area instead of subtracted | 6 of `window-size.test.ts`'s 13 |
+  | `pushInside` returning the position unchanged | 3, the three that move a window |
+  | the `isDesktop()` guard dropped from `matchWindowToBoard` | 1, the no-Tauri test |
+  | the toggle no longer writing the setting | 2 DOM tests, in two files |
+
+**Asked of Nick.** Nothing. Q28 settled the behaviour, including the both-ways question,
+and the chip settled the shape.
+
+**Reuse review.** The new code introduced no second copy of anything: `clamp` and
+`pushInside` are private to the one file, the chrome numbers are still asked for rather
+than written, and the only arithmetic about board sizes is still `fitBoardSize`, which
+this phase calls rather than repeats. `App.tsx` gained `chooseBoardSize` beside
+`chooseLevel`, which is the same shape for the same reason - the two halves of a setting
+change belong where the running app is known, not in the control. No em dashes under
+`src/`, no forbidden word in a changed file.
+
+**Left.**
+
+- **The web build precaches one more entry**, 22 rather than 21, because the Tauri window
+  API is a 14.46 kB chunk in `dist/assets/` that the iPad will never load. It is the
+  price of the lazy import and it was already being paid for the dialog and filesystem
+  plugins. Worth a line in a future phase if the precache is ever trimmed; not worth a
+  build-config exception now.
+- **Spec 11.4's own list still reads five permissions.** S22 in section 20 says it
+  becomes eight and section 20 wins, so the app is right and the older section is stale.
+  The spec is the orchestrator's document, so it is recorded here rather than edited.
+- **The installer was not run** and `%LOCALAPPDATA%\Simply Chess Data` was not deleted.
+  Box 12.6 is now a 1.3.0 walk and `docs/acceptance.md` says so, with the toggle added to
+  what Nick is asked to try.
+- The packaged window was put back as it was found before it was closed: the board size
+  setting back to small, the window back to 1400 by 980, and the four settings keys
+  otherwise untouched. No game was seeded in this phase. The pane's storage was cleared
+  and the dev server stopped.
+- Two files, `src/dev/use-dev-scene.ts` and `src/ui/keep-in-view.ts`, still show as
+  modified in `git status` with an empty diff. It is the stale stat cache phases 13 and
+  14 both recorded; neither was touched or staged.
+- `../London` and `../Conquest` were not touched.

@@ -7,7 +7,10 @@ changed the name, the screen and what the app does, and a record that says what 
 used to be is not a record of what was checked. **Brought to 1.2.0 in phase 13**, which
 moved every control under the board, and to **1.2.1 in phase 14**, which corrected three
 of those placements on Nick's ruling (Q27): items 1, 3 and 11 say what changed and the
-rest stand, because nothing else about what the app DOES moved with them.
+rest stand, because nothing else about what the app DOES moved with them. **Brought to
+1.3.0 in phase 15**, where the board size toggle began changing the Windows window to
+match the board it asks for (Q28): items 9 and 11 carry it, and it is the first version
+in which the app has ever drawn the full 832 board.
 
 Where something was checked by driving the app, it was driven: the development build in
 the browser pane, the production bundle from `npm run preview`, and the packaged window
@@ -67,6 +70,7 @@ pixel, and `scrollWidth` never exceeds `innerWidth`.
 | Phase 13 notes | The version 1.2.0 layout, twelve rows, and the review state beside them | S16 held in all twelve; large board 584 at 1400x980, 424 landscape, 728 upright; no row wider than the board |
 | Gate 13 findings | The same, driven by the orchestrator, and the 1.2.0 packaged window | Four rows each the width of the board at y 763, 813, 863 and 913; the board stayed 584 across the review; 576 in the shipped window at a display scale of 1.5 |
 | Phase 14 notes | The 1.2.1 placements, eight rows (two states x two sizes x two themes at 1400x980) | S16 held in all eight; board 576 large and 416 small at this machine's 1.5, unchanged by Q27; arrows ending on the board's right edge in every row; widest row 324 px of the small board's 416 |
+| Phase 15 notes | The 1.3.0 packaged window at both sizes, after the toggle resized it | S16 held at both: 416 ending on 580 in a 1024 by 808 window, and **832 ending on 996** in a 1440 by 1224 one, with `scrollWidth` equal to `innerWidth` in each and all four rows the width of the board |
 
 **The board does not change size when row two appears**, which is what phase 9's
 re-measured chrome was for: it counted a second button row that did not exist until phase
@@ -266,9 +270,40 @@ one is the start's, with Back disabled beside it.
 
 ## 9. Windows
 
-**Green as far as a session can take it, at 1.2.1. The installer run is Nick's.**
+**Green as far as a session can take it, at 1.3.0. The installer run is Nick's.**
 
-**The current installer is 1.2.1**, built in phase 14 with `npx tauri build` (1 m 55 s,
+**The current installer is 1.3.0**, built in phase 15 with `npx tauri build` (2 m 4 s,
+the Rust half 1 m 49 s):
+
+- `src-tauri/target/release/bundle/nsis/Simply Chess_1.3.0_x64-setup.exe`, **6,902,858
+  bytes (6.6 MB)**, and the executable at **9,156,096 bytes (8.7 MB)**. The installer's
+  shape is phase 8's and unchanged.
+- **The window follows the board size toggle** (spec S21), driven in that build over the
+  debugging port, at a work area of 2560 by 1392 logical pixels and a display scale of
+  1.5. Shrunk to 1000 by 780, which is the band where the toggle used to do nothing, it
+  drew the 416 board; **Large took the window to 1439 by 1223 and the board to 832**, and
+  **Small put it back to 1023 by 807 and the board to 416**. Maximised, Small un-maximised
+  it and gave the same 1023 by 807. Put in the bottom right corner of the work area,
+  Large moved it back inside to x 1106.67, y 132, where the previous position would have
+  hung 415 px off the screen; the x was left alone in the case where only the height
+  needed it. Nothing was centred.
+- **`setSize` sets the INNER size**, which was checked rather than assumed: a 1439 by 1223
+  target read back as an inner size of 1439.33 by 1223.33 and an outer size of 1454 by
+  1260.67, the difference being the measured frame of 14.67 by 37.33.
+- **The capability gained three permissions** (spec S22): `core:window:allow-set-size`,
+  `core:window:allow-unmaximize` and `core:window:allow-set-position`. Every READ the
+  phase needed was already in `core:window:default`, and none of the three was refused in
+  the shipped build.
+- **S16 holds at both sizes in that window**: 416 ending on 580 with `scrollWidth` 1024 of
+  1024, and 832 ending on 996 with 1440 of 1440. The four rows are the width of the board
+  in both. One screenshot of the 832 board was taken and looked at; it is the first time
+  this app has drawn the full large board, because until now no window it ran in had the
+  room.
+
+The 1.2.1 walk below is kept, because it is where Q27's placements and the engine inside
+the window were checked and neither has changed.
+
+**The 1.2.1 installer**, built in phase 14 with `npx tauri build` (1 m 55 s,
 the Rust half 1 m 40 s):
 
 - `src-tauri/target/release/bundle/nsis/Simply Chess_1.2.1_x64-setup.exe`, **6,897,569
@@ -297,8 +332,10 @@ the Rust half 1 m 40 s):
 - The game seeded for that drive was removed afterwards; the four settings keys were left
   as they were.
 
-The 1.1.0 walk below is kept because it is the fuller one: it is where the uninstaller,
-the data folder and the capability list were checked, and none of that has changed since.
+The 1.1.0 walk below is kept because it is the fuller one: it is where the uninstaller and
+the data folder were checked, and neither has changed since. Its capability list is the
+one thing that has: phase 15 added three window permissions to the five it names, for the
+reason spec S22 gives.
 
 Built in phase 12 with `npx tauri build`:
 
@@ -347,9 +384,10 @@ Built in phase 12 with `npx tauri build`:
   bump deleting the user's game; that mutation was done in phase 8, put back, and the four
   cases re-run here.
 
-**Nick's, once:** install **1.2.1**, which is the newest installer on disk (over an
+**Nick's, once:** install **1.3.0**, which is the newest installer on disk (over an
 earlier one if it is installed, checking the
-settings and the game survive), open the app, play a move on the board, save a game and
+settings and the game survive), open the app, play a move on the board, press Large and
+watch the window follow it, save a game and
 load it back through the real dialogs, close and reopen to see the game remembered, stop
 and review a game in the installed app, then uninstall with the box ticked and check
 `%LOCALAPPDATA%\Simply Chess Data` is gone. Plan box 12.6. Date: ______
@@ -360,7 +398,9 @@ that only a person can answer. What could be checked from here was: both file bu
 on screen and live, and the window takes the desktop path (`__TAURI_INTERNALS__` is
 present, which is what `isDesktop()` reads), so the halves behind those buttons are the
 Tauri ones rather than the browser's download and file input. The capability file grants
-exactly the five permissions spec 11.4 lists.
+exactly the eight permissions spec 11.4 and S22 list between them: the five for the
+dialogs and the file, and the three phase 15 added so the window can resize and move
+itself.
 
 **One thing to know before installing.** The identifier changed with the name in phase 9,
 from `com.nick.simple-chess` to `com.nick.simply-chess`, and NSIS keys an install on the
@@ -395,14 +435,14 @@ Date: ______
 
 ## 11. Tests
 
-**Green.** 325 tests in 37 files, both projects, in 9.0 seconds warm on this machine,
-which is inside the twenty-second rule. By project: 255 string tests in 25 files, 70 DOM
+**Green.** 339 tests in 38 files, both projects, in 9.5 seconds warm on this machine,
+which is inside the twenty-second rule. By project: 268 string tests in 26 files, 71 DOM
 tests in 12. Nothing is skipped. `tsc -b` clean, `npx oxlint` silent. No em dashes under
 `src/` or `src-tauri/`. The version is held in three files by four tests, and the Windows
 data folder's name is held in three files by three more.
 
-All eleven tests of spec S15 are present, all eight that spec 18.7 adds, and all four
-of 19.2:
+All eleven tests of spec S15 are present, all eight that spec 18.7 adds, all four
+of 19.2 and both of 20.3:
 
 | S15 | Where |
 |---|---|
@@ -429,6 +469,8 @@ of 19.2:
 | 21. The report's text takes the head row's colour | `ui/review.dom.test.tsx`, "names a blunder with its move number, its tag and the better move", holds that no line carries a colour of its own; the colour itself is measured in the pane, because jsdom applies no stylesheet |
 | 22. The Play as radios and the two toggles work and are remembered, the radios from under the board and the toggles from the header | `ui/remembered.dom.test.tsx`, "remembers the level, the side, the board size and the theme" and "lets the engine open, and turns the board the other way up"; `ui/shell.dom.test.tsx` for the theme's own storage key |
 | 23. The arrows are in the first row under the board and the two toggles are in the header | `ui/viewer.dom.test.tsx`, "clicks, steps and marks, with the board still locked", for the arrows and for row two holding none; `ui/remembered.dom.test.tsx`, "puts every control but the two toggles under the board" for the header and "puts New game in the same row as Play as" for the third of Q27's placements |
+| 24. The window a board needs is worked out by a pure function, with the work-area clamp, the minimum-size clamp and the move back inside | `ui/window-size.test.ts`, thirteen tests: the 1023 by 807 small target, the large target from the work area, both clamps, the minimum read out of `tauri.conf.json` itself, and the four cases of moving or not moving |
+| 25. On the web the toggle changes the board and resizes nothing, and no test starts a Tauri call | `ui/remembered.dom.test.tsx`, "changes the board and resizes nothing on the web"; `ui/window-size.test.ts`, "does nothing, and imports no Tauri, where there is no window", which holds the second half with a mock whose factory would run if anything imported the Tauri window API |
 
 Two items have found holes in this walk rather than confirming them, which is what the
 walk is for. Item 10, in phase 8: the redo stack was held and the hint and the outcome

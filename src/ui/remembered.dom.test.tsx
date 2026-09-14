@@ -1,5 +1,5 @@
 import { cleanup, screen } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import type { StrengthProfile } from '../engine'
 import { board, movesOnScreen, renderApp } from '../test/dom'
 import { fakeEngine } from '../test/fake-engine'
@@ -41,6 +41,16 @@ const radio = (name: string) => screen.getByLabelText(name) as HTMLInputElement
  */
 const sizeToggle = (to: 'large' | 'small') =>
   screen.getByRole('button', { name: `Switch to the ${to} board` })
+
+/**
+ * How big the board is being drawn, which the move list carries as a custom
+ * property because its own height is the board's. jsdom lays nothing out, so an
+ * inline style is the only place a size can be read at all.
+ */
+const boardPixels = () =>
+  (document.querySelector('.move-list') as HTMLElement | null)?.style.getPropertyValue(
+    '--board-pixels',
+  )
 
 /** The theme toggle, which reads the same way and sits beside it. */
 const themeToggle = (to: 'light' | 'dark') =>
@@ -133,6 +143,36 @@ describe('the settings', () => {
     expect(rows).toHaveLength(4)
     expect(newGame.closest('.play-controls')).toBe(rows[3])
     expect(radio('White').closest('.play-controls')).toBe(rows[3])
+  })
+
+  /**
+   * S15 item 25: on the web the toggle changes the board and nothing else.
+   *
+   * jsdom is a browser as far as this app can tell, so `isDesktop()` is false
+   * and `matchWindowToBoard` returns before it imports anything. That is the
+   * half of spec S21 this test can hold: no test may start a Tauri call, and
+   * the window half is driven in the packaged window instead.
+   *
+   * The viewport is widened first because jsdom's is 1024 by 768, where the
+   * fit rule answers 416 for both sizes and the toggle would look inert here
+   * for the very reason it looked inert to Nick.
+   */
+  it('changes the board and resizes nothing on the web', async () => {
+    const was = { width: window.innerWidth, height: window.innerHeight }
+    onTestFinished(() => {
+      window.innerWidth = was.width
+      window.innerHeight = was.height
+    })
+    window.innerWidth = 1600
+    window.innerHeight = 1280
+    const { user } = renderApp()
+    await screen.findByTestId('board')
+    expect(boardPixels()).toBe('416px')
+
+    await user.click(sizeToggle('large'))
+    expect(boardPixels()).toBe('832px')
+    await user.click(sizeToggle('small'))
+    expect(boardPixels()).toBe('416px')
   })
 
   /**
