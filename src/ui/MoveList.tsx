@@ -1,4 +1,3 @@
-import type { CSSProperties } from 'react'
 import { fullMove, type PlayedMove } from '../play'
 import { scrollToShow } from './keep-in-view'
 
@@ -12,7 +11,11 @@ import { scrollToShow } from './keep-in-view'
  * standing on is marked (spec 18.4).
  *
  * Its own column between the board and the side panel, as tall as the board
- * (spec 18.1). The trainer counts rows because its list stands beside a board
+ * (spec 18.1). The board's pixels arrive as `--board-pixels` on the row above,
+ * set there rather than here because the side panel takes its own ceiling from
+ * the same number (spec S26); this file only reads it, through `play.css`.
+ *
+ * The trainer counts rows because its list stands beside a board
  * of one fixed size; this board is whatever fits the screen (spec S2), so the
  * height is the board's own number, handed down from where it is worked out.
  * It travels as a custom property rather than as an inline `height`, because
@@ -21,12 +24,10 @@ import { scrollToShow } from './keep-in-view'
  */
 export function MoveList({
   moves,
-  pixels,
   activePly,
   onSelect,
 }: {
   moves: PlayedMove[]
-  pixels: number
   /** Where the viewer is standing, or null while the game is being played. */
   activePly: number | null
   onSelect: (ply: number) => void
@@ -66,10 +67,7 @@ export function MoveList({
   }
 
   return (
-    <ol
-      className="move-list"
-      style={{ '--board-pixels': `${pixels}px` } as CSSProperties}
-    >
+    <ol className="move-list">
       {pairs.map((pair, index) => (
         <li
           key={pair.number}

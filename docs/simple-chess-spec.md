@@ -6,8 +6,9 @@ orchestrator session from Nick's brief (`SimpleChess-brief.txt`) and his rulings
 **section 18 specifies version 2, the sibling of the trainer's Play screen, section 19
 specifies versions 1.2.0 and 1.2.1, which made room for the report, section 20 specifies
 1.3.0, where the window matches the board, section 21 specifies 1.3.1 and 1.3.2, which give
-that window the room the layout actually needs, and section 22 specifies 1.4.0, where the
-window opens at the size the remembered board needs. A later section wins over an earlier one
+that window the room the layout actually needs, section 22 specifies 1.4.0, where the
+window opens at the size the remembered board needs, and section 23 specifies 1.4.1,
+where the report scrolls in its own column. A later section wins over an earlier one
 wherever they differ.** The product is now called **Simply Chess**; the earlier sections
 keep the old name as history.
 
@@ -1473,3 +1474,46 @@ the small board asks for, read out of the file itself.
 To section 17: on Windows, the app opens at 1087 by 807 with Small remembered and at the
 large size with Large remembered, centred, with the board drawn at the size that window
 was chosen for. The version is 1.4.0 when this section is green.
+
+---
+
+## 23. Version 1.4.1: the report scrolls, not the window (ruled 2026-09-14)
+
+| # | Question | Ruling |
+|---|---|---|
+| Q32 | A report longer than the screen | **The panel scrolls, not the page.** Nick, using 1.4.0: "The vertical scrollbar scrolls the whole window, the game report moves should be the panel with the vertical scroll bar not the whole window." |
+
+Until now the side panel had no ceiling, so a report longer than the board is tall made
+the page itself taller than the window and `main` scrolled. Reading the last slip moved
+the board, the four button rows and the move list up the screen with it: the whole window
+travelled for the sake of one column.
+
+**S26. The side panel is a column that scrolls itself, like the move list.**
+
+- Its ceiling is the board's own height, so it ends level with the board and the move
+  list, and the page keeps the height it had.
+- It scrolls vertically, with the move list's own thin scrollbar, so the two columns
+  beside the board behave alike. This is the phase 6 rule again, now for the third
+  column: **a column that needs to scroll scrolls itself and nothing above it.**
+- It scrolls one way only. The panel is a scroll container now, so a child that rounds a
+  pixel past it at a fractional display scale would draw a scrollbar along the bottom of
+  the panel; `overflow-x: hidden` stops that. It is scoped to the one column, which is
+  what makes it honest here where the same declaration at page level was refused in 21.3:
+  there it would have hidden the layout telling the truth about a window too small for it.
+- **The board's pixels move up to the row.** The move list took its height from
+  `--board-pixels` set on itself; the panel needs the same number, so it is set once on
+  `.play-body` and both columns read it. One number, one home.
+- **The narrow layout keeps no ceiling.** Below 900 px the columns are stacked, there is
+  no board beside the panel to take a height from, and the page scrolls as it always has
+  there.
+
+### 23.1 Tests and acceptance, added
+
+To S15: (29) the board's pixels are on the row rather than on the move list, so both
+columns can read them. The scrolling itself is a pane measurement, as the move list's is:
+jsdom lays nothing out.
+
+To section 17: on Windows, a loaded game of two dozen moves with a report long enough to
+overflow its column scrolls inside the panel, with the board, the four rows and the move
+list staying exactly where they are and the page not scrolling at all. The version is
+1.4.1 when this section is green.

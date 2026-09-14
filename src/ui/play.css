@@ -118,6 +118,34 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+  /* The panel scrolls ITSELF, exactly as the move list beside it does and for
+     the same reason (spec S26). A report longer than the board is tall used to
+     make `main` scroll, which moved the board, the four rows and the move list
+     up the screen so that one column could be read: the whole window travelled
+     for the sake of the panel. The ceiling is the board's own height, so the
+     panel ends level with the board and the list and the page keeps the height
+     it had.
+
+     `overflow-x: hidden` because this column scrolls one way. It is a scroll
+     container now, so a child that rounds a pixel past it at a fractional
+     display scale would otherwise draw a scrollbar across the bottom of the
+     panel. Scoped to the panel, which is why it is honest here where it was
+     not at page level (spec 21.3). */
+  max-height: var(--board-pixels);
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* The list's own, so the two columns scroll alike. */
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+.play-side::-webkit-scrollbar {
+  width: 8px;
+}
+
+.play-side::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 4px;
 }
 
 /* Origin: London src/ui/play.css lines 11 to 48, adapted: it is one group along
@@ -537,6 +565,10 @@
   .play-side {
     align-self: stretch;
     max-width: none;
+    /* No board beside it here to take a ceiling from, and the page scrolls in
+       this layout anyway, so the panel is as tall as the report (spec S26). */
+    max-height: none;
+    overflow-y: visible;
   }
 
   /* Exactly the ten rows: there is no board beside the list here to take its

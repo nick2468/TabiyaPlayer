@@ -43,12 +43,14 @@ const sizeToggle = (to: 'large' | 'small') =>
   screen.getByRole('button', { name: `Switch to the ${to} board` })
 
 /**
- * How big the board is being drawn, which the move list carries as a custom
- * property because its own height is the board's. jsdom lays nothing out, so an
- * inline style is the only place a size can be read at all.
+ * How big the board is being drawn, which the ROW carries as a custom property
+ * because two columns take a measurement from it: the move list its height and
+ * the side panel its ceiling (spec S26). It was on the list itself until the
+ * panel needed it too. jsdom lays nothing out, so an inline style is the only
+ * place a size can be read at all.
  */
 const boardPixels = () =>
-  (document.querySelector('.move-list') as HTMLElement | null)?.style.getPropertyValue(
+  (document.querySelector('.play-body') as HTMLElement | null)?.style.getPropertyValue(
     '--board-pixels',
   )
 

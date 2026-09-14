@@ -7,7 +7,12 @@ from is Q22 and undecided),
 from one React, TypeScript and Vite code base. The code is copied from those two apps
 wherever they already do the job, so that a shared library can follow later.
 
-Current state: **version 1.4.0 is built, and it is the whole of the specification.**
+Current state: **version 1.4.1 is built, and it is the whole of the specification.**
+Phase 19 landed 2026-09-14, after Nick found that a long report scrolled the whole window
+(spec Q32, section 23): **the side panel is now a column that scrolls itself**, with the
+board's own height as its ceiling and the move list's thin scrollbar, so the board, the
+four rows and the move list stay where they are while the report is read. The board's
+pixels moved from the move list to `.play-body`, because two columns read them now.
 Phase 18 landed 2026-09-14, after Nick found that the app opened at a size matching
 neither of the two the toggle produces (spec Q31, section 22): **the window now opens at
 the size the REMEMBERED board needs, centred.** `tauri.conf.json` declares the small

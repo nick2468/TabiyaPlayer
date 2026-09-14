@@ -21,8 +21,10 @@ where its own contents round past it and a LOADED game, reviewed, scrolled the p
 sideways. The allowance is now 64 (spec S24) and **1.3.2 is built with its installer**.
 **Phase 18 landed 2026-09-14**: the window was declared at 1400 by 980, which is between
 the two automatic sizes and therefore matches neither, so the launch now asks the same
-question the toggle does (spec S25) and **1.4.0 is built with its installer**. Every phase
-in the plan is complete and the only open boxes are Nick's.
+question the toggle does (spec S25) and **1.4.0 is built with its installer**. **Phase 19 landed 2026-09-14**: a report longer than the
+board made the whole window scroll, so the side panel is now a column that scrolls itself
+like the move list (spec S26) and **1.4.1 is built with its installer**. Every phase in
+the plan is complete and the only open boxes are Nick's.
 
 Read [the specification](simple-chess-spec.md) first. It says what the app does. This
 document says what gets built, in what order, and how we know each part is finished.
@@ -849,6 +851,27 @@ Done in the orchestrator session, as phase 17 was.
 - [x] 18.5 Version 1.4.0, proved in the shipped window with each size remembered.
 - [x] 18.6 Docs swept, committed, installer built.
 
+---
+
+## Phase 19 - the report scrolls, not the window
+
+**Goal: a long report scrolls inside its own column, with the board and the rows staying
+where they are. Spec section 23.**
+
+Done in the orchestrator session, as phases 17 and 18 were.
+
+- [x] 19.1 `--board-pixels` moves from the move list to `.play-body`, so both columns
+      beside the board read one number from one home.
+- [x] 19.2 `.play-side` takes the board's height as a ceiling, scrolls vertically with
+      the move list's own thin scrollbar, and scrolls one way only.
+- [x] 19.3 The narrow layout keeps no ceiling: stacked columns, and the page scrolls
+      there as it always has.
+- [x] 19.4 Tests: S15 item 29, and the DOM helper that read the property off the list
+      now reads it off the row.
+- [x] 19.5 Version 1.4.1, proved in the shipped window with a report long enough to
+      overflow its column.
+- [x] 19.6 Docs swept, committed, installer built.
+
 ## Progress
 
 | Phase | State |
@@ -872,6 +895,7 @@ Done in the orchestrator session, as phase 17 was.
 | 16 - the window the layout actually needs | **Complete** 2026-09-14. 341 tests green in 9.7 s. `innerSizeForBoard` adds a 24 px scrollbar allowance to the WIDTH only, so the two automatic windows are 1047 by 807 and 1463 by 1223 rather than 1023 and 1439. Driven in the shipped 1.3.1 window with a real reviewed game at both automatic sizes and in both themes: the side panel is beside the board at y 164 in all four, `main` does not scroll, and `scrollWidth` equals `innerWidth`. Version 1.3.1, installer 6,902,247 bytes, rebuilt at the gate as 6,902,478 (NSIS build timestamps; the file on disk is the gate's). |
 | 17 - the pixel the panel rounds by | **Complete** 2026-09-14, done in the orchestrator session. The allowance is 64 rather than 24, so the side panel sits at 349 px instead of 309.67 and its full-width children no longer round a pixel past it. The automatic windows are 1087 by 807 and 1503 by 1223. Version 1.3.2. |
 | 18 - the window opens at the size it will use | **Complete** 2026-09-14, done in the orchestrator session. The window is declared at the small board's own 1087 by 807 and the launch asks for the remembered size, centred. A small-board launch resizes nothing; a large-board one resizes once. Version 1.4.0. |
+| 19 - the report scrolls, not the window | **Complete** 2026-09-14, done in the orchestrator session. The side panel has the board's height as a ceiling and scrolls itself, so a long report no longer takes the board, the rows and the move list up the screen with it. The board's pixels moved to the row, which both columns now read. Version 1.4.1. |
 
 ## Phase notes
 
@@ -4476,3 +4500,41 @@ every window reading in this plan carries.
 build` clean. One expectation was wrong when first written and the code was right: a
 centred x of (1920 - 1103) / 2 is 408.5, which rounds to 409, not the 408 the comment
 claimed. The comment now says so.
+
+### Phase 19 notes (orchestrator, 2026-09-14)
+
+**Measured in the shipped 1.4.1 window**, with Nick's own 23-move file seeded and
+reviewed into nine slips, at the small automatic size of 1088 by 808:
+
+| | Before, in 1.4.0 | After |
+|---|---|---|
+| `main` | scrollHeight 1130 against clientHeight 642, so the WINDOW scrolled | 660 against 660, so it does not |
+| The side panel | as tall as the report, no ceiling | 416 tall with a scrollHeight of 1029, so it scrolls itself |
+| The three columns | the panel ran on past the board | board 416, list 416, panel 416, all at y 164 |
+
+**And scrolling the panel moves nothing else**, which is the whole of what Nick asked
+for: with `scrollTop` driven to 600, the board stayed at y 164, the move list at 164, the
+first button row at 592, `window.scrollY` 0 and `main.scrollTop` 0, and the bottom of the
+report came into view - "Stopped after move 23" and Copy game.
+
+**Decided, and why.**
+
+- **The ceiling is the board's own height**, so the panel ends level with the board and
+  the move list. It is the same rule the list has had since phase 9, and the third column
+  now reads the same way as the second.
+- **`--board-pixels` moved from the move list to `.play-body`.** Two columns need the
+  number now, so it is set once on the row they share rather than twice. `MoveList` lost
+  its `pixels` prop with it, and the DOM helper that read the property off the list reads
+  it off the row.
+- **`overflow-x: hidden` on the panel, which 21.3 refused at page level.** The panel is a
+  scroll container now, so a child rounding a pixel past it at a fractional display scale
+  would draw a scrollbar along its bottom. Scoped to one column it hides a rounding
+  artefact; at page level it would have hidden the layout telling the truth about a window
+  too small for it. The distinction is in the spec rather than only in the stylesheet.
+- **The narrow layout keeps no ceiling**: there is no board beside the panel there, and
+  the page scrolls in that layout as it always has.
+
+**The bar:** 346 tests green, `tsc -b` clean, `npx oxlint` silent, `npm run build` clean.
+The scrolling itself is a pane and window measurement, as the move list's is: jsdom lays
+nothing out, so the test that can be written is that the number lives on the row, and the
+rest is the table above.

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { squaresForSan } from '../model/moves'
 import { isPromotion, legalDests, sideToMove } from '../model/position'
 import type { Shape } from '../model/types'
@@ -168,7 +168,10 @@ export function Screen({
         reviewed={report !== null}
       />
 
-      <div className="play-body">
+      {/* The board's own pixels, for the two columns beside it: the move list
+          takes its height from them and the side panel its ceiling (spec S26).
+          One home, on the row, because both children need the same number. */}
+      <div className="play-body" style={{ '--board-pixels': `${pixels}px` } as CSSProperties}>
         <div className="play-column">
           {/* The bar and the board in one box, so the bar is stretched to the
               board's own height rather than given a height of its own. */}
@@ -256,12 +259,7 @@ export function Screen({
           {notice && <Notice message={notice.text} bad={notice.bad} />}
         </div>
 
-        <MoveList
-          moves={session.moves}
-          pixels={pixels}
-          activePly={report ? ply : null}
-          onSelect={step}
-        />
+        <MoveList moves={session.moves} activePly={report ? ply : null} onSelect={step} />
 
         {/* The hint sentence and the report, and nothing else (spec Q24). Both
             are the game talking rather than controls, and the report starts at
