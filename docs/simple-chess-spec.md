@@ -5,8 +5,9 @@ orchestrator session from Nick's brief (`SimpleChess-brief.txt`) and his rulings
 (section 2, then section 18). Sections 1 to 17 specify version 1 and stay true;
 **section 18 specifies version 2, the sibling of the trainer's Play screen, section 19
 specifies versions 1.2.0 and 1.2.1, which made room for the report, section 20 specifies
-1.3.0, where the window matches the board, and section 21 specifies 1.3.1 and 1.3.2, which give
-that window the room the layout actually needs. A later section wins over an earlier one
+1.3.0, where the window matches the board, section 21 specifies 1.3.1 and 1.3.2, which give
+that window the room the layout actually needs, and section 22 specifies 1.4.0, where the
+window opens at the size the remembered board needs. A later section wins over an earlier one
 wherever they differ.** The product is now called **Simply Chess**; the earlier sections
 keep the old name as history.
 
@@ -1296,7 +1297,11 @@ corner, where the toggle is inert. That band is what Nick found.
   to it, and then the board is whatever fits, which is the behaviour of every version
   before this one.
 - **Opening the app resizes nothing.** The window opens at the size `tauri.conf.json`
-  gives it, or the size Windows remembers for it. Only the toggle resizes.
+  gives it. Only the toggle resizes. **Reversed by Q31 in section 22**: a window that
+  opened at neither of the two sizes the toggle produces was a landing page matching
+  nothing, so the launch now asks the same question the toggle does. (The sentence also
+  said "or the size Windows remembers for it", which was never true of this app: it has
+  no window-state plugin, so every launch has always used the declared size.)
 
 **On the web there is no window to resize and nothing changes.** A page cannot resize a
 browser window it did not open, and an iPad has no window at all, so the toggle keeps
@@ -1425,3 +1430,46 @@ To section 17: on Windows, a game reviewed after either automatic resize has its
 beside the move list, with `main` not scrolling; and a LOADED game of two dozen moves,
 reviewed, leaves the page scrolling in neither direction. The version is 1.3.1 for the
 first half of this section and **1.3.2 for S24**.
+
+---
+
+## 22. Version 1.4.0: the window opens at the size it will use (ruled 2026-09-14)
+
+| # | Question | Ruling |
+|---|---|---|
+| Q31 | The size the app opens at | **One of the two automatic sizes, whichever the remembered board size names.** Nick, using 1.3.2: "When launching simply chess the initial landing page size is wider than the auto-small width and narrower than the auto large width. It should match one of the two auto sizes depending on the persisted board size state." |
+
+The window was declared at 1400 by 980, which is between the small board's 1087 and the
+large board's 1503 and therefore matches neither. Every launch landed on a size the app
+would never choose for itself, and the board inside it was whatever happened to fit.
+
+**S25. The launch asks the same question as the toggle.**
+
+- `tauri.conf.json` declares the **small** size, 1087 by 807, because Small is the default
+  board size (Q3) and every fresh install therefore opens at exactly the right size with
+  nothing to resize. The two files cannot import from each other, so a test holds them
+  together, as one already holds the window's minimum.
+- On starting, the app asks for the window the REMEMBERED board size needs. A small-board
+  launch changes nothing. A large-board launch resizes once.
+- **A launch centres the window; the toggle does not.** At a launch nobody has put the
+  window anywhere yet - the configuration centres it at the size it declares - so a window
+  that resized from its top-left corner would sit off centre by half the difference. Once
+  the app is open, a window the user has placed stays where they put it, which is S21's
+  rule and is unchanged.
+- The work-area clamp, the minimum-size clamp and the rule that a window too big for the
+  screen starts at the work area's corner all apply exactly as they do for the toggle.
+- On the web nothing happens, as before: there is no window to open at a size.
+
+**What this costs.** A window the user has resized by hand is put back to the size of the
+remembered board the next time the app opens. That is what Q31 asks for: the two automatic
+sizes are the sizes this app has, and the launch is now one of them.
+
+### 22.1 Tests and acceptance, added
+
+To S15: (27) a launch answers a centred position, where the toggle answers none for a
+window that already fits; (28) the width and height in `tauri.conf.json` are the window
+the small board asks for, read out of the file itself.
+
+To section 17: on Windows, the app opens at 1087 by 807 with Small remembered and at the
+large size with Large remembered, centred, with the board drawn at the size that window
+was chosen for. The version is 1.4.0 when this section is green.

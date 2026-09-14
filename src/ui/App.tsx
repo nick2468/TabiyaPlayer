@@ -116,6 +116,12 @@ export function Shell() {
     void opening.then(() => {
       if (scene?.hint) void game.askHint()
     })
+
+    // The window opens at the size the REMEMBERED board needs, centred (spec
+    // S25). `tauri.conf.json` declares the small one, so this changes nothing
+    // at all on a small-board launch and resizes once on a large-board one.
+    // On the web it returns having done nothing.
+    void matchWindowToBoard(boardSize, true)
     // Once, on mount. `game` is a fresh object every render by design, and the
     // settings here are the ones storage gave when this component mounted.
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -7,7 +7,17 @@ from is Q22 and undecided),
 from one React, TypeScript and Vite code base. The code is copied from those two apps
 wherever they already do the job, so that a shared library can follow later.
 
-Current state: **version 1.3.1 is built, and it is the whole of the specification.**
+Current state: **version 1.4.0 is built, and it is the whole of the specification.**
+Phase 18 landed 2026-09-14, after Nick found that the app opened at a size matching
+neither of the two the toggle produces (spec Q31, section 22): **the window now opens at
+the size the REMEMBERED board needs, centred.** `tauri.conf.json` declares the small
+one, 1087 by 807, so a fresh install and every small-board launch open at the right size
+with nothing to resize; a large-board launch resizes once. A launch centres the window
+and the toggle does not, because at a launch nobody has placed it yet. This reverses
+S21's "opening the app resizes nothing", and S21 says so where it stands.
+
+Phase 17 landed the same day and is version 1.3.2: see the allowance below.
+
 Phase 16 landed 2026-09-14, after Nick used 1.3.0 and found that "in both auto size
 cases the post game review drops to under the board" (spec Q29, section 21): **the
 window the toggle asks for now has room for the scrollbar**, so a reviewed game's
@@ -22,7 +32,8 @@ the layout truly needs. The allowance grew again in 1.3.2 (spec S24): 24 covered
 scrollbar and left the side panel on 309.67 px, where its own contents round a pixel past
 it and the page scrolls sideways, which is what a LOADED game reviewed at either
 automatic size did. It is 64, the panel sits at 349.67, and the two automatic sizes are
-**1087 by 807** and, on this machine, **1503 by 1223**.
+**1087 by 807** and, on this machine, **1503 by 1223**. Those two are also the only sizes
+the window ever opens at, from 1.4.0 (S25).
 
 Phase 15 landed 2026-09-14, after Nick shrank the window and found the Small/Large
 toggle inert (spec Q28, section 20): **the board size toggle now sets the Windows

@@ -118,6 +118,70 @@ describe('the window a board needs', () => {
  * the difference between two targets is the difference between two boards, and
  * what is left over in either is the chrome and the allowance together.
  */
+/**
+ * S15 item 27: the launch (spec S25).
+ *
+ * A launch is the one time the window is centred. Nobody has put it anywhere
+ * yet - `tauri.conf.json` centres it at the size it declares - so a window that
+ * resized from its top-left corner would sit off centre by half the difference.
+ * The toggle never centres, and the test above holds that.
+ */
+describe('the window at a launch', () => {
+  it('centres the window it asks for', () => {
+    const target = windowForBoard('small', screen1080(), true)
+    // 1087 + the 16 px frame is an outer width of 1103, and (1920 - 1103) / 2
+    // is 408.5, which rounds to 409. The height: 807 + 39 is 846, and
+    // (1032 - 846) / 2 is exactly 93.
+    expect(target.inner).toEqual({ width: 1087, height: 807 })
+    expect(target.position).toEqual({ x: 409, y: 93 })
+  })
+
+  it('centres a large window on the same screen', () => {
+    const target = windowForBoard('large', screen1080(), true)
+    expect(target.position).toEqual({
+      x: Math.round((1920 - (target.inner.width + FRAME.width)) / 2),
+      y: Math.round((1032 - (target.inner.height + FRAME.height)) / 2),
+    })
+  })
+
+  it('always answers a position, even where the toggle would leave it alone', () => {
+    // The toggle says null here, because the window already fits where it is.
+    expect(windowForBoard('small', screen1080()).position).toBeNull()
+    expect(windowForBoard('small', screen1080(), true).position).not.toBeNull()
+  })
+
+  it('keeps a window too big for the screen at the corner of the work area', () => {
+    // Centring a window bigger than the screen would put it off the top left,
+    // so the same push-inside rule holds it at the corner.
+    const tiny = screen1080({ workArea: { x: 40, y: 20, width: 800, height: 600 } })
+    const target = windowForBoard('small', tiny, true)
+    expect(target.position).toEqual({ x: 40, y: 20 })
+  })
+})
+
+/**
+ * S15 item 28: the size the window is DECLARED at is the small board's own
+ * (spec S25).
+ *
+ * `tauri.conf.json` is what the window opens at before any code runs, so a
+ * small-board launch - which is every fresh install, since Small is the default
+ * - is already the right size and nothing resizes. The two files cannot be made
+ * to import from each other, so the test holds them together, the way it
+ * already holds the minimum and the way `local-folder.test.ts` holds the data
+ * folder's name across three files.
+ */
+describe('the size the window is declared at', () => {
+  it('is the window the small board asks for', () => {
+    const main = (
+      JSON.parse(
+        readFileSync(new URL('../../src-tauri/tauri.conf.json', import.meta.url), 'utf8'),
+      ) as { app: { windows: { width: number; height: number }[] } }
+    ).app.windows[0]
+    const small = windowForBoard('small', screen1080()).inner
+    expect({ width: main.width, height: main.height }).toEqual(small)
+  })
+})
+
 describe('the room beyond the layout itself', () => {
   /** `main`'s vertical scrollbar, measured at a display scale of 1 and of 1.5. */
   const SCROLLBAR = 15

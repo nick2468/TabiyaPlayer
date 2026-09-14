@@ -23,6 +23,12 @@ import { BOARD_SIZE, BOARD_SIZE_LARGE, fitBoardSize, innerSizeForBoard } from '.
  * did not open, and an iPad has no window, so the toggle keeps the behaviour of
  * every version before this one. The Tauri API is imported inside the function
  * and behind `isDesktop()` (spec S14), so the browser bundle never pulls it in.
+ *
+ * From 1.4.0 the LAUNCH asks the same question as the toggle (spec S25): the
+ * window opens at the size the remembered board needs, rather than at a size
+ * between the two that matches neither. `tauri.conf.json` declares the small
+ * one, so a fresh install and every small-board launch are already the right
+ * size and nothing moves; a large-board launch resizes once and is centred.
  */
 
 /** The monitor without its taskbar, in logical pixels. */
@@ -77,7 +83,18 @@ export const MIN_INNER_HEIGHT = 720
  * window, so the window is never sized for a board the screen cannot show, and
  * the board it is sized for is the board that will then be drawn.
  */
-export function windowForBoard(size: BoardSizeName, now: WindowNow): WindowTarget {
+export function windowForBoard(
+  size: BoardSizeName,
+  now: WindowNow,
+  /**
+   * A launch rather than a toggle (spec S25). The window is centred instead of
+   * left where it is, because at a launch nobody has put it anywhere yet:
+   * `tauri.conf.json` centres it at the size it declares, and a window that
+   * then resized from its top-left corner would sit off centre by half the
+   * difference. The toggle never centres, for the opposite reason.
+   */
+  atLaunch = false,
+): WindowTarget {
   // The room for a window's contents is the screen less what the frame takes.
   const roomWide = now.workArea.width - now.frame.width
   const roomTall = now.workArea.height - now.frame.height
@@ -93,10 +110,32 @@ export function windowForBoard(size: BoardSizeName, now: WindowNow): WindowTarge
     height: clamp(wanted.height, MIN_INNER_HEIGHT, roomTall),
   }
 
+  const outerWide = inner.width + now.frame.width
+  const outerTall = inner.height + now.frame.height
+
+  if (atLaunch) {
+    // Centred, and then held inside the work area by the same rule as below,
+    // so a window too big for the screen starts at its corner rather than off
+    // the top left of it.
+    const x = pushInside(
+      now.workArea.x + Math.round((now.workArea.width - outerWide) / 2),
+      outerWide,
+      now.workArea.x,
+      now.workArea.width,
+    )
+    const y = pushInside(
+      now.workArea.y + Math.round((now.workArea.height - outerTall) / 2),
+      outerTall,
+      now.workArea.y,
+      now.workArea.height,
+    )
+    return { board, inner, position: { x, y } }
+  }
+
   // Moved, not centred: a window the user placed stays where they put it as
   // far as it can, and is pushed back inside by the least that puts it there.
-  const x = pushInside(now.position.x, inner.width + now.frame.width, now.workArea.x, now.workArea.width)
-  const y = pushInside(now.position.y, inner.height + now.frame.height, now.workArea.y, now.workArea.height)
+  const x = pushInside(now.position.x, outerWide, now.workArea.x, now.workArea.width)
+  const y = pushInside(now.position.y, outerTall, now.workArea.y, now.workArea.height)
   const moved = x !== now.position.x || y !== now.position.y
 
   return { board, inner, position: moved ? { x, y } : null }
@@ -126,7 +165,7 @@ function pushInside(at: number, span: number, edge: number, room: number): numbe
  * itself changes whatever happens here, because the setting is remembered
  * before this is called and `useBoardPixels` answers the `resize` event.
  */
-export async function matchWindowToBoard(size: BoardSizeName): Promise<void> {
+export async function matchWindowToBoard(size: BoardSizeName, atLaunch = false): Promise<void> {
   if (!isDesktop()) return
   try {
     const { currentMonitor, getCurrentWindow, LogicalPosition, LogicalSize } = await import(
@@ -147,15 +186,19 @@ export async function matchWindowToBoard(size: BoardSizeName): Promise<void> {
     const area = monitor.workArea.size.toLogical(monitor.scaleFactor)
     const areaAt = monitor.workArea.position.toLogical(monitor.scaleFactor)
 
-    const target = windowForBoard(size, {
-      workArea: { x: areaAt.x, y: areaAt.y, width: area.width, height: area.height },
-      // Measured at the moment of the change rather than assumed. A frame
-      // added where it should be subtracted is a window a title bar too short,
-      // every time.
-      frame: { width: outer.width - inner.width, height: outer.height - inner.height },
-      position: { x: position.x, y: position.y },
-      pixelRatio: window.devicePixelRatio,
-    })
+    const target = windowForBoard(
+      size,
+      {
+        workArea: { x: areaAt.x, y: areaAt.y, width: area.width, height: area.height },
+        // Measured at the moment of the change rather than assumed. A frame
+        // added where it should be subtracted is a window a title bar too short,
+        // every time.
+        frame: { width: outer.width - inner.width, height: outer.height - inner.height },
+        position: { x: position.x, y: position.y },
+        pixelRatio: window.devicePixelRatio,
+      },
+      atLaunch,
+    )
 
     await win.setSize(new LogicalSize(target.inner.width, target.inner.height))
     if (target.position) {

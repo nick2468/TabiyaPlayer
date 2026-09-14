@@ -19,7 +19,10 @@ stays beside the move list. **1.3.1 is built with its installer.** **Phase 17 la
 allowed for the scrollbar and nothing else, so the side panel was squeezed onto the pixel
 where its own contents round past it and a LOADED game, reviewed, scrolled the page
 sideways. The allowance is now 64 (spec S24) and **1.3.2 is built with its installer**.
-Every phase in the plan is complete and the only open boxes are Nick's.
+**Phase 18 landed 2026-09-14**: the window was declared at 1400 by 980, which is between
+the two automatic sizes and therefore matches neither, so the launch now asks the same
+question the toggle does (spec S25) and **1.4.0 is built with its installer**. Every phase
+in the plan is complete and the only open boxes are Nick's.
 
 Read [the specification](simple-chess-spec.md) first. It says what the app does. This
 document says what gets built, in what order, and how we know each part is finished.
@@ -827,6 +830,25 @@ It is one constant, its comment, six test numbers and a property.
 - [x] 17.4 Proved in the shipped window with Nick's own file.
 - [x] 17.5 Docs swept, committed, installer built.
 
+---
+
+## Phase 18 - the window opens at the size it will use
+
+**Goal: the app lands on one of its two automatic sizes, whichever the remembered board
+size names. Spec section 22.**
+
+Done in the orchestrator session, as phase 17 was.
+
+- [x] 18.1 `tauri.conf.json` declares 1087 by 807, the small board's own window, so a
+      fresh install and every small-board launch open at the right size already.
+- [x] 18.2 `windowForBoard` takes `atLaunch`, which centres rather than leaving the
+      window where it is, and keeps every clamp it already had.
+- [x] 18.3 The startup effect asks for the remembered size once, on mount.
+- [x] 18.4 Tests: S15 items 27 and 28, including the declared size read out of
+      `tauri.conf.json` and held against what the small board asks for.
+- [x] 18.5 Version 1.4.0, proved in the shipped window with each size remembered.
+- [x] 18.6 Docs swept, committed, installer built.
+
 ## Progress
 
 | Phase | State |
@@ -849,6 +871,7 @@ It is one constant, its comment, six test numbers and a property.
 | 15 - the window matches the board | **Complete** 2026-09-14. 339 tests green in 9.5 s. The board size toggle sets the Windows window to the size that board needs, both ways: driven in the shipped 1.3.0 window, a window shrunk into the dead band grew to 1439 by 1223 with an 832 board on Large and went back to 1023 by 807 with a 416 board on Small, a maximised one un-maximised first, and one in the bottom right corner was moved back inside rather than left hanging off. Nothing resizes on the web. Version 1.3.0 in the three files, and its installer built at 6,902,858 bytes, rebuilt at the gate as 6,902,111 (NSIS build timestamps; the file on disk is the gate's). |
 | 16 - the window the layout actually needs | **Complete** 2026-09-14. 341 tests green in 9.7 s. `innerSizeForBoard` adds a 24 px scrollbar allowance to the WIDTH only, so the two automatic windows are 1047 by 807 and 1463 by 1223 rather than 1023 and 1439. Driven in the shipped 1.3.1 window with a real reviewed game at both automatic sizes and in both themes: the side panel is beside the board at y 164 in all four, `main` does not scroll, and `scrollWidth` equals `innerWidth`. Version 1.3.1, installer 6,902,247 bytes, rebuilt at the gate as 6,902,478 (NSIS build timestamps; the file on disk is the gate's). |
 | 17 - the pixel the panel rounds by | **Complete** 2026-09-14, done in the orchestrator session. The allowance is 64 rather than 24, so the side panel sits at 349 px instead of 309.67 and its full-width children no longer round a pixel past it. The automatic windows are 1087 by 807 and 1503 by 1223. Version 1.3.2. |
+| 18 - the window opens at the size it will use | **Complete** 2026-09-14, done in the orchestrator session. The window is declared at the small board's own 1087 by 807 and the launch asks for the remembered size, centred. A small-board launch resizes nothing; a large-board one resizes once. Version 1.4.0. |
 
 ## Phase notes
 
