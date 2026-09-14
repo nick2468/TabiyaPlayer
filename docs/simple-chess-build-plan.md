@@ -10,7 +10,7 @@ built and its installer made. **Phase 14 landed 2026-09-14 and passed its gate t
 day**: Nick used 1.2.0 and corrected three placements (spec Q27), so the two view toggles
 went back to the header, New game joined Play as and the stepping arrows moved to the
 board's bottom right corner. 1.2.1 is built and its installer made. **Phase 15 landed
-2026-09-14**: Nick shrank the window, found the board size toggle inert, and ruled that
+2026-09-14 and passed its gate the same day**: Nick shrank the window, found the board size toggle inert, and ruled that
 the window should change to match the board (spec section 20). It does, both ways, and
 **1.3.0 is built with its installer**. Every phase in the plan is now complete and the
 only open boxes are Nick's.
@@ -799,7 +799,7 @@ API is reached today, and `src-tauri/capabilities/default.json`.
 | 12 - version 1.1.0 | **Complete** 2026-09-13, box 12.6 is Nick's. 324 tests green in 9.2 s. Gate 11's finding fixed in `ce0e743`; 1.1.0 in the three files; the installer is 6,898,142 bytes and the shipped window was driven, reviewed and walked at 688 with S16 holding; `docs/acceptance.md` rewritten for version 2; both of Q22's routes documented. |
 | 13 - room for the report | **Complete** 2026-09-14. 324 tests green in 9.1 s. Every button and toggle is under the board in the four rows of S19; the side panel is the hint sentence and the report, which starts at the top of the column and reads in the head row's colour; the selector row lines up under the heading. `CHROME_BELOW` is 224 and the large board 584 at 1400 by 980. Version 1.2.0 in the three files; no window built at it. |
 | 14 - the three placements, corrected | **Complete** 2026-09-14. 325 tests green in 9.0 s. The two view toggles are back in the header, restored from `fccab21`; New game is in row four with Play as; the arrows end row one at the board's bottom right corner. The board is unchanged at 584 (576 at 1.5), because four rows are still four rows. Version 1.2.1 in the three files, and its installer built at 6,897,569 bytes, rebuilt at the gate as 6,897,286 (an NSIS bundle carries build timestamps, so two builds of one commit differ slightly; the file on disk is the gate's). |
-| 15 - the window matches the board | **Complete** 2026-09-14. 339 tests green in 9.5 s. The board size toggle sets the Windows window to the size that board needs, both ways: driven in the shipped 1.3.0 window, a window shrunk into the dead band grew to 1439 by 1223 with an 832 board on Large and went back to 1023 by 807 with a 416 board on Small, a maximised one un-maximised first, and one in the bottom right corner was moved back inside rather than left hanging off. Nothing resizes on the web. Version 1.3.0 in the three files, and its installer built at 6,902,858 bytes. |
+| 15 - the window matches the board | **Complete** 2026-09-14. 339 tests green in 9.5 s. The board size toggle sets the Windows window to the size that board needs, both ways: driven in the shipped 1.3.0 window, a window shrunk into the dead band grew to 1439 by 1223 with an 832 board on Large and went back to 1023 by 807 with a 416 board on Small, a maximised one un-maximised first, and one in the bottom right corner was moved back inside rather than left hanging off. Nothing resizes on the web. Version 1.3.0 in the three files, and its installer built at 6,902,858 bytes, rebuilt at the gate as 6,902,111 (NSIS build timestamps; the file on disk is the gate's). |
 
 ## Phase notes
 
@@ -4029,3 +4029,80 @@ change belong where the running app is known, not in the control. No em dashes u
   modified in `git status` with an empty diff. It is the stale stat cache phases 13 and
   14 both recorded; neither was touched or staged.
 - `../London` and `../Conquest` were not touched.
+
+### Gate 15 findings (orchestrator, 2026-09-14)
+
+**Passed.** One observation for Nick at the end, which is a consequence of the rule he
+chose rather than a fault in it.
+
+**Verified from the repo.** `npx vitest run`: 38 files, **339 passed, none skipped, 9.4
+seconds**. `tsc -b` clean, `npx oxlint` exit 0 with no output, `npm run build` clean.
+`../London` and `../Conquest` hold no change of ours.
+
+**Mutation-checked, four, each reversed.**
+
+| Mutation | Red |
+|---|---|
+| `pushInside` returns the position it was given, so nothing is ever moved | 3 tests |
+| `clamp` drops the minimum and keeps only the work-area cap | the minimum test |
+| `MIN_INNER_WIDTH` set to 900, drifting from `tauri.conf.json` | the cross-file test |
+| `innerSizeForBoard` leaves `CHROME_ABOVE` out of the height | 6 tests |
+
+The third is the one worth naming: `window-size.test.ts` reads `tauri.conf.json` and
+holds its `minWidth` and `minHeight` against the two constants, the way
+`local-folder.test.ts` holds the data folder's name across three files. A minimum changed
+in one place now fails the suite.
+
+**Driven by me in the packaged 1.3.0 window**, with the window moved and maximised from
+OUTSIDE the app through `user32`, which is what a person dragging a corner actually does,
+rather than by asking the app to move itself. The work area is 2560 by 1392 logical at a
+display scale of 1.5.
+
+| Step | Window inner | Board |
+|---|---|---|
+| shrunk from outside into the dead band | 1001 by 781 | 416 |
+| **Large** | **1440 by 1224** | **832** |
+| Small | 1024 by 808 | 416 |
+| maximised from outside | 2560 by 1370 | 416 |
+| Large, from maximised | 1440 by 1224 | 832 |
+| Small, from there | 1024 by 808 | 416 |
+
+**The corner case, measured on the real window.** Placed with its bottom right on the
+work area's own corner, at 1522, 547 with an outer size of 1038 by 845, pressing Large
+moved it to **1107, 131**, whose outer edges are 2561 and 1392 against a work area of
+2560 by 1392. Inside, to within the two-thirds of a logical pixel that a scale of 1.5
+rounds by, and moved by the least that puts it there rather than centred. That is S21's
+rule holding on the machine rather than in a test.
+
+**The toggle is no longer inert**, which was the whole point: at 1001 by 781, where the
+old build drew 416 for both sizes and the button did nothing a person could see, Large
+now draws the full **832** board. It is the first time this app has drawn it.
+
+**Taken on the builder's account**, and it answered the chip's one named question with a
+measurement rather than an assumption: **`setSize` sets the INNER size.** Asked for 1439
+by 1223 it read back an inner of 1439.33 by 1223.33 and an outer of 1454 by 1260.67, the
+difference being the frame measured before the call. My own drive agrees: a 1440 by 1224
+inner reading with an outer of 1454 by 1261.
+
+**The installer, built at this gate.**
+
+| | |
+|---|---|
+| Installer | `src-tauri/target/release/bundle/nsis/Simply Chess_1.3.0_x64-setup.exe`, **6,902,111 bytes** |
+| Executable | `src-tauri/target/release/simply-chess.exe`, 9,156,096 bytes |
+
+The builder's own build of the same commit recorded 6,902,858. As at gate 14, an NSIS
+bundle carries build timestamps, so two builds of one commit differ by a few hundred
+bytes; the file on disk is this gate's.
+
+**The observation for Nick.** Pressing **Large on a MAXIMISED window makes the window
+smaller**: it un-maximises and sets 1440 by 1224, and the board is 832 either way,
+because a maximised window on this screen already had room for it. That is S21 doing
+exactly what it says - the window is always the size the chosen board needs - and it is
+the one case where "match both ways" costs something rather than buying something. If he
+wants it left alone, the rule would become "match, unless the window already has room for
+that board", which is one condition in `windowForBoard` and one test. Not changed here:
+he ruled the rule, and this is what it does.
+
+**Nick's three boxes are all that is left**, now against the 1.3.0 installer: 7.8, 8.6
+and 12.6.
