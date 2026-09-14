@@ -12,10 +12,10 @@ went back to the header, New game joined Play as and the stepping arrows moved t
 board's bottom right corner. 1.2.1 is built and its installer made. **Phase 15 landed
 2026-09-14 and passed its gate the same day**: Nick shrank the window, found the board size toggle inert, and ruled that
 the window should change to match the board (spec section 20). It does, both ways, and
-**1.3.0 is built with its installer**. **Phase 16 landed 2026-09-14**: the window it
+**1.3.0 is built with its installer**. **Phase 16 landed 2026-09-14 and passed its gate the same day**: the window it
 asked for was a scrollbar short of what the layout needs, so the report landed under the
 board after an automatic resize; it now carries the allowance of spec S23 and the report
-stays beside the move list. **1.3.1 is built with its installer.**
+stays beside the move list. **1.3.1 is built with its installer.** Every phase in the plan is complete and the only open boxes are Nick's.
 
 Read [the specification](simple-chess-spec.md) first. It says what the app does. This
 document says what gets built, in what order, and how we know each part is finished.
@@ -823,7 +823,7 @@ Read first: spec section 21 all of it, then S21 and S2. `src/ui/board-size.ts`
 | 13 - room for the report | **Complete** 2026-09-14. 324 tests green in 9.1 s. Every button and toggle is under the board in the four rows of S19; the side panel is the hint sentence and the report, which starts at the top of the column and reads in the head row's colour; the selector row lines up under the heading. `CHROME_BELOW` is 224 and the large board 584 at 1400 by 980. Version 1.2.0 in the three files; no window built at it. |
 | 14 - the three placements, corrected | **Complete** 2026-09-14. 325 tests green in 9.0 s. The two view toggles are back in the header, restored from `fccab21`; New game is in row four with Play as; the arrows end row one at the board's bottom right corner. The board is unchanged at 584 (576 at 1.5), because four rows are still four rows. Version 1.2.1 in the three files, and its installer built at 6,897,569 bytes, rebuilt at the gate as 6,897,286 (an NSIS bundle carries build timestamps, so two builds of one commit differ slightly; the file on disk is the gate's). |
 | 15 - the window matches the board | **Complete** 2026-09-14. 339 tests green in 9.5 s. The board size toggle sets the Windows window to the size that board needs, both ways: driven in the shipped 1.3.0 window, a window shrunk into the dead band grew to 1439 by 1223 with an 832 board on Large and went back to 1023 by 807 with a 416 board on Small, a maximised one un-maximised first, and one in the bottom right corner was moved back inside rather than left hanging off. Nothing resizes on the web. Version 1.3.0 in the three files, and its installer built at 6,902,858 bytes, rebuilt at the gate as 6,902,111 (NSIS build timestamps; the file on disk is the gate's). |
-| 16 - the window the layout actually needs | **Complete** 2026-09-14. 341 tests green in 9.7 s. `innerSizeForBoard` adds a 24 px scrollbar allowance to the WIDTH only, so the two automatic windows are 1047 by 807 and 1463 by 1223 rather than 1023 and 1439. Driven in the shipped 1.3.1 window with a real reviewed game at both automatic sizes and in both themes: the side panel is beside the board at y 164 in all four, `main` does not scroll, and `scrollWidth` equals `innerWidth`. Version 1.3.1, installer 6,902,247 bytes. |
+| 16 - the window the layout actually needs | **Complete** 2026-09-14. 341 tests green in 9.7 s. `innerSizeForBoard` adds a 24 px scrollbar allowance to the WIDTH only, so the two automatic windows are 1047 by 807 and 1463 by 1223 rather than 1023 and 1439. Driven in the shipped 1.3.1 window with a real reviewed game at both automatic sizes and in both themes: the side panel is beside the board at y 164 in all four, `main` does not scroll, and `scrollWidth` equals `innerWidth`. Version 1.3.1, installer 6,902,247 bytes, rebuilt at the gate as 6,902,478 (NSIS build timestamps; the file on disk is the gate's). |
 
 ## Phase notes
 
@@ -4274,3 +4274,70 @@ to mean and does.
   It is the stale stat cache phases 13, 14 and 15 all recorded; neither was touched or
   staged.
 - `../London` and `../Conquest` were not touched.
+
+### Gate 16 findings (orchestrator, 2026-09-14)
+
+**Passed, with nothing outstanding.** The report is beside the move list after both
+automatic resizes, checked by me in the shipped build with a real reviewed game on
+screen, which is the thing Nick asked for.
+
+**Verified from the repo.** `npx vitest run`: 38 files, **341 passed, none skipped, 9.9
+seconds**. `tsc -b` clean, `npx oxlint` exit 0 with no output, `npm run build` clean.
+`../London` and `../Conquest` hold no change of ours.
+
+**Mutation-checked, three, each reversed.**
+
+| Mutation | Red |
+|---|---|
+| the allowance set to 0, which is phase 15's behaviour | 6 tests |
+| the allowance set to 8, a number smaller than a scrollbar | 6 tests |
+| the allowance added to the height as well as the width | 6 tests |
+
+The second is the one that matters: it fails because S15 item 26 holds the PROPERTY, that
+what is left over the layout's 607 must cover a scrollbar, rather than the number 24. A
+future allowance that looks plausible and is too small cannot pass.
+
+**Driven by me in the packaged 1.3.1 window**, with the game seeded into the window's own
+storage and scanned by the real engine into a blunder and an inaccuracy, so the panel has
+a real report in it rather than an empty column.
+
+| State | Window inner | Width for the columns | Side panel | Board | `main` scrolls | scrollWidth |
+|---|---|---|---|---|---|---|
+| **Large** | 1464 by 1224 | 1416 | x 1115, **y 164** | 832 | no, scrollbar 0 | 1464 = innerWidth |
+| **Small** | 1048 by 808 | 1000 | x 699, **y 164** | 416 | no, scrollbar 0 | 1048 = innerWidth |
+
+The board's own y is 164 in both, so the panel's y matching it is the panel sitting beside
+the move list rather than under the board. The move list is at x 924 and x 508, between
+the two, which is 19.1's order. Both themes checked at both sizes: the same four answers
+in all four. A screenshot of the large one was taken, looked at and sent to Nick.
+
+**What it was**, for the record, because the fault hid well: `main` is the scrolling
+element above 900 by 700, so its vertical scrollbar took 15 px out of the columns'
+width **without changing `document.documentElement.clientWidth`**. Every check the app
+could have made for a scrollbar would have read zero. The layout fitted its window by one
+pixel, and the scrollbar took fifteen.
+
+**Two numbers corrected, both by the builder measuring rather than trusting a document.**
+
+- **A scrollbar is 15 CSS pixels at a display scale of 1 AND at 1.5**, measured twice with
+  a throwaway scrolling box. Spec 21.2 and my chip both said a scrollbar is a physical
+  thing and therefore worst at scale 1, which would have made it about 17 there. It is
+  not: it stays 15. The spec now says the measured thing. The allowance of 24 clears it
+  either way, so nothing built on the wrong reasoning was wrong.
+- **"14 px short" in the gate 15 measurements was the SHORTFALL, not the scrollbar.** The
+  scrollbar is 15 and the layout had one pixel of slack; 15 minus 1 is the 14. The
+  builder said so rather than letting the two numbers sit there disagreeing.
+
+**The installer, built at this gate.**
+
+| | |
+|---|---|
+| Installer | `src-tauri/target/release/bundle/nsis/Simply Chess_1.3.1_x64-setup.exe`, **6,902,478 bytes** |
+| Executable | `src-tauri/target/release/simply-chess.exe`, 9,156,096 bytes |
+
+The builder's own build of the same commit recorded 6,902,247, which is the NSIS
+timestamp difference this plan has recorded at each of the last three gates. The file on
+disk is this gate's.
+
+**Nick's three boxes are all that is left**, now against the 1.3.1 installer: 7.8, 8.6
+and 12.6.

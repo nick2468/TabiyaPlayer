@@ -1360,7 +1360,11 @@ scrolling at all. Twenty-one pixels was enough; the height was never the problem
 
 **S23. The window the toggle asks for has a margin, and the margin is the scrollbar.**
 `innerSizeForBoard` adds a width allowance to the layout's minimum, at least as wide as a
-vertical scrollbar at a display scale of 1, which is the worst case in logical pixels.
+vertical scrollbar. **Measured rather than reasoned about in phase 16: WebView2 draws it
+15 CSS pixels wide at a display scale of 1 and 15 again at 1.5**, so it does not grow in
+CSS pixels as the scale rises, which is what an earlier draft of this section assumed it
+would. The allowance is 24, which clears the 15 at both scales and is a round number
+rather than one tuned to the machine it was measured on.
 The height keeps its exact figure, because the height was never short: with the panel
 beside the board the page fits its window, and it is only the wrap that made it tall.
 
