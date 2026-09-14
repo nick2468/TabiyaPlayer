@@ -12,8 +12,9 @@ went back to the header, New game joined Play as and the stepping arrows moved t
 board's bottom right corner. 1.2.1 is built and its installer made. **Phase 15 landed
 2026-09-14 and passed its gate the same day**: Nick shrank the window, found the board size toggle inert, and ruled that
 the window should change to match the board (spec section 20). It does, both ways, and
-**1.3.0 is built with its installer**. Every phase in the plan is now complete and the
-only open boxes are Nick's.
+**1.3.0 is built with its installer**. **Phase 16 is next**: the window it asks for is
+one pixel short of what the layout needs, so the report lands under the board after an
+automatic resize (spec section 21), which is version 1.3.1.
 
 Read [the specification](simple-chess-spec.md) first. It says what the app does. This
 document says what gets built, in what order, and how we know each part is finished.
@@ -780,6 +781,27 @@ API is reached today, and `src-tauri/capabilities/default.json`.
       a maximised window too.
 - [x] 15.7 Version 1.3.0 in the three files, docs swept, reuse review, commit, installer.
 
+---
+
+## Phase 16 - the window the layout actually needs
+
+**Goal: after either automatic resize, a reviewed game's report is beside the move list
+where it belongs, not under the board. Spec section 21.**
+
+Read first: spec section 21 all of it, then S21 and S2. `src/ui/board-size.ts`
+(`innerSizeForBoard` and the chrome constants), `src/ui/window-size.ts`,
+`src/ui/window-size.test.ts`, `src/ui/app.css` (`main` is the scrolling element),
+`src/ui/play.css` (`.play-body` and `.play-side`).
+
+- [ ] 16.1 `innerSizeForBoard` adds the width allowance of S23, named and explained, with
+      the height left exactly as it is.
+- [ ] 16.2 Tests: S15 item 26, and every existing number in `window-size.test.ts` that
+      the allowance moves, updated with the reason in its comment.
+- [ ] 16.3 Driven in the packaged window at BOTH automatic sizes, with a real reviewed
+      game on screen: the side panel's y equals the board's y, `main` does not scroll,
+      and `scrollWidth` equals `innerWidth`. Both themes.
+- [ ] 16.4 Version 1.3.1 in the three files, docs swept, reuse review, commit, installer.
+
 ## Progress
 
 | Phase | State |
@@ -800,6 +822,7 @@ API is reached today, and `src-tauri/capabilities/default.json`.
 | 13 - room for the report | **Complete** 2026-09-14. 324 tests green in 9.1 s. Every button and toggle is under the board in the four rows of S19; the side panel is the hint sentence and the report, which starts at the top of the column and reads in the head row's colour; the selector row lines up under the heading. `CHROME_BELOW` is 224 and the large board 584 at 1400 by 980. Version 1.2.0 in the three files; no window built at it. |
 | 14 - the three placements, corrected | **Complete** 2026-09-14. 325 tests green in 9.0 s. The two view toggles are back in the header, restored from `fccab21`; New game is in row four with Play as; the arrows end row one at the board's bottom right corner. The board is unchanged at 584 (576 at 1.5), because four rows are still four rows. Version 1.2.1 in the three files, and its installer built at 6,897,569 bytes, rebuilt at the gate as 6,897,286 (an NSIS bundle carries build timestamps, so two builds of one commit differ slightly; the file on disk is the gate's). |
 | 15 - the window matches the board | **Complete** 2026-09-14. 339 tests green in 9.5 s. The board size toggle sets the Windows window to the size that board needs, both ways: driven in the shipped 1.3.0 window, a window shrunk into the dead band grew to 1439 by 1223 with an 832 board on Large and went back to 1023 by 807 with a 416 board on Small, a maximised one un-maximised first, and one in the bottom right corner was moved back inside rather than left hanging off. Nothing resizes on the web. Version 1.3.0 in the three files, and its installer built at 6,902,858 bytes, rebuilt at the gate as 6,902,111 (NSIS build timestamps; the file on disk is the gate's). |
+| 16 - the window the layout actually needs | **Not started.** Spec section 21: the window the toggle asks for is a scrollbar's width short, so the report wraps under the board after an automatic resize. Version 1.3.1. |
 
 ## Phase notes
 

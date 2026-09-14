@@ -4,9 +4,10 @@ Version 2, 2026-09-13 (version 1 shipped 2026-09-12 as 1.0.0). Written by the
 orchestrator session from Nick's brief (`SimpleChess-brief.txt`) and his rulings
 (section 2, then section 18). Sections 1 to 17 specify version 1 and stay true;
 **section 18 specifies version 2, the sibling of the trainer's Play screen, section 19
-specifies versions 1.2.0 and 1.2.1, which made room for the report, and section 20
-specifies 1.3.0, where the window matches the board. A later section wins over an earlier
-one wherever they differ.** The product is now called **Simply Chess**; the earlier sections
+specifies versions 1.2.0 and 1.2.1, which made room for the report, section 20 specifies
+1.3.0, where the window matches the board, and section 21 specifies 1.3.1, which gives
+that window the room the layout actually needs. A later section wins over an earlier one
+wherever they differ.** The product is now called **Simply Chess**; the earlier sections
 keep the old name as history.
 
 This document says what the app does and how it is built. The
@@ -1321,3 +1322,65 @@ nothing resizes, and no test starts a Tauri call.
 To section 17: on Windows, shrinking the window into the dead band and pressing Large
 grows the window and draws a large board; pressing Small puts it back to 1023 by 807.
 The version is 1.3.0 when this section is green.
+
+---
+
+## 21. Version 1.3.1: the window the layout actually needs (ruled 2026-09-14)
+
+| # | Question | Ruling |
+|---|---|---|
+| Q29 | The report after an automatic resize | **It stays beside the move list.** Nick, using 1.3.0: "In both auto size cases the post game review drops to under the board, I really want it alongside the move list which is the natural place." The window the toggle asks for must have room for the three columns of 19.1 with a report in the third, not merely for the board. |
+
+### 21.1 What went wrong, measured
+
+`innerSizeForBoard` asks for the layout's EXACT minimum: the board plus
+`CHROME_BESIDE_WIDE`, which is the sum of the page padding, the bar, the gaps, the move
+list and the side panel's own 300 px minimum. Exact is one pixel too little, and this is
+why.
+
+Measured in the shipped 1.3.0 window at a display scale of 1.5, with a report showing:
+
+| Auto size | Page width for the columns | The three columns need | Result |
+|---|---|---|---|
+| Small, 1024 by 808 | 961 | 975 | the side panel wraps under the board |
+| Large, 1440 by 1224 | 1377 | 1391 | the same |
+
+Both are 14 px short, and the 14 is a scrollbar. **`main` is the scrolling element above
+900 by 700** (`app.css`), so its vertical scrollbar takes about 15 logical pixels out of
+the width WITHOUT changing `document.documentElement.clientWidth`, which is why the page
+reports no scrollbar at all while behaving as though one is there. The layout fits its
+window by one pixel, the scrollbar takes fifteen, and the side panel is pushed onto the
+next line, where it lands under the board with the report in it.
+
+**Proved by giving it the room**: the same window and the same report at an inner width
+of 1045 instead of 1024 puts the panel back beside the board at y 164 with `main` not
+scrolling at all. Twenty-one pixels was enough; the height was never the problem.
+
+### 21.2 The rule
+
+**S23. The window the toggle asks for has a margin, and the margin is the scrollbar.**
+`innerSizeForBoard` adds a width allowance to the layout's minimum, at least as wide as a
+vertical scrollbar at a display scale of 1, which is the worst case in logical pixels.
+The height keeps its exact figure, because the height was never short: with the panel
+beside the board the page fits its window, and it is only the wrap that made it tall.
+
+The allowance belongs to the WINDOW's arithmetic and not to the chrome constants.
+`CHROME_BESIDE_WIDE` describes what the layout truly needs and the fit rule of S2 uses it
+to answer honestly about a window the user sized; a scrollbar allowance buried in it
+would take pixels off the board on every screen for a scrollbar that is only sometimes
+there.
+
+**What this does not fix, and that is accepted.** A window the USER drags to within a
+scrollbar's width of the boundary still wraps the panel under the board, because the wrap
+is the layout degrading as it is meant to and the app cannot both honour the size the user
+chose and refuse to use it. The toggle is what promises a window that fits, and that
+promise is what this section makes true.
+
+### 21.3 Tests and acceptance, added
+
+To S15: (26) the window a board asks for is wider than the layout's bare minimum by at
+least a scrollbar, held in the same pure test as S21's other arithmetic.
+
+To section 17: on Windows, a game reviewed after either automatic resize has its report
+beside the move list, with `main` not scrolling. The version is 1.3.1 when this section
+is green.
