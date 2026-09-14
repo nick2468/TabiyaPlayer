@@ -1,7 +1,7 @@
 # Origin: London src-tauri/Cargo.toml, adapted: the package name, the lib name and the description.
 [package]
 name = "simply-chess"
-version = "1.3.0"
+version = "1.3.1"
 description = "A no-frills chess game against Stockfish"
 authors = ["Nick"]
 edition = "2021"

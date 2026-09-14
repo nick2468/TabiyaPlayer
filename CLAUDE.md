@@ -7,11 +7,24 @@ from is Q22 and undecided),
 from one React, TypeScript and Vite code base. The code is copied from those two apps
 wherever they already do the job, so that a shared library can follow later.
 
-Current state: **version 1.3.0 is built, and it is the whole of the specification.**
+Current state: **version 1.3.1 is built, and it is the whole of the specification.**
+Phase 16 landed 2026-09-14, after Nick used 1.3.0 and found that "in both auto size
+cases the post game review drops to under the board" (spec Q29, section 21): **the
+window the toggle asks for now has room for the scrollbar**, so a reviewed game's
+report stays beside the move list where it belongs. Phase 15 asked for the layout's
+exact minimum, and `main` is the scrolling element in any window at least 900 by 700,
+so its vertical scrollbar took 15 px out of the three columns and wrapped the side
+panel under the board - without changing `document.documentElement.clientWidth`, so
+the page reported no scrollbar at all while behaving as though one was there. The fix
+is one number, `SCROLLBAR_ALLOWANCE` in `ui/board-size.ts`, added to the WIDTH only in
+`innerSizeForBoard` and deliberately not to the chrome constants, which describe what
+the layout truly needs. The two automatic sizes are now **1047 by 807** and, on this
+machine, 1463 by 1223.
+
 Phase 15 landed 2026-09-14, after Nick shrank the window and found the Small/Large
 toggle inert (spec Q28, section 20): **the board size toggle now sets the Windows
 window to the size that board needs, both ways.** Small is the 416 board, so the
-window becomes 1023 by 807; Large is the biggest board the screen can show, worked
+window becomes 1023 by 807 (1047 from phase 16); Large is the biggest board the screen can show, worked
 out against the monitor's work area rather than the window, so the window is never
 sized for a board that will not be drawn. A maximised window is un-maximised first,
 and a window that would hang off the screen is moved back inside by the least that
@@ -211,7 +224,8 @@ scale).
   import it, with `storage/local-folder.test.ts` holding the three together); the
   chrome constants in `ui/board-size.ts` (the only pixel numbers in a `.ts` or
   `.tsx`), with `innerSizeForBoard` in that same file the one way to ask what a
-  board needs around it; `windowForBoard` and `matchWindowToBoard` in
+  board needs around it and the only home of the scrollbar allowance that goes
+  with it (spec S23); `windowForBoard` and `matchWindowToBoard` in
   `ui/window-size.ts` (all the arithmetic of making the Windows window match the
   board, and the only place anything resizes or moves that window), with the
   window's declared minimum written there and in `tauri.conf.json` and held

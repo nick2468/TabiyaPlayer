@@ -10,7 +10,9 @@ of those placements on Nick's ruling (Q27): items 1, 3 and 11 say what changed a
 rest stand, because nothing else about what the app DOES moved with them. **Brought to
 1.3.0 in phase 15**, where the board size toggle began changing the Windows window to
 match the board it asks for (Q28): items 9 and 11 carry it, and it is the first version
-in which the app has ever drawn the full 832 board.
+in which the app has ever drawn the full 832 board. **Brought to 1.3.1 in phase 16**,
+which gave that window room for the scrollbar so a reviewed game's report stays beside
+the move list instead of dropping under the board (Q29): items 1, 9 and 11 carry it.
 
 Where something was checked by driving the app, it was driven: the development build in
 the browser pane, the production bundle from `npm run preview`, and the packaged window
@@ -71,6 +73,7 @@ pixel, and `scrollWidth` never exceeds `innerWidth`.
 | Gate 13 findings | The same, driven by the orchestrator, and the 1.2.0 packaged window | Four rows each the width of the board at y 763, 813, 863 and 913; the board stayed 584 across the review; 576 in the shipped window at a display scale of 1.5 |
 | Phase 14 notes | The 1.2.1 placements, eight rows (two states x two sizes x two themes at 1400x980) | S16 held in all eight; board 576 large and 416 small at this machine's 1.5, unchanged by Q27; arrows ending on the board's right edge in every row; widest row 324 px of the small board's 416 |
 | Phase 15 notes | The 1.3.0 packaged window at both sizes, after the toggle resized it | S16 held at both: 416 ending on 580 in a 1024 by 808 window, and **832 ending on 996** in a 1440 by 1224 one, with `scrollWidth` equal to `innerWidth` in each and all four rows the width of the board |
+| Phase 16 notes | The 1.3.1 packaged window at both automatic sizes, in both themes, with a reviewed game on screen | The side panel beside the board at y 164 in all four, `main` not scrolling in any of them, and S16 holding: 416 ending on 580 with 1048 of 1048, and 832 ending on 996 with 1464 of 1464 |
 
 **The board does not change size when row two appears**, which is what phase 9's
 re-measured chrome was for: it counted a second button row that did not exist until phase
@@ -270,9 +273,42 @@ one is the start's, with Back disabled beside it.
 
 ## 9. Windows
 
-**Green as far as a session can take it, at 1.3.0. The installer run is Nick's.**
+**Green as far as a session can take it, at 1.3.1. The installer run is Nick's.**
 
-**The current installer is 1.3.0**, built in phase 15 with `npx tauri build` (2 m 4 s,
+**The current installer is 1.3.1**, built in phase 16 with `npx tauri build` (2 m 8 s,
+the Rust half 1 m 50 s):
+
+- `src-tauri/target/release/bundle/nsis/Simply Chess_1.3.1_x64-setup.exe`, **6,902,247
+  bytes (6.6 MB)**, and the executable at **9,156,096 bytes (8.7 MB)**. The installer's
+  shape is phase 8's and unchanged.
+- **A reviewed game's report is beside the move list after either automatic resize**
+  (spec S23, Q29), which is what 1.3.0 got wrong. Driven in the 1.3.1 window with a real
+  six-move game scanned by the engine into a blunder and an inaccuracy, at both automatic
+  sizes and in both themes. The three numbers the check is, in all four states: the side
+  panel's `y` is the board's `y`, both 164; `main.scrollHeight` equals
+  `main.clientHeight`, so nothing scrolls and no scrollbar is taken; and `scrollWidth`
+  equals `innerWidth`.
+
+  | State | Window inner | Width for the columns | Side panel |
+  |---|---|---|---|
+  | Large, dark | 1464 by 1224 | 1416 | x 1115, y 164, beside the board |
+  | Large, light | 1464 by 1224 | 1416 | the same |
+  | Small, light | 1048 by 808 | 1000 | x 699, y 164, beside the board |
+  | Small, dark | 1048 by 808 | 1000 | the same |
+
+  In 1.3.0 the same two windows were 1440 and 1024 wide, gave the columns 1377 and 961
+  against the 1391 and 975 they need, and put the panel under the board at y 803.
+- **S16 still holds at both sizes** in the wider windows: 416 ending on 580 with
+  `scrollWidth` 1048 of 1048, and **832 ending on 996** with 1464 of 1464, with the four
+  rows the width of the board in both. One screenshot of the large state with the report
+  in it was taken and looked at.
+- The game seeded for that drive was removed afterwards, the window put back to 1400 by
+  980, and the four settings keys left exactly as they were found.
+
+The 1.3.0 walk below is kept, because it is where the resize itself, the permissions and
+the corner case were checked and none of that has changed.
+
+**The 1.3.0 installer**, built in phase 15 with `npx tauri build` (2 m 4 s,
 the Rust half 1 m 49 s):
 
 - `src-tauri/target/release/bundle/nsis/Simply Chess_1.3.0_x64-setup.exe`, **6,902,858
@@ -282,7 +318,8 @@ the Rust half 1 m 49 s):
   debugging port, at a work area of 2560 by 1392 logical pixels and a display scale of
   1.5. Shrunk to 1000 by 780, which is the band where the toggle used to do nothing, it
   drew the 416 board; **Large took the window to 1439 by 1223 and the board to 832**, and
-  **Small put it back to 1023 by 807 and the board to 416**. Maximised, Small un-maximised
+  **Small put it back to 1023 by 807 and the board to 416**. (Phase 16 made those two
+  targets 24 px wider, for the reason spec S23 gives.) Maximised, Small un-maximised
   it and gave the same 1023 by 807. Put in the bottom right corner of the work area,
   Large moved it back inside to x 1106.67, y 132, where the previous position would have
   hung 415 px off the screen; the x was left alone in the case where only the height
@@ -384,7 +421,7 @@ Built in phase 12 with `npx tauri build`:
   bump deleting the user's game; that mutation was done in phase 8, put back, and the four
   cases re-run here.
 
-**Nick's, once:** install **1.3.0**, which is the newest installer on disk (over an
+**Nick's, once:** install **1.3.1**, which is the newest installer on disk (over an
 earlier one if it is installed, checking the
 settings and the game survive), open the app, play a move on the board, press Large and
 watch the window follow it, save a game and
@@ -435,14 +472,14 @@ Date: ______
 
 ## 11. Tests
 
-**Green.** 339 tests in 38 files, both projects, in 9.5 seconds warm on this machine,
-which is inside the twenty-second rule. By project: 268 string tests in 26 files, 71 DOM
+**Green.** 341 tests in 38 files, both projects, in 9.7 seconds warm on this machine,
+which is inside the twenty-second rule. By project: 270 string tests in 26 files, 71 DOM
 tests in 12. Nothing is skipped. `tsc -b` clean, `npx oxlint` silent. No em dashes under
 `src/` or `src-tauri/`. The version is held in three files by four tests, and the Windows
 data folder's name is held in three files by three more.
 
 All eleven tests of spec S15 are present, all eight that spec 18.7 adds, all four
-of 19.2 and both of 20.3:
+of 19.2, both of 20.3 and the one 21.3 adds:
 
 | S15 | Where |
 |---|---|
@@ -469,8 +506,9 @@ of 19.2 and both of 20.3:
 | 21. The report's text takes the head row's colour | `ui/review.dom.test.tsx`, "names a blunder with its move number, its tag and the better move", holds that no line carries a colour of its own; the colour itself is measured in the pane, because jsdom applies no stylesheet |
 | 22. The Play as radios and the two toggles work and are remembered, the radios from under the board and the toggles from the header | `ui/remembered.dom.test.tsx`, "remembers the level, the side, the board size and the theme" and "lets the engine open, and turns the board the other way up"; `ui/shell.dom.test.tsx` for the theme's own storage key |
 | 23. The arrows are in the first row under the board and the two toggles are in the header | `ui/viewer.dom.test.tsx`, "clicks, steps and marks, with the board still locked", for the arrows and for row two holding none; `ui/remembered.dom.test.tsx`, "puts every control but the two toggles under the board" for the header and "puts New game in the same row as Play as" for the third of Q27's placements |
-| 24. The window a board needs is worked out by a pure function, with the work-area clamp, the minimum-size clamp and the move back inside | `ui/window-size.test.ts`, thirteen tests: the 1023 by 807 small target, the large target from the work area, both clamps, the minimum read out of `tauri.conf.json` itself, and the four cases of moving or not moving |
+| 24. The window a board needs is worked out by a pure function, with the work-area clamp, the minimum-size clamp and the move back inside | `ui/window-size.test.ts`, fifteen tests: the 1047 by 807 small target, the large target from the work area, both clamps, the minimum read out of `tauri.conf.json` itself, and the four cases of moving or not moving |
 | 25. On the web the toggle changes the board and resizes nothing, and no test starts a Tauri call | `ui/remembered.dom.test.tsx`, "changes the board and resizes nothing on the web"; `ui/window-size.test.ts`, "does nothing, and imports no Tauri, where there is no window", which holds the second half with a mock whose factory would run if anything imported the Tauri window API |
+| 26. The window is wider than the layout's bare minimum by at least a scrollbar | `ui/window-size.test.ts`, "asks for more width than the layout itself needs", which reconstructs the chrome from two answers of the same function rather than importing a private constant, and "leaves the height exactly as the layout needs it" for the other half of spec S23 |
 
 Two items have found holes in this walk rather than confirming them, which is what the
 walk is for. Item 10, in phase 8: the redo stack was held and the hint and the outcome
