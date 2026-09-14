@@ -4366,3 +4366,56 @@ disk is this gate's.
 
 **Nick's three boxes are all that is left**, now against the 1.3.1 installer: 7.8, 8.6
 and 12.6.
+
+### Phase 17 notes (orchestrator, 2026-09-14)
+
+Built in this session rather than chipped, at Nick's request: "fix it here, in this
+session". It is one constant, its comment, six test numbers and a property, and the whole
+of it is `5613e55`.
+
+**Reproduced first, in the shipped 1.3.1 window, with Nick's own file.** He named it, so
+it was read: a 23-move game with **ten slips**, which is what makes the report long enough
+for `main` to scroll. My own six-move game at gate 16 had two slips and never triggered
+it. With his game loaded and reviewed at the small automatic size: `main.scrollWidth` 986
+against `clientWidth` 985, the vertical scrollbar taking its 15, and the side panel
+**309.67 px wide reporting a `scrollWidth` of 311**. The large size was identical - the
+same 309.67 - because the board and the move list grow together and the panel is what is
+left over.
+
+**The panel's own minimum is not the problem.** Measured with a `width: min-content`
+clone: the report shrinks to 300 happily. It is the ROUNDING at a display scale of 1.5,
+and the report's horizontal bar is where it shows: a computed width of 309.667 px that
+paints 311.
+
+**Then measured rather than guessed at.** The window was widened a step at a time from
+outside, with that report on screen:
+
+| Side panel | Its `scrollWidth` | The page |
+|---|---|---|
+| 311 | 312 | scrolls sideways |
+| 319 | 320 | scrolls sideways |
+| **327** | 327 | does not |
+| 335, 343, 359, 383, 415, 448.5 | exact | does not |
+
+So 327 is where it stops, and the allowance has to clear it. **64** puts the panel at
+349.67 at both sizes, 22 px clear, and makes the automatic windows 1087 by 807 and 1503
+by 1223. The constant is renamed `WINDOW_ALLOWANCE`, because "scrollbar" is no longer the
+whole of what it is for.
+
+**Proved in the shipped 1.3.2 window**, same file, same review, both automatic sizes and
+the 1400 window it opens in: the panel is 349.67 (448.5 at 1400, where it reaches its
+max-width), `horizontal` false and the overflow 0 in all three, and the panel is beside
+the board at y 164 in all three.
+
+**The bar:** 341 tests green, `tsc -b` clean, `npx oxlint` silent, `npm run build` clean.
+The allowance put back to 24 turns six tests red, and S15 item 26 now holds the property
+- the allowance covers the scrollbar AND the panel's room over its minimum - rather than
+the number, so a plausible-looking value that is too small cannot pass.
+
+**A mistake worth writing down, because this project's own CLAUDE.md warns about it.**
+The mutation check above was first reversed with `git checkout -- src/ui/board-size.ts`,
+and board-size.ts was tracked with my own UNCOMMITTED fix in it, so the checkout threw
+the fix away along with the mutation. The tests went green against 1.3.1's code and would
+have looked like a pass. It was caught by re-reading the constant rather than trusting
+the word "restored", re-applied, and the mutation redone with the reverse edit, which is
+what the hazard note says to do and what I had just not done.
