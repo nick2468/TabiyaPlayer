@@ -4442,3 +4442,37 @@ the fix away along with the mutation. The tests went green against 1.3.1's code 
 have looked like a pass. It was caught by re-reading the constant rather than trusting
 the word "restored", re-applied, and the mutation redone with the reverse edit, which is
 what the hazard note says to do and what I had just not done.
+
+### Phase 18 notes (orchestrator, 2026-09-14)
+
+One question and three small changes, in this session as phase 17 was.
+
+- **`tauri.conf.json` declares 1087 by 807**, the small board's own window, where it
+  declared 1400 by 980. Small is the default board size, so a fresh install now opens at
+  exactly the size the app would choose and nothing resizes at all. The two files cannot
+  import from each other, so `window-size.test.ts` reads the declared width and height out
+  of the configuration and holds them against `windowForBoard('small', ...)`. A drift in
+  either file fails the suite, which is the same guard the window's minimum already had.
+- **`windowForBoard` takes `atLaunch`.** It centres, where the toggle leaves the window
+  where it is. The reason is in the parameter's own comment: at a launch nobody has placed
+  the window, the configuration centres it at the size it declares, and a window that then
+  resized from its top-left corner would sit off centre by half the difference. Every
+  clamp it already had still applies, including the one that puts a window too big for the
+  screen at the work area's corner rather than off the top left of it.
+- **The startup effect asks once**, beside the game it reopens.
+
+**Proved in the shipped 1.4.0 build, twice, by restarting it with each size remembered.**
+
+| Remembered | Window inner | Board | Where |
+|---|---|---|---|
+| small | **1088 by 808** | 416 | centred, `screenX` 737 on a 2560 wide work area |
+| large | **1504 by 1224** | 832 | centred, `screenX` 529 |
+
+Neither scrolls in either direction. The one pixel over the 1087 and 1503 the arithmetic
+asks for is the display scale of 1.5 rounding, in the app's favour, and is the same pixel
+every window reading in this plan carries.
+
+**The bar:** 346 tests green (five new), `tsc -b` clean, `npx oxlint` silent, `npm run
+build` clean. One expectation was wrong when first written and the code was right: a
+centred x of (1920 - 1103) / 2 is 408.5, which rounds to 409, not the 408 the comment
+claimed. The comment now says so.

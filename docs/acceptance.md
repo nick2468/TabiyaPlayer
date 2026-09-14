@@ -273,6 +273,14 @@ one is the start's, with Back disabled beside it.
 
 ## 9. Windows
 
+**At 1.4.0 the window opens at one of its two automatic sizes** (spec S25), which is the
+first thing a person sees and was previously 1400 by 980, matching neither. Driven in the
+shipped 1.4.0 build, twice, by restarting it with each size remembered: with Small
+remembered it opened at **1088 by 808 with the 416 board**, and with Large at **1504 by
+1224 with the 832 board**, both centred on the work area, with the page scrolling in
+neither direction. The one-pixel difference from the 1087 and 1503 the arithmetic asks
+for is the display scale of 1.5 rounding, in the app's favour.
+
 **Green as far as a session can take it, at 1.3.1. The installer run is Nick's.**
 
 **The current installer is 1.3.1**, built in phase 16 with `npx tauri build` (2 m 8 s,
