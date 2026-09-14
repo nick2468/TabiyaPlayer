@@ -3,9 +3,10 @@
 Version 2, 2026-09-13 (version 1 shipped 2026-09-12 as 1.0.0). Written by the
 orchestrator session from Nick's brief (`SimpleChess-brief.txt`) and his rulings
 (section 2, then section 18). Sections 1 to 17 specify version 1 and stay true;
-**section 18 specifies version 2, the sibling of the trainer's Play screen, and section
-19 specifies version 1.2.0, which made room for the report. A later section wins over an
-earlier one wherever they differ.** The product is now called **Simply Chess**; the earlier sections
+**section 18 specifies version 2, the sibling of the trainer's Play screen, section 19
+specifies versions 1.2.0 and 1.2.1, which made room for the report, and section 20
+specifies 1.3.0, where the window matches the board. A later section wins over an earlier
+one wherever they differ.** The product is now called **Simply Chess**; the earlier sections
 keep the old name as history.
 
 This document says what the app does and how it is built. The
@@ -1248,3 +1249,75 @@ are in the header, which is Q27's three placements held where a test can see the
 To section 17: the screen is 19.1's at both sizes and both themes at the three
 viewports with S16 holding, and the large board's new size is recorded. The version is
 1.2.0 when this section is green, and **1.2.1 when Q27's three placements are**.
+
+---
+
+## 20. Version 1.3.0: the window matches the board (ruled 2026-09-14)
+
+| # | Question | Ruling |
+|---|---|---|
+| Q28 | The board size toggle in a small window | **The window changes to match the board.** Nick: "The Small/Large toggle doesn't work going from small to large if the user has shrunk the window size. Make it so that the window size auto changes to match the dimension that fits everything naturally." Asked whether Small should shrink the window back, he chose **both ways**: the window is always the size the chosen board needs. |
+
+### 20.1 Why the toggle looked dead
+
+`fitBoardSize` never answers less than `BOARD_SIZE`, which is 416, because a viewport too
+small for the small board is one where scrolling beats shrinking the pieces past reading
+(S2). So in a window with less than a large board's worth of room, Large computes 416,
+the screen does not change, and the toggle reads as broken. It was not broken; it was
+honest about a window with no room in it.
+
+How small is too small, with the layout of 19.1 and the chrome of `board-size.ts` (167
+above, 224 below, 607 beside): the first board bigger than 416 is 424 at a display scale
+of 1, and 432 at 1.25 or 1.5, where the size must be a multiple of 32 or 16. So the
+toggle does nothing until the window is about **1039 wide and 823 tall**. The window's
+own minimum is 960 by 720, so there is a band of window sizes, reachable by dragging a
+corner, where the toggle is inert. That band is what Nick found.
+
+### 20.2 The rule
+
+**S21. The board size toggle sets the window to the size that board needs, on Windows.**
+
+- The size a board needs is the board plus the chrome: `board + CHROME_BESIDE_WIDE` wide
+  and `board + CHROME_ABOVE + CHROME_BELOW` tall, as an INNER size. Those three constants
+  keep their single home in `ui/board-size.ts` and are not written down anywhere else.
+- **Small** is the 416 board, so the window becomes 1023 by 807.
+- **Large** is the biggest board the screen can actually show: `fitBoardSize` asked for
+  832 against the monitor's work area rather than against the window, so the window never
+  grows past the screen and the board it is sized for is the board that will be drawn.
+- The target is clamped to the monitor's **work area** (the screen without its taskbar)
+  less the window's own frame, which is `outerSize` minus `innerSize`, measured at the
+  moment of the change rather than assumed.
+- A **maximised** window is un-maximised first: a maximised window ignores a size.
+- If the window would then hang off the work area, it is moved back inside, by the least
+  that puts it there. It is not re-centred: a window the user placed stays where they put
+  it as far as it can.
+- The window's declared minimum, 960 by 720, still binds; a target under it is clamped up
+  to it, and then the board is whatever fits, which is the behaviour of every version
+  before this one.
+- **Opening the app resizes nothing.** The window opens at the size `tauri.conf.json`
+  gives it, or the size Windows remembers for it. Only the toggle resizes.
+
+**On the web there is no window to resize and nothing changes.** A page cannot resize a
+browser window it did not open, and an iPad has no window at all, so the toggle keeps
+S2's behaviour there: the largest board that fits, and Large may equal Small on a small
+screen. The desktop call is imported lazily behind `isDesktop()` (S14), so the browser
+bundle does not carry it.
+
+**S22. Three more permissions in the Tauri capability.** Verified against
+`src-tauri/gen/schemas/acl-manifests.json`: `core:window:default`, which `core:default`
+brings in, already allows the app to READ its own geometry (`current-monitor`,
+`inner-size`, `outer-size`, `scale-factor`, `is-maximized`, `outer-position`). It does
+not allow it to CHANGE it. So the capability gains `core:window:allow-set-size`,
+`core:window:allow-unmaximize` and `core:window:allow-set-position`, and its description
+says what they are for. Section 11.4's list of five entries becomes eight.
+
+### 20.3 Tests and acceptance, added
+
+To S15: (24) the size a board needs is worked out by a pure function, tested without a
+window, including the work-area clamp, the minimum-size clamp and the move back inside;
+(25) the toggle still changes the remembered setting and the board on the web, where
+nothing resizes, and no test starts a Tauri call.
+
+To section 17: on Windows, shrinking the window into the dead band and pressing Large
+grows the window and draws a large board; pressing Small puts it back to 1023 by 807.
+The version is 1.3.0 when this section is green.

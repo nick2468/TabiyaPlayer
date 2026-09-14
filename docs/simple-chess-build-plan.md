@@ -9,8 +9,9 @@ so every control moved under the board and the report took the side panel, and 1
 built and its installer made. **Phase 14 landed 2026-09-14 and passed its gate the same
 day**: Nick used 1.2.0 and corrected three placements (spec Q27), so the two view toggles
 went back to the header, New game joined Play as and the stepping arrows moved to the
-board's bottom right corner. 1.2.1 is built and its installer made. **Nothing is left in
-the plan but Nick's own three boxes.**
+board's bottom right corner. 1.2.1 is built and its installer made. **Phase 15 is next**: Nick shrank the window, found the
+board size toggle inert, and ruled that the window should change to match the board
+(spec section 20), which is version 1.3.0.
 
 Read [the specification](simple-chess-spec.md) first. It says what the app does. This
 document says what gets built, in what order, and how we know each part is finished.
@@ -748,6 +749,35 @@ commit before phase 13 and holds the header this brings back.
 - [x] 14.6 Version 1.2.1 in the three files, docs swept, reuse review, commit, and the
       installer built.
 
+---
+
+## Phase 15 - the window matches the board
+
+**Goal: choosing a board size sets the Windows window to the size that board needs, both
+ways, and the toggle is never inert again. Spec section 20.**
+
+Read first: spec section 20 all of it, then S2 in section 4 (the fit rule), S14 (Tauri
+imported lazily) and 11.4 (the capability). `src/ui/board-size.ts`,
+`src/ui/use-board-pixels.ts`, `src/ui/App.tsx`, `src/storage/paths.ts` for how a Tauri
+API is reached today, and `src-tauri/capabilities/default.json`.
+
+- [ ] 15.1 A pure function that answers the window size a board needs, with the work
+      area, the window frame, the minimum size and the move back inside all in it, and
+      its test. No browser and no Tauri in it.
+- [ ] 15.2 The desktop half: read the monitor, the frame and whether the window is
+      maximised; un-maximise if it is; set the size; move the window back inside the
+      work area if it now hangs off. Imported lazily behind `isDesktop()`.
+- [ ] 15.3 The toggle calls it, on both sizes, and does nothing extra on the web.
+- [ ] 15.4 The capability gains `core:window:allow-set-size`,
+      `core:window:allow-unmaximize` and `core:window:allow-set-position`, and its
+      description says what they are for.
+- [ ] 15.5 Tests: S15 items 24 and 25. No test starts a Tauri call.
+- [ ] 15.6 Driven in the pane (nothing resizes, the toggle still works) and then in the
+      packaged window: shrink into the dead band, press Large, watch the window grow and
+      the board become large; press Small and watch it go back to 1023 by 807. Both from
+      a maximised window too.
+- [ ] 15.7 Version 1.3.0 in the three files, docs swept, reuse review, commit, installer.
+
 ## Progress
 
 | Phase | State |
@@ -767,6 +797,7 @@ commit before phase 13 and holds the header this brings back.
 | 12 - version 1.1.0 | **Complete** 2026-09-13, box 12.6 is Nick's. 324 tests green in 9.2 s. Gate 11's finding fixed in `ce0e743`; 1.1.0 in the three files; the installer is 6,898,142 bytes and the shipped window was driven, reviewed and walked at 688 with S16 holding; `docs/acceptance.md` rewritten for version 2; both of Q22's routes documented. |
 | 13 - room for the report | **Complete** 2026-09-14. 324 tests green in 9.1 s. Every button and toggle is under the board in the four rows of S19; the side panel is the hint sentence and the report, which starts at the top of the column and reads in the head row's colour; the selector row lines up under the heading. `CHROME_BELOW` is 224 and the large board 584 at 1400 by 980. Version 1.2.0 in the three files; no window built at it. |
 | 14 - the three placements, corrected | **Complete** 2026-09-14. 325 tests green in 9.0 s. The two view toggles are back in the header, restored from `fccab21`; New game is in row four with Play as; the arrows end row one at the board's bottom right corner. The board is unchanged at 584 (576 at 1.5), because four rows are still four rows. Version 1.2.1 in the three files, and its installer built at 6,897,569 bytes, rebuilt at the gate as 6,897,286 (an NSIS bundle carries build timestamps, so two builds of one commit differ slightly; the file on disk is the gate's). |
+| 15 - the window matches the board | **Not started.** Spec section 20: the board size toggle sets the window to the size that board needs, both ways, on Windows. Version 1.3.0. |
 
 ## Phase notes
 
