@@ -618,7 +618,7 @@ a reinstall" untrue.
 ### 12.2 Hosting
 
 Cloudflare Pages, project `simplechess`, built from the private GitHub repository
-`nick2468/SimpleChess` on `main` with `npm run build` into `dist`, Node 22.12.0 from
+`nick2468/SimpleChess` on `main` with `npm run build` into `dist`, Node 24.21.0 from
 `.node-version` and a `NODE_VERSION` build variable, custom domain
 `simplechess.datacrafter.net`. Every push to `main` rebuilds and republishes.
 

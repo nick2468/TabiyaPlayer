@@ -48,7 +48,7 @@ Cloudflare route.
 | Cloudflare's own URL | `simplechess-___.pages.dev` (Cloudflare picks the middle) |
 | Build command | `npm run build` |
 | Output directory | `dist` |
-| Node version | 22.12.0, from `.node-version` and a `NODE_VERSION` variable |
+| Node version | 24.21.0, from `.node-version` and a `NODE_VERSION` variable |
 
 **Every push to `main` rebuilds and republishes.** Nothing else to run.
 
@@ -132,8 +132,11 @@ Private is fine. Cloudflare can read a private repository once you grant it.
 
 **The Node version matters.** Cloudflare's default is older than Vite 8 accepts, and
 the build fails with a version error. The repository holds a `.node-version` file
-saying `22.12.0`. Set a `NODE_VERSION` build variable to the same value as well, as
-Conquest's project does. The build log says which version it installed.
+saying `24.21.0`. Set a `NODE_VERSION` build variable to the same value as well, as
+Conquest's project does. Keep the two equal: Cloudflare does not document which one
+wins when they differ. The build log says which version it installed. (The pin was
+22.12.0 until 2026-09-19, when every sibling app moved to the Node 24 long-term-support
+line after its tests and build passed on it.)
 
 `npm run build` runs `npm run engine` first, which copies Stockfish out of the
 `stockfish` package into `public/engine/`. That folder is gitignored on purpose, so

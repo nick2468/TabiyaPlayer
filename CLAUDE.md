@@ -175,8 +175,10 @@ scale).
 
 ## Toolchain
 
-- Node 22.12.0 (`.node-version`), npm. The Rust toolchain is installed but **not on a
-  tool shell's PATH**: `cargo` and `rustc` are in `%USERPROFILE%\.cargo\bin`, so put it
+- Node 24.21.0 (`.node-version`, raised from 22.12.0 on 2026-09-19 after the tests,
+  `tsc -b` and the build all passed on it), npm. The machine's own node may still be
+  20.20.2 until Nick upgrades it, and everything is green on that too. The Rust
+  toolchain is installed but **not on a tool shell's PATH**: `cargo` and `rustc` are in `%USERPROFILE%\.cargo\bin`, so put it
   on the path for any command that builds the window (`export
   PATH="$HOME/.cargo/bin:$PATH"` in Bash, `$env:Path = "$env:USERPROFILE\.cargo\bin;$env:Path"`
   in PowerShell). NSIS is already fetched, at `%LOCALAPPDATA%\tauri\NSIS`.

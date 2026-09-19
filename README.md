@@ -39,7 +39,7 @@ acceptance list item by item and says who checked what.
 
 ## Running it
 
-**In a browser, while working on it.** Node 22.12.0 and npm:
+**In a browser, while working on it.** Node 24.21.0 and npm (20.19 or newer also works):
 
 ```bash
 npm install
