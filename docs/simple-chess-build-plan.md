@@ -899,11 +899,23 @@ confirmed by him directly: the name, desktop only, the data folder, and each out
       Player v1.5.0", opened at 1087 by 807 with the 416 board, the bar reading +0.4 on the
       opening position so the engine answers, a fresh profile in `Tabiya Player Data`, no
       service worker, no sideways scroll.
-- [ ] 20.5b The old Simply Chess uninstalled, silently so its data folder stays for Nick
-      to delete, and its install folder checked afterwards.
-- [ ] 20.6 GitHub: created private, pushed, released with the installer, licence
-      checked, then made public.
-- [ ] 20.7 Nick's landing page: an entry beside Tabiya, pushed.
+- [x] 20.5b The old Simply Chess uninstalled, after Nick confirmed his game was saved,
+      with `uninstall.exe /S`: a silent uninstall skips the confirm page, so the hook's
+      `$DeleteAppDataCheckboxState` stays 0 and `Simply Chess Data` is left for him to
+      delete. Afterwards the uninstall entry, the Start menu shortcut and the install
+      folder were all gone, with no executable left behind, which the trainer's rename
+      did leave. Only Tabiya and Tabiya Player are registered now.
+- [x] 20.6 GitHub: `github.com/nick2468/TabiyaPlayer`, created private, pushed, tag
+      `v1.5.0` with the installer on its release (sha256 `0adfeadf...f66cf668`, the same
+      as the local file; GitHub names the asset `Tabiya.Player_1.5.0_x64-setup.exe`,
+      because an asset name cannot hold a space), `/releases/latest` resolving to it,
+      the licence detected as MIT through `gh api`, then made public. Fetched with no
+      token, the repository, the latest release and the licence all answer 200. The
+      release notes name the Stockfish build inside the installer and where its source
+      is, because the binary carries GPL-3.0 obligations the source does not.
+- [x] 20.7 Nick's landing page: an entry beside Tabiya with a Download link and no Play
+      link, pushed as `nick2468@a3be821` and read back from GitHub. Tabiya's session added
+      the link the other way, `Tabiya@5622b37`; this session does not edit `../Tabiya`.
 - [ ] 20.8 Nick renames the folder `SimpleChess` to `TabiyaPlayer`, and the memory and
       the build cache follow it.
 
@@ -931,7 +943,7 @@ confirmed by him directly: the name, desktop only, the data folder, and each out
 | 17 - the pixel the panel rounds by | **Complete** 2026-09-14, done in the orchestrator session. The allowance is 64 rather than 24, so the side panel sits at 349 px instead of 309.67 and its full-width children no longer round a pixel past it. The automatic windows are 1087 by 807 and 1503 by 1223. Version 1.3.2. |
 | 18 - the window opens at the size it will use | **Complete** 2026-09-14, done in the orchestrator session. The window is declared at the small board's own 1087 by 807 and the launch asks for the remembered size, centred. A small-board launch resizes nothing; a large-board one resizes once. Version 1.4.0. |
 | 19 - the report scrolls, not the window | **Complete** 2026-09-14, done in the orchestrator session. The side panel has the board's height as a ceiling and scrolls itself, so a long report no longer takes the board, the rows and the move list up the screen with it. The board's pixels moved to the row, which both columns now read. Version 1.4.1. |
-| 20 - public, as Tabiya Player | **In progress** 2026-10-19, in the orchestrator session. Spec section 24: renamed, MIT licensed, desktop only, version 1.5.0. |
+| 20 - public, as Tabiya Player | **Complete but for the folder rename** 2026-10-19, in the orchestrator session. Spec section 24: renamed, MIT licensed, desktop only, version 1.5.0, installed here in place of Simply Chess, public at github.com/nick2468/TabiyaPlayer with the installer on release v1.5.0, and on Nick's landing page. Box 20.8 is Nick's. |
 
 ## Phase notes
 
