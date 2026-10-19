@@ -1,13 +1,25 @@
-# Simply Chess
+# Tabiya Player
 
-A no-frills chess game against Stockfish, on one screen. It runs as an installed
-Windows app (Tauri 2 over WebView2, like the Repertoire Trainer in `../London`) and as
-an iPad Home Screen app (a PWA, like Conquest in `../Conquest`; where it is served
-from is Q22 and undecided),
-from one React, TypeScript and Vite code base. The code is copied from those two apps
-wherever they already do the job, so that a shared library can follow later.
+A no-frills chess game against Stockfish, on one screen: the companion to Tabiya, the
+opening trainer in `../Tabiya`, which was called London and then Repertoire Trainer
+while this app's code was copied from it. **It is a Windows desktop app only** (Tauri 2
+over WebView2). The PWA work of phase 7 is still in the tree, built and tested, and is
+not published: Nick ruled Q22 desktop only (spec section 24). One React, TypeScript and
+Vite code base, copied from Tabiya and Conquest (`../Conquest`) wherever they already do
+the job, so that a shared library can follow later. **It is public**: MIT, at
+`github.com/nick2468/TabiyaPlayer` (`origin`).
 
-Current state: **version 1.4.1 is built, and it is the whole of the specification.**
+Current state: **version 1.5.0, public as Tabiya Player** (phase 20, spec section 24,
+2026-10-19). Renamed from Simply Chess with three identities kept apart (S27): the
+product name and the package names moved, so the installer is
+`Tabiya Player_<version>_x64-setup.exe` and the executable `tabiya-player.exe`; the data
+folder moved to `Tabiya Player Data` with no migration, because Nick was the only person
+with it installed; the Tauri identifier `com.nick.simply-chess` and the `simply-chess.*`
+storage keys did NOT move, because they are invisible, and a comment at each says so.
+The documents keep the names they were written under: `docs/simple-chess-*.md`,
+`chips/`, the brief, and the dated spec and plan sections. Do not find-and-replace them.
+
+Version 1.4.1, before the rename, was the whole of the specification as Simply Chess.
 Phase 19 landed 2026-09-14, after Nick found that a long report scrolled the whole window
 (spec Q32, section 23): **the side panel is now a column that scrolls itself**, with the
 board's own height as its ceiling and the move list's thin scrollbar, so the board, the
@@ -182,7 +194,7 @@ scale).
   on the path for any command that builds the window (`export
   PATH="$HOME/.cargo/bin:$PATH"` in Bash, `$env:Path = "$env:USERPROFILE\.cargo\bin;$env:Path"`
   in PowerShell). NSIS is already fetched, at `%LOCALAPPDATA%\tauri\NSIS`.
-- `npm run dev` on port 5185 (`--strictPort`; 5173 is dc.web, 5175 is London, 5180
+- `npm run dev` on port 5185 (`--strictPort`; 5173 is dc.web, 5175 is Tabiya, 5180
   and 5181 are Conquest). `npm run preview` on 5186 serves the built files with the
   service worker, which is the only way to test offline.
 - `npx vitest run` runs both test projects. `tsc -b` type-checks. `npm run build`
@@ -280,8 +292,11 @@ scale).
   `Co-Authored-By: <the model you are> <noreply@anthropic.com>`. PowerShell 5.1
   mangles some multi-line messages: write the message to a scratch file and use
   `git commit -F` when in doubt.
-- Never change anything under `../London` or `../Conquest`. Read and copy only.
-- Never push. Nick pushes.
+- Never change anything under `../Tabiya` (once `../London`) or `../Conquest`. Read
+  and copy only. A cross-link or a fix there goes to that repository's own session.
+- **Builders never push.** The remote exists from 1.5.0 (`origin`, public), and pushing
+  is the orchestrator's step after a review passes, which is the house rule in
+  `C:\Users\nick2\Code\CLAUDE.md`.
 
 ## Standing hazards
 

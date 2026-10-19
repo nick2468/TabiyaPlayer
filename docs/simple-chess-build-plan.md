@@ -1,6 +1,6 @@
-# Simple Chess - build plan
+# Tabiya Player - build plan
 
-Version 3, 2026-09-14. Status: **Active.** Version 1 (phases 0 to 8) is built and every
+Version 4, 2026-10-19. Status: **Active.** **Phase 20 (spec section 24) took the app public as Tabiya Player**, MIT, desktop only; everything below it is the record of building it as Simple Chess and then Simply Chess, and keeps those names. Version 1 (phases 0 to 8) is built and every
 gate passed by 2026-09-12; its boxes 7.8 and 8.6 are Nick's. Version 2 (phases 9 to 12,
 spec section 18) made the app Simply Chess, a sibling of the trainer's Play screen, and
 shipped as 1.1.0 on 2026-09-13 with every gate passed. Phase 13 (spec section 19) landed 2026-09-14 and
@@ -872,6 +872,41 @@ Done in the orchestrator session, as phases 17 and 18 were.
       overflow its column.
 - [x] 19.6 Docs swept, committed, installer built.
 
+---
+
+## Phase 20 - public, as Tabiya Player
+
+**Goal: the app is Tabiya Player everywhere a person reads it, MIT licensed, installed in
+place of Simply Chess, its source public, its installer on a release, and on Nick's
+landing page. Spec section 24.**
+
+Done in the orchestrator session at Nick's request, relayed from the Tabiya session and
+confirmed by him directly: the name, desktop only, the data folder, and each outward step.
+
+- [x] 20.1 The product name, the package names, the window title, the header, the PGN
+      tag and default file name, and the data folder, in the files spec 24 lists; the
+      identifier and the storage keys unchanged, with a comment at each saying why.
+- [x] 20.2 MIT: `LICENSE`, `package.json`, `Cargo.toml`, and the README's Licence section
+      with the Stockfish paragraph.
+- [x] 20.3 The README rewritten for a stranger: what it is, the download with the
+      unsigned-installer note, how to run and build it, how it was built, the licence.
+- [x] 20.4 `.claude/launch.json` runs npm relatively, so the dev server survives the
+      folder rename and a clone anywhere.
+- [x] 20.5 Version 1.5.0 built and Tabiya Player installed: `Tabiya Player_1.5.0_x64-setup.exe`,
+      6,902,875 bytes, registered as "Tabiya Player 1.5.0" at `%LOCALAPPDATA%\Tabiya Player`,
+      holding `tabiya-player.exe` and its uninstaller, with a Start menu entry of its own.
+      The INSTALLED window, driven over its debugging port: title and header "Tabiya
+      Player v1.5.0", opened at 1087 by 807 with the 416 board, the bar reading +0.4 on the
+      opening position so the engine answers, a fresh profile in `Tabiya Player Data`, no
+      service worker, no sideways scroll.
+- [ ] 20.5b The old Simply Chess uninstalled, silently so its data folder stays for Nick
+      to delete, and its install folder checked afterwards.
+- [ ] 20.6 GitHub: created private, pushed, released with the installer, licence
+      checked, then made public.
+- [ ] 20.7 Nick's landing page: an entry beside Tabiya, pushed.
+- [ ] 20.8 Nick renames the folder `SimpleChess` to `TabiyaPlayer`, and the memory and
+      the build cache follow it.
+
 ## Progress
 
 | Phase | State |
@@ -896,6 +931,7 @@ Done in the orchestrator session, as phases 17 and 18 were.
 | 17 - the pixel the panel rounds by | **Complete** 2026-09-14, done in the orchestrator session. The allowance is 64 rather than 24, so the side panel sits at 349 px instead of 309.67 and its full-width children no longer round a pixel past it. The automatic windows are 1087 by 807 and 1503 by 1223. Version 1.3.2. |
 | 18 - the window opens at the size it will use | **Complete** 2026-09-14, done in the orchestrator session. The window is declared at the small board's own 1087 by 807 and the launch asks for the remembered size, centred. A small-board launch resizes nothing; a large-board one resizes once. Version 1.4.0. |
 | 19 - the report scrolls, not the window | **Complete** 2026-09-14, done in the orchestrator session. The side panel has the board's height as a ceiling and scrolls itself, so a long report no longer takes the board, the rows and the move list up the screen with it. The board's pixels moved to the row, which both columns now read. Version 1.4.1. |
+| 20 - public, as Tabiya Player | **In progress** 2026-10-19, in the orchestrator session. Spec section 24: renamed, MIT licensed, desktop only, version 1.5.0. |
 
 ## Phase notes
 

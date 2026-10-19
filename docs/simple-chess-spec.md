@@ -1,4 +1,4 @@
-# Simple Chess - specification
+# Tabiya Player - specification
 
 Version 2, 2026-09-13 (version 1 shipped 2026-09-12 as 1.0.0). Written by the
 orchestrator session from Nick's brief (`SimpleChess-brief.txt`) and his rulings
@@ -7,9 +7,10 @@ orchestrator session from Nick's brief (`SimpleChess-brief.txt`) and his rulings
 specifies versions 1.2.0 and 1.2.1, which made room for the report, section 20 specifies
 1.3.0, where the window matches the board, section 21 specifies 1.3.1 and 1.3.2, which give
 that window the room the layout actually needs, section 22 specifies 1.4.0, where the
-window opens at the size the remembered board needs, and section 23 specifies 1.4.1,
-where the report scrolls in its own column. A later section wins over an earlier one
-wherever they differ.** The product is now called **Simply Chess**; the earlier sections
+window opens at the size the remembered board needs, section 23 specifies 1.4.1,
+where the report scrolls in its own column, and section 24 specifies 1.5.0, where the app
+went public as Tabiya Player. A later section wins over an earlier one
+wherever they differ.** The product is now called **Tabiya Player** (section 24); it was **Simply Chess** from section 18 and Simple Chess before that, and the earlier sections
 keep the old name as history.
 
 This document says what the app does and how it is built. The
@@ -1517,3 +1518,51 @@ To section 17: on Windows, a loaded game of two dozen moves with a report long e
 overflow its column scrolls inside the panel, with the board, the four rows and the move
 list staying exactly where they are and the page not scrolling at all. The version is
 1.4.1 when this section is green.
+
+---
+
+## 24. Version 1.5.0: public, as Tabiya Player (ruled 2026-10-19)
+
+Nick, through the Tabiya session on 2026-10-19: make this app public the way the trainer
+was made public the day before. Settle the name, add a licence, rebuild, put the new
+install in place of the old one, publish the source, and add it to his landing page.
+
+| # | Question | Ruling |
+|---|---|---|
+| Q33 | The public name | **Tabiya Player.** The trainer went public as Tabiya; this is its companion. Tabiya is where the openings are learnt, and Tabiya Player is where the game is played out, which is what this app has been since Q16 made it a sibling of the trainer's Play screen. Offered beside it: keeping Simply Chess, which was the cheapest by far but sits in a crowd (a Steam game of that name that also played Stockfish, SimpleChess on the App Store, Simple Chess on Android and iOS), and two chess terms that searched clear, Zugzwang and Luft. He proposed the Tabiya family himself and chose Player over Chess and Chess Player. |
+| Q34 | The licence | **MIT, "Copyright (c) 2026 Nick Walker"**, the shape of every public repository of his: a `LICENSE` file, the licence and the full name in `package.json` and `src-tauri/Cargo.toml`, and a Licence section in the README with the trainer's Stockfish paragraph. |
+| Q22 | Deployment, settled | **Desktop only.** "I won't make it a web app." The PWA work of phase 7 stays in the tree, built and tested, and is not published; `docs/simple-chess-deploy.md` becomes the record of two routes that were written up and not taken. `npm run dev` still runs the app in a browser, which is how it is developed and how anyone can try it without installing. |
+| Q35 | The data folder | **Renamed with the app, without a migration.** Nick is the only person with the app installed, and he saves his game in progress before the change; the level, the side, the board size and the theme reset to their defaults. Carrying a WebView2 profile across folders is not worth code for one person's four settings. |
+
+**S27. Three identities, and only one of them moves.** Learnt from the trainer's rename,
+whose code carried a false claim for weeks about which identity caused a second install.
+
+| | Before | After | Why |
+|---|---|---|---|
+| Product name | Simply Chess | **Tabiya Player** | What a person reads: the window title, the header, the Start menu, the install folder, the installer's file name, and the PGN `Event` tag. NSIS keys its uninstall entry on this, so a new product name installs as a second application beside the first, which is expected and is undone by uninstalling the old one by hand. |
+| Package names | `simply-chess` in `package.json` and Cargo | **`tabiya-player`** | The executable is named by the Cargo package, not the product name: it becomes `tabiya-player.exe`. Two sources for two names, and both have to land. |
+| Data folder | `Simply Chess Data` | **`Tabiya Player Data`** | Q35. The three literals in `paths.ts`, `lib.rs` and the NSIS hook move together, and `local-folder.test.ts` still holds them to each other and to the product name. |
+| Tauri identifier | `com.nick.simply-chess` | **unchanged** | Invisible. Nothing reads it but the fallback profile folder. Changing it buys nothing. |
+| Storage keys | `simply-chess.*` | **unchanged** | Invisible. On the desktop they start empty anyway in the new folder's profile, so renaming them would only reset the web build's settings for no gain. A comment at each declaration says so, so a later tidy-up does not "fix" them. |
+
+**What is not renamed, on purpose.** The documents keep the name they were written
+under: `chips/`, `SimpleChess-brief.txt`, the dated sections of this specification, the
+plan's phase sections and their findings, and the file names `docs/simple-chess-*.md`,
+which every one of those links to. A find-and-replace would turn a record of what
+happened into a record of something that did not. Saved games whose `Event` tag says
+Simply Chess go on loading, because nothing reads that tag, and a test says so.
+
+**The PGN's default file name** follows the product: a saved game is offered as
+`tabiya-player-<date>-<time>.pgn`.
+
+### 24.1 Tests and acceptance, added
+
+To S15: (30) a game saved under the old name loads. `local-folder.test.ts` already holds
+the three folder literals together and to the product name, and it passes with all of
+them moved.
+
+To section 17: the installer is `Tabiya Player_1.5.0_x64-setup.exe` and installs an
+executable called `tabiya-player.exe`; the window, the header and the Start menu say
+Tabiya Player; the source is public under MIT at `github.com/nick2468/TabiyaPlayer`,
+with the installer attached to a release. The version is 1.5.0 when this section is
+green.

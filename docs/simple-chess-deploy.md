@@ -1,4 +1,10 @@
-# Simply Chess - putting it on the iPad
+# Simply Chess - putting it on the iPad (not taken)
+
+**Status, 2026-10-19: neither route was taken.** Nick ruled the app desktop only when
+it went public as Tabiya Player (spec Q22, section 24): "I won't make it a web app."
+The site below was never published and `simplechess.datacrafter.net` does not exist.
+This document is kept as the record of two routes that were written up and not used,
+and as the starting point if that ever changes.
 
 Origin: Conquest `docs/conquest-deploy.md`, adapted: this app's project, repository
 and domain, an offline proof that plays a move against the engine, and an update
