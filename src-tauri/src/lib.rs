@@ -1,5 +1,5 @@
 // Origin: London src-tauri/src/lib.rs, adapted: the folder name, the two messages, and the comments describe this app.
-//! The Tauri shell around the Simply Chess web app.
+//! The Tauri shell around the Tabiya Player web app.
 //!
 //! It does almost nothing on purpose. The app is the same web build that runs
 //! in a browser; the only reason for the wrapper is a real window on Windows,
@@ -10,11 +10,12 @@
 //! setting and the game in progress live (spec section 10), so the folder it
 //! sits in is the folder a person would go looking for. Tauri's default is a
 //! folder named after the bundle identifier, which would be
-//! `%LOCALAPPDATA%\com.nick.simply-chess` for an app called Simply Chess. An
-//! identifier is not a folder name a person should have to read, so the folder
-//! is pointed somewhere readable instead. Readable is NOT
-//! `%LOCALAPPDATA%\Simply Chess`: that is the install folder, which belongs to
-//! the installer.
+//! `%LOCALAPPDATA%\com.nick.simply-chess` for an app called Tabiya Player,
+//! because the identifier still carries the app's first name and is meant to
+//! (spec S27: it is invisible, and changing it buys nothing). An identifier is
+//! not a folder name a person should have to read, so the folder is pointed
+//! somewhere readable instead. Readable is NOT `%LOCALAPPDATA%\Tabiya Player`:
+//! that is the install folder, which belongs to the installer.
 //!
 //! That is why the window is built here rather than left to `tauri.conf.json`.
 //! Every setting still lives in the config: the window is declared there with
@@ -25,8 +26,8 @@ use tauri::{Manager, WebviewWindowBuilder};
 
 /// The app's own folder under the user's local data folder.
 ///
-/// NOT `Simply Chess`, which is the INSTALL folder: a current-user NSIS install
-/// puts the program itself in `%LOCALAPPDATA%\Simply Chess`. The window's
+/// NOT `Tabiya Player`, which is the INSTALL folder: a current-user NSIS install
+/// puts the program itself in `%LOCALAPPDATA%\Tabiya Player`. The window's
 /// profile must not live inside it, because that folder goes on every
 /// uninstall, and the settings and the game in progress are in the profile.
 /// This folder goes only when the user ticks the box (spec 11.3).
@@ -35,7 +36,10 @@ use tauri::{Manager, WebviewWindowBuilder};
 /// `LOCAL_FOLDER` in `src/storage/paths.ts`, and `APP_LOCAL_FOLDER` in
 /// `src-tauri/installer-hooks.nsh`, which is what an uninstall removes.
 /// `src/storage/local-folder.test.ts` reads all three and holds them together.
-const LOCAL_FOLDER: &str = "Simply Chess Data";
+///
+/// It was `Simply Chess Data` until 1.5.0, when the app was renamed (spec S27).
+/// The old folder is not read and not moved: it is left for the user to delete.
+const LOCAL_FOLDER: &str = "Tabiya Player Data";
 
 /// The browser profile inside it: cache, cookies and local storage.
 const WEBVIEW_FOLDER: &str = "WebView2";
@@ -68,5 +72,5 @@ pub fn run() {
             Ok(())
         })
         .run(tauri::generate_context!())
-        .expect("error while running the Simply Chess window");
+        .expect("error while running the Tabiya Player window");
 }

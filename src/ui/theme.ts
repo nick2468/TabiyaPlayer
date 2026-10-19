@@ -20,6 +20,7 @@ export type Theme = 'dark' | 'light'
 /** The two words, in one place, so nothing writes the pair out twice. */
 export const THEMES: readonly Theme[] = ['dark', 'light']
 
+// The app's first name, kept on purpose: see the keys in `storage/prefs.ts`.
 const KEY = 'simply-chess.theme'
 
 /**

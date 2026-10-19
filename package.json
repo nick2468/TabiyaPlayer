@@ -1,9 +1,11 @@
 {
-  "name": "simply-chess",
-  "version": "1.4.1",
+  "name": "tabiya-player",
+  "version": "1.5.0",
   "private": true,
   "type": "module",
-  "description": "A no-frills chess game against Stockfish",
+  "description": "A no-frills chess game against Stockfish, the companion to Tabiya",
+  "license": "MIT",
+  "author": "Nick Walker",
   "scripts": {
     "dev": "npm run engine && vite --port 5185 --strictPort",
     "build": "npm run engine && tsc -b && vite build",

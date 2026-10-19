@@ -1,4 +1,4 @@
-// Origin: London scripts/packaged-eval.mjs, identical.
+// Origin: London scripts/packaged-eval.mjs, adapted: the executable's name in the usage note.
 /**
  * Read and drive the PACKAGED app's window from a script.
  *
@@ -10,7 +10,7 @@
  * capability fault that had silently destroyed a progress file.
  *
  *   WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS="--remote-debugging-port=9333"
- *   ./src-tauri/target/release/repertoire-trainer.exe &
+ *   ./src-tauri/target/release/tabiya-player.exe &
  *   node scripts/packaged-eval.mjs "document.body.innerText"
  *   node scripts/packaged-eval.mjs @probe.js
  *

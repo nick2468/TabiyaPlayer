@@ -161,7 +161,7 @@ the board on purpose, so nothing in a test can play a move in it. It can still b
 Start the built executable with WebView2's debugging port on:
 
 ```bash
-WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS="--remote-debugging-port=9333" ./src-tauri/target/release/simply-chess.exe &
+WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS="--remote-debugging-port=9333" ./src-tauri/target/release/tabiya-player.exe &
 ```
 
 Then `node scripts/packaged-eval.mjs "<expression>"` evaluates anything in that window,
@@ -186,7 +186,7 @@ Two more things no test can answer, both from phase 7.
 
 **Whether the app works with no internet** is a question about a service worker, and
 a development build has none by choice (`devOptions: { enabled: false }`). So it is
-proved against the built files: `npm run build`, then the `simply-chess-preview`
+proved against the built files: `npm run build`, then the `tabiya-player-preview`
 launch configuration on port 5186, open it and **play one move** (that visit is what
 lets the worker store everything), then stop the server and reload.
 

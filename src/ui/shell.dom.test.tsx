@@ -21,7 +21,7 @@ describe('the header', () => {
   it('names the app and shows its version', () => {
     renderApp()
     const heading = screen.getByRole('heading', { level: 1 })
-    expect(heading.textContent).toContain('Simply Chess')
+    expect(heading.textContent).toContain('Tabiya Player')
     expect(heading.textContent).toContain(`v${__APP_VERSION__}`)
   })
 

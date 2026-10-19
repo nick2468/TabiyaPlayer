@@ -29,8 +29,13 @@ export function isDesktop(): boolean {
  * uninstall removes. `local-folder.test.ts` reads all three files and holds
  * them together, so a rename that reaches two of them fails the suite.
  *
- * NOT `Simply Chess`, which is the install folder and goes on every uninstall.
+ * NOT `Tabiya Player`, which is the install folder and goes on every uninstall.
  * The trainer's reason (its `paths.ts`) is this one, and it cost it a lost
  * progress file to learn.
+ *
+ * It was `Simply Chess Data` until 1.5.0, when the app was renamed Tabiya
+ * Player (spec S27). The old folder is neither read nor moved: it holds one
+ * person's settings and a game they were told to save first, and it is left
+ * for them to delete.
  */
-export const LOCAL_FOLDER = 'Simply Chess Data'
+export const LOCAL_FOLDER = 'Tabiya Player Data'

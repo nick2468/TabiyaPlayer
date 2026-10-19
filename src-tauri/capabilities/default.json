@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "What the Simply Chess window is allowed to do: let the user pick a place to save a game and a file to load one, and read and write that one text file anywhere under the user's own home folder, and resize and move itself when the user chooses a board size, which is the whole of what the last three grants are for. Nothing else. The app keeps its settings and the game in progress in the window's own browser profile, which needs no grant at all.",
+  "description": "What the Tabiya Player window is allowed to do: let the user pick a place to save a game and a file to load one, and read and write that one text file anywhere under the user's own home folder, and resize and move itself when the user chooses a board size, which is the whole of what the last three grants are for. Nothing else. The app keeps its settings and the game in progress in the window's own browser profile, which needs no grant at all.",
   "windows": [
     "main"
   ],

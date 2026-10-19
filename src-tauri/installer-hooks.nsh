@@ -1,5 +1,5 @@
 ; Origin: London src-tauri/installer-hooks.nsh, adapted: one folder, because this app has no roaming data folder.
-; Installer hooks for Simply Chess.
+; Installer hooks for Tabiya Player.
 ;
 ; One hook only: the one NSIS runs at the end of an uninstall, immediately
 ; after its own data-removal block.
@@ -7,7 +7,7 @@
 ; WHY IT EXISTS. That stock block removes $APPDATA\${BUNDLEID} and
 ; $LOCALAPPDATA\${BUNDLEID}, the two folders named after the bundle identifier.
 ; This app keeps nothing in either of them: it has one folder,
-; $LOCALAPPDATA\Simply Chess Data, holding the window's browser profile, and
+; $LOCALAPPDATA\Tabiya Player Data, holding the window's browser profile, and
 ; the settings and the game in progress are the local storage inside it. So the
 ; uninstaller's offer to remove application data would be removing nothing that
 ; exists. An offer that does not do what it says is worse than no offer at all.
@@ -39,14 +39,18 @@
 ; folder name and the product name are the same words today by choice rather
 ; than by construction, and a deletion that followed a renamed product would be
 ; a deletion of the wrong folder. It is also not the install folder, which is
-; $LOCALAPPDATA\Simply Chess without the "Data" and goes on every uninstall.
+; $LOCALAPPDATA\Tabiya Player without the "Data" and goes on every uninstall.
+;
+; Until 1.5.0 the app was Simply Chess and this literal was Simply Chess Data.
+; An old Simply Chess uninstaller names its own folder and cannot reach this one,
+; and this one cannot reach the old folder, which is left for the user to delete.
 ;
 ; The !ifndef is what lets scripts/check-uninstall-hook.mjs compile this same
 ; macro text against a scratch folder and run all four cases for real. Nothing
 ; in a build defines it, so a build gets the literal.
 
 !ifndef APP_LOCAL_FOLDER
-  !define APP_LOCAL_FOLDER "$LOCALAPPDATA\Simply Chess Data"
+  !define APP_LOCAL_FOLDER "$LOCALAPPDATA\Tabiya Player Data"
 !endif
 
 !macro NSIS_HOOK_POSTUNINSTALL

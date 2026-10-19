@@ -2,17 +2,17 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "//": "The --prefix flag makes npm run the script in THIS folder whatever directory invoked it. Port 5185 with --strictPort, because 5173 is dc.web, 5175 is the trainer, and 5180 and 5181 are Conquest.",
-      "name": "simply-chess-dev",
+      "//": "Port 5185 with --strictPort, because 5173 is dc.web, 5175 is Tabiya, and 5180 and 5181 are Conquest. npm runs relative to this folder, so the folder can be renamed or cloned anywhere.",
+      "name": "tabiya-player-dev",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["--prefix", "C:/Users/nick2/Code/SimpleChess", "run", "dev"],
+      "runtimeArgs": ["run", "dev"],
       "port": 5185
     },
     {
-      "//": "Serves the BUILT files, with the service worker. `npm run dev` never has one, so this is the only way to test that the game opens with no internet. The service worker arrives in phase 7.",
-      "name": "simply-chess-preview",
+      "//": "Serves the BUILT files, with the service worker. `npm run dev` never has one, so this is the only way to test that the game opens with no internet.",
+      "name": "tabiya-player-preview",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["--prefix", "C:/Users/nick2/Code/SimpleChess", "run", "preview"],
+      "runtimeArgs": ["run", "preview"],
       "port": 5186
     }
   ]

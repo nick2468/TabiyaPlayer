@@ -55,9 +55,9 @@ describe('Save game', () => {
     await vi.waitFor(() => expect(saved).toHaveBeenCalled())
 
     const [text, name] = saved.mock.calls.at(-1) ?? []
-    expect(text).toContain('[Event "Simply Chess"]')
+    expect(text).toContain('[Event "Tabiya Player"]')
     expect(text).toContain('1. d4')
-    expect(name).toMatch(/^simply-chess-\d{4}-\d{2}-\d{2}-\d{4}\.pgn$/)
+    expect(name).toMatch(/^tabiya-player-\d{4}-\d{2}-\d{2}-\d{4}\.pgn$/)
   })
 
   it('says where it went, and then stops saying it', async () => {

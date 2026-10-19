@@ -66,7 +66,7 @@
    centred on each other rather than sharing a baseline, because the two boxes
    are different heights.
 
-   Left aligned, so "Difficulty" starts on the same pixel as "Simply Chess"
+   Left aligned, so "Difficulty" starts on the same pixel as "Tabiya Player"
    (spec Q26). Both sit inside the page's own `--pad-left`, so that is all it
    takes. It was centred until phase 13, which is the trainer's row in a screen
    this app no longer has: with every control under the board, a row centred

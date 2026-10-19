@@ -3,5 +3,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    simply_chess_lib::run()
+    tabiya_player_lib::run()
 }

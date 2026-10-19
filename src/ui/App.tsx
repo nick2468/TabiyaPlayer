@@ -241,7 +241,7 @@ export function Shell() {
     <div className="app">
       <header className="app-header">
         <h1>
-          Simply Chess <span className="app-version">v{__APP_VERSION__}</span>
+          Tabiya Player <span className="app-version">v{__APP_VERSION__}</span>
         </h1>
         <nav className="app-nav">
           {/* Each toggle reads the size or the theme it would switch TO, which

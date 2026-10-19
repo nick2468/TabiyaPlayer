@@ -65,7 +65,7 @@ export function pgnDate(at: string): string {
 }
 
 /**
- * What a saved file is called by default: `simply-chess-2026-09-11-1432.pgn`.
+ * What a saved file is called by default: `tabiya-player-2026-09-11-1432.pgn`.
  *
  * Stamped from the clock to the minute, so saving the same game twice in an
  * afternoon does not land two files on top of each other in a downloads folder
@@ -77,9 +77,9 @@ export function pgnDate(at: string): string {
  */
 export function saveFileName(at: string): string {
   const when = new Date(at)
-  if (Number.isNaN(when.getTime())) return 'simply-chess.pgn'
+  if (Number.isNaN(when.getTime())) return 'tabiya-player.pgn'
   const date = `${when.getFullYear()}-${pad(when.getMonth() + 1)}-${pad(when.getDate())}`
-  return `simply-chess-${date}-${pad(when.getHours())}${pad(when.getMinutes())}.pgn`
+  return `tabiya-player-${date}-${pad(when.getHours())}${pad(when.getMinutes())}.pgn`
 }
 
 /**
@@ -119,7 +119,7 @@ export function gameToPgn(game: GameForPgn): string {
   const result = pgnResult(outcome, side)
 
   const header = [
-    pgnTag('Event', 'Simply Chess'),
+    pgnTag('Event', 'Tabiya Player'),
     pgnTag('Site', '-'),
     pgnTag('Date', pgnDate(game.at)),
     pgnTag('Round', '-'),

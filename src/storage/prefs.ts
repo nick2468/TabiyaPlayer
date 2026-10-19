@@ -11,7 +11,7 @@ import { levelOrNull } from '../play'
  * user has to make again every time they come back.
  *
  * In `localStorage`, and never in a file. On Windows that storage lives in the
- * WebView2 profile under `Simply Chess Data`, which survives an upgrade and
+ * WebView2 profile under `Tabiya Player Data`, which survives an upgrade and
  * goes on a ticked uninstall, and that is the right life for a preference. A
  * file would have to be versioned, migrated and backed up; losing one of these
  * costs a click (spec S9).
@@ -26,6 +26,11 @@ import { levelOrNull } from '../play'
  * state that drift apart the moment somebody presses a radio.
  */
 
+// These keys say `simply-chess` and stay that way on purpose. The app was
+// renamed Tabiya Player when it went public (spec S27), and a storage key is
+// invisible: nobody reads one, so renaming them would reset every setting for
+// no gain. The same holds for `simply-chess.theme` in `ui/theme.ts`,
+// `simply-chess.game` in `current-game.ts`, and the Tauri identifier.
 const LEVEL_KEY = 'simply-chess.level'
 const SIDE_KEY = 'simply-chess.side'
 const BOARD_SIZE_KEY = 'simply-chess.board-size'

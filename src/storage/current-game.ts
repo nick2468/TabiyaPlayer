@@ -17,6 +17,7 @@ import { SIDES, read, remove, write } from './prefs'
  * right shape, and chess says whether it is a game.
  */
 
+// The app's first name, kept on purpose: see the keys in `prefs.ts`.
 const KEY = 'simply-chess.game'
 
 /** The one version there has been. A record saying anything else is discarded. */
