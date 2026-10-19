@@ -1,90 +1,96 @@
-# Simply Chess
+# Tabiya Player
 
-A no-frills chess game against the Stockfish engine. One screen: the name with the
-board size and theme toggles at its right, the difficulty in a row under it, then the
-opening line and the status, then the board with its evaluation bar and four rows of
-buttons under it (this position, this game, the file, the next game), the move list in
-its own column, and a side panel that is the report on the game you have just played.
+A no-frills chess game against the Stockfish engine, for Windows. One screen, eight
+levels, the engine's evaluation on a bar beside the board, and when the game is over,
+a review that names every slip you made and the move the engine would have played
+instead.
 
-It runs as an installed Windows app and as an iPad Home Screen app, from one code
-base. The code comes from the Repertoire Trainer (`../London`) and Conquest
-(`../Conquest`).
+It is the companion to [Tabiya](https://github.com/nick2468/Tabiya), which teaches
+chess opening repertoires. Tabiya is where you learn the openings; this is where you
+play the game out.
 
-Read [docs/simple-chess-spec.md](docs/simple-chess-spec.md) first. It holds every
-decision. [docs/simple-chess-build-plan.md](docs/simple-chess-build-plan.md) holds
-the phases and their progress.
+Built in Australia.
 
-## Status
+## Download
 
-**Version 1.3.1 is built, and it is the whole of the specification** (sections 19 to 21
-for this version, 18 for version 2, sections 1 to 17 for version 1). The game plays, saves
-and loads, remembers itself, is a Home Screen app that works with no internet, and
-installs on Windows. A game can be stopped and reviewed: the engine scans every
-position of it and the report names each slip with the move it would have played
-instead, and the move list becomes a viewer you can click and step through with the
-arrow keys. Version 1.2.0 gave the report the side panel to itself and put every
-button under the board, which is what the board gives up height for; 1.2.1 put the two
-view toggles back in the header and paired New game with Play as and the stepping
-arrows with Undo, Redo and Hint. In 1.3.0 the board size toggle takes the Windows
-window with it, both ways: Large sets the window to the size the biggest board the
-screen can show needs, and Small puts it back. The toggle used to look
-dead in a window with no room in it, which is what Nick found. In 1.3.1 the window it
-asks for has room for the scrollbar as well, so a reviewed game's report stays beside
-the move list instead of dropping under the board.
+**[Download the latest installer](https://github.com/nick2468/TabiyaPlayer/releases/latest)**
+for 64-bit Windows. It installs for the current user, with no administrator prompt.
 
-Three things are left and all are Nick's, because they need his machine, his accounts
-and his iPad: running the installer, publishing the site, and playing a move in
-aeroplane mode. [docs/acceptance.md](docs/acceptance.md) walks the specification's
-acceptance list item by item and says who checked what.
+Windows will warn you that the publisher is unknown, because the installer is not
+signed with a code signing certificate. That is what an unsigned installer looks like
+whoever wrote it. If you would rather not take that on a stranger's word, the source
+is all here and `npm run dev` runs the app in a browser without installing anything.
+
+## What is in it
+
+- **A game against Stockfish** at eight levels, from Very casual to Unpleasant, with
+  Club as the place to start. Play White or Black. The level can change mid-game and
+  the engine hears it on its next move.
+- **The bar** beside the board shows the engine's evaluation as a shade and a number:
+  plus when White is better and minus when Black is, the usual convention, with the
+  bar turned to match the board.
+- **Hint** draws the engine's move as an arrow and says it in words.
+- **Undo and Redo**, a picker when a pawn reaches the last rank, and the game in
+  progress remembered when you close the window.
+- **Stop and review.** The engine scans every position of the game and the report
+  names each inaccuracy, mistake and blunder with its move number and the move the
+  engine preferred, then gives the final position a verdict in words. The move list
+  becomes a viewer: click a move, or step with the arrow keys, and standing where a
+  slip was played shows both the move you made and the engine's choice on the board.
+  From there you can **Keep playing**, or **Play from here** to try the position again.
+- **Save game and Load game** write and read ordinary PGN files, with the report's
+  comments in a reviewed game. **Copy game** puts the same text on the clipboard.
+- Two board sizes and a light and a dark theme. The window resizes itself to fit the
+  board you choose.
 
 ## Running it
 
-**In a browser, while working on it.** Node 24.21.0 and npm (20.19 or newer also works):
-
 ```bash
 npm install
-```
-
-```bash
 npm run dev
 ```
 
-That serves it on http://localhost:5185. `npm run dev` copies Stockfish into
-`public/engine/` first, which is why the first run takes a moment. There is no
-service worker in a development build, so to try the app offline build it and serve
-the built files:
+The dev server binds to port 5185. `npm run dev` copies Stockfish into `public/engine/`
+first, which is why the first run takes a moment. `npm test` runs the suite and
+`npx tsc -b` typechecks.
 
-```bash
-npm run build
-```
-
-```bash
-npm run preview
-```
-
-That serves http://localhost:5186 with the service worker, which is the only way to
-see what the iPad sees.
-
-**On an iPad, as a Home Screen app.** Open the published site in Safari, press Share,
-then Add to Home Screen. Once it has been opened once it works in aeroplane mode,
-engine and all. Publishing it is Nick's job and needs his accounts or his wifi:
-[docs/simple-chess-deploy.md](docs/simple-chess-deploy.md) writes up both routes,
-Cloudflare Pages and Caddy on the LAN, and the choice between them is still open.
-
-**On Windows, as an installed app.** The Rust toolchain has to be on the path first
-(it lives in `%USERPROFILE%\.cargo\bin` and is not there by default), then:
+To build the Windows installer, put the Rust toolchain on the path and run:
 
 ```bash
 npx tauri build
 ```
 
-That writes `src-tauri/target/release/bundle/nsis/Simply Chess_1.2.1_x64-setup.exe`.
-It installs for the current user, with no administrator prompt, into
-`%LOCALAPPDATA%\Simply Chess`. It is unsigned, so SmartScreen warns the first time:
-More info, then Run anyway. The window keeps its settings and the game in progress in
-`%LOCALAPPDATA%\Simply Chess Data`, and the uninstaller removes that folder only if you
-tick the box.
+That writes `src-tauri/target/release/bundle/nsis/Tabiya Player_<version>_x64-setup.exe`.
+The window keeps its settings and the game in progress in
+`%LOCALAPPDATA%\Tabiya Player Data`, and the uninstaller removes that folder only if you
+tick the box. `node scripts/check-uninstall-hook.mjs` proves the uninstaller's four
+cases without uninstalling anything.
 
-`npx tauri dev` runs the same window against the dev server, and
-`node scripts/check-uninstall-hook.mjs` proves the uninstaller's four cases without
-uninstalling anything.
+## How it was built
+
+[`docs/simple-chess-spec.md`](docs/simple-chess-spec.md) is the contract and
+[`docs/simple-chess-build-plan.md`](docs/simple-chess-build-plan.md) is the running
+record: every phase, what it changed, and what the review of it found. `chips/` holds
+the brief each phase was built from. Reading a phase's chip, then its plan section,
+then its review notes shows the whole loop, including the parts that were wrong the
+first time.
+
+The app was called Simply Chess while it was built, and the documents keep that name,
+because a dated record keeps the name it was written under. Its code started as a copy
+of Tabiya's Play screen, back when that app was called London, which is why many
+source files open with an `Origin: London` line saying what was copied and what
+changed.
+
+## Licence
+
+MIT. See [LICENSE](LICENSE). You may copy, change and use this, including in something
+you sell. Keep the copyright notice in any copy you pass on. The documents under
+`docs/` and `chips/` are covered by the same licence.
+
+**One thing to know before you redistribute a build.** The app plays against
+[Stockfish](https://stockfishchess.org/), which is licensed GPL-3.0. Stockfish is not
+in this repository: `scripts/copy-engine.mjs` copies it out of `node_modules` at build
+time, and `public/engine/` is gitignored. So the source here is MIT and nothing more. A
+built installer, though, has Stockfish inside it, and distributing that combined binary
+puts GPL-3.0 obligations on it. If you ship a build rather than the source, read the
+GPL terms first.
