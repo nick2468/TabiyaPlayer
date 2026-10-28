@@ -8,8 +8,8 @@ specifies versions 1.2.0 and 1.2.1, which made room for the report, section 20 s
 1.3.0, where the window matches the board, section 21 specifies 1.3.1 and 1.3.2, which give
 that window the room the layout actually needs, section 22 specifies 1.4.0, where the
 window opens at the size the remembered board needs, section 23 specifies 1.4.1,
-where the report scrolls in its own column, and section 24 specifies 1.5.0, where the app
-went public as Tabiya Player. A later section wins over an earlier one
+where the report scrolls in its own column, section 24 specifies 1.5.0, where the app
+went public as Tabiya Player, and section 25 specifies 1.5.1, the first signed release. A later section wins over an earlier one
 wherever they differ.** The product is now called **Tabiya Player** (section 24); it was **Simply Chess** from section 18 and Simple Chess before that, and the earlier sections
 keep the old name as history.
 
@@ -1566,3 +1566,57 @@ executable called `tabiya-player.exe`; the window, the header and the Start menu
 Tabiya Player; the source is public under MIT at `github.com/nick2468/TabiyaPlayer`,
 with the installer attached to a release. The version is 1.5.0 when this section is
 green.
+
+---
+
+## 25. Version 1.5.1: signed, with the notices the program owes (ruled 2026-10-28)
+
+Nick, through the Tabiya session on 2026-10-28: sign the installer with his new Certum
+code signing certificate, set the publisher to Nicholas Walker, and republish. Three more
+rulings came from him directly when the work turned up questions the request did not
+answer.
+
+| # | Question | Ruling |
+|---|---|---|
+| Q36 | Signing | **Signed with Nicholas Walker's Certum "Open Source Code Signing in the Cloud" certificate**, the one that signs Tabiya. Windows names the publisher **Open Source Developer Nicholas Walker**. The private key stays in Certum's SimplySign cloud, so a signed build needs Nick logged in. Open-source use only: Certum revokes it otherwise. `docs/releasing.md` has the steps and the yearly renewal. |
+| Q37 | The licence notices inside the program | **Added now, as Tabiya has them.** The program contains two GPL libraries, Stockfish and chessground, and showed no licence text at all. An **About** toggle in the header, before Large and Light, puts the About screen in the game's place: who made it, the source address, the MIT text, the full GPL text, every direct dependency with its licence, and a notice for every library in the program, generated from the build. |
+| Q38 | The unsigned 1.5.0 release | **Deleted**, with its tag. Nobody had downloaded it, it was unsigned, and it carried the publisher Tauri derived from the identifier, so anyone who installed it and later upgraded would have met the trap S28 describes. |
+
+**S28. The publisher is Nicholas Walker, and it never changes.** Tauri uses
+`bundle.publisher` as the publisher Apps and Features shows and the executable's company
+name, and also as the name of the registry key an upgrade reads the old install's folder
+from: `HKCU\Software\<publisher>\<product>`. Unset, it is the second part of the
+identifier, so 1.5.0 wrote `HKCU\Software\nick\Tabiya Player`. Tabiya changed its publisher
+once and every upgrade from an older version then failed with "Error launching installer"
+and "Unable to uninstall!". Here the change is free, once, because nobody else has an
+install. `bundle.copyright` says the same name, and so do `LICENSE`, `package.json` and
+`Cargo.toml`, which said "Nick Walker" in 1.5.0: the certificate is in the full name, and
+`src/ui/licences.test.ts` holds the publisher to the holder named in `LICENSE`.
+
+**S29. The installer compresses with zlib, not LZMA.** Nick's ruling for Tabiya on
+2026-10-24, applied here for the same reason: NSIS's LZMA module is under the Common
+Public License 1.0, whose conditions on its object code no installer of his had met, and
+its zlib module asks nothing of a binary. The installer grows by a few per cent.
+
+**S30. About is the game's alternative, not a second screen beside it.** It replaces the
+game screen and the difficulty row while it is open, and the header's first toggle reads
+"About" or "Game", what it would switch to, as the other two do. The game lives in the
+provider above the screen, so opening About and coming back loses nothing; a test holds
+that. The source address is text, not a link: in the desktop window a link would need the
+opener plugin and a permission this app does not otherwise have. The licence texts, the
+dependency list and the notices generator are Tabiya's, copied with an `Origin:` line
+each; they are pure and tested, and the generator fails the build on any licence it does
+not recognise, so a notice can never ship wrong without someone deciding it.
+
+### 25.1 Tests and acceptance, added
+
+To S15: (31) the licence texts are the files they come from, the dependency list is
+package.json, and every licence in it is one the list has been read for; (32) the notices
+generator's rules, against fixtures; (33) the publisher and the copyright name the
+`LICENSE` holder; (34) About takes the game's place and gives the same game back.
+
+To section 17: the installer is signed, sha256 and timestamped, by Open Source Developer
+Nicholas Walker; it installs fresh and reinstalls over itself through its own windows on
+the real machine, the old uninstaller given the install folder; the installed program and
+uninstaller carry the same signature; the release's asset is the walked file, byte for
+byte. The version is 1.5.1 when this section is green.

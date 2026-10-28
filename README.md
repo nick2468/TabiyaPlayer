@@ -16,10 +16,12 @@ Built in Australia.
 **[Download the latest installer](https://github.com/nick2468/TabiyaPlayer/releases/latest)**
 for 64-bit Windows. It installs for the current user, with no administrator prompt.
 
-Windows will warn you that the publisher is unknown, because the installer is not
-signed with a code signing certificate. That is what an unsigned installer looks like
-whoever wrote it. If you would rather not take that on a stranger's word, the source
-is all here and `npm run dev` runs the app in a browser without installing anything.
+The installer is signed. Windows names its publisher as **Open Source Developer
+Nicholas Walker**, from a Certum open-source code signing certificate. SmartScreen may
+still warn you about a new release for a while, because Windows builds up its trust in
+each new file over time, signed or not. If you would rather not take any of that on a
+stranger's word, the source is all here and `npm run dev` runs the app in a browser
+without installing anything.
 
 ## What is in it
 
@@ -42,6 +44,8 @@ is all here and `npm run dev` runs the app in a browser without installing anyth
   comments in a reviewed game. **Copy game** puts the same text on the clipboard.
 - Two board sizes and a light and a dark theme. The window resizes itself to fit the
   board you choose.
+- **About** says who made it and carries every licence the program owes, including a
+  notice for each library inside it, generated from the build itself.
 
 ## Running it
 
@@ -64,7 +68,9 @@ That writes `src-tauri/target/release/bundle/nsis/Tabiya Player_<version>_x64-se
 The window keeps its settings and the game in progress in
 `%LOCALAPPDATA%\Tabiya Player Data`, and the uninstaller removes that folder only if you
 tick the box. `node scripts/check-uninstall-hook.mjs` proves the uninstaller's four
-cases without uninstalling anything.
+cases without uninstalling anything. A plain `npx tauri build` is unsigned; a release is
+built with `npm run build:signed`, which needs the signing certificate, and
+[`docs/releasing.md`](docs/releasing.md) has every step.
 
 ## How it was built
 
@@ -87,10 +93,12 @@ MIT. See [LICENSE](LICENSE). You may copy, change and use this, including in som
 you sell. Keep the copyright notice in any copy you pass on. The documents under
 `docs/` and `chips/` are covered by the same licence.
 
-**One thing to know before you redistribute a build.** The app plays against
-[Stockfish](https://stockfishchess.org/), which is licensed GPL-3.0. Stockfish is not
-in this repository: `scripts/copy-engine.mjs` copies it out of `node_modules` at build
-time, and `public/engine/` is gitignored. So the source here is MIT and nothing more. A
-built installer, though, has Stockfish inside it, and distributing that combined binary
-puts GPL-3.0 obligations on it. If you ship a build rather than the source, read the
-GPL terms first.
+**One thing to know before you redistribute a build.** The program contains two
+libraries under the GNU General Public License: [Stockfish](https://stockfishchess.org/)
+(GPL-3.0), the engine, and [chessground](https://github.com/lichess-org/chessground)
+(GPL-3.0-or-later), the board. Neither is in this repository: both come from
+`node_modules`, Stockfish copied into the app by `scripts/copy-engine.mjs` at build time,
+and `public/engine/` is gitignored. So the source here is MIT and nothing more. A built
+installer, though, has both inside it, so the program as a whole is distributed under
+GPL-3.0, and the About screen carries both licence texts and a notice for every library
+in it. If you ship a build rather than the source, read the GPL terms first.

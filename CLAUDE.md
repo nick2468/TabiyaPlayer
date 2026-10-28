@@ -9,8 +9,16 @@ Vite code base, copied from Tabiya and Conquest (`../Conquest`) wherever they al
 the job, so that a shared library can follow later. **It is public**: MIT, at
 `github.com/nick2468/TabiyaPlayer` (`origin`).
 
-Current state: **version 1.5.0, public as Tabiya Player** (phase 20, spec section 24,
-2026-10-19). Renamed from Simply Chess with three identities kept apart (S27): the
+Current state: **version 1.5.1, signed** (phase 21, spec section 25, 2026-10-28). The
+installer is signed by Open Source Developer Nicholas Walker with the Certum certificate
+Tabiya uses, built with `npm run build:signed` while Nick is logged in to SimplySign; the
+steps are `docs/releasing.md`. **The publisher is "Nicholas Walker" and never changes**
+(S28): it names the registry key an upgrade reads. The program carries its licence
+notices on an **About** screen (S30), and the installer compresses with zlib (S29). **A
+session's shell is sandboxed** (see the standing hazards): installs are proved only
+through `scripts/upgrade-walk.cmd` started by Explorer.
+
+Version 1.5.0, public as Tabiya Player (phase 20, spec section 24, 2026-10-19). Renamed from Simply Chess with three identities kept apart (S27): the
 product name and the package names moved, so the installer is
 `Tabiya Player_<version>_x64-setup.exe` and the executable `tabiya-player.exe`; the data
 folder moved to `Tabiya Player Data` with no migration, because Nick was the only person
@@ -250,7 +258,7 @@ scale).
   these words" for storage and for the address bar alike, and each key string stays
   in the module that owns it); `scrollToShow` in `ui/keep-in-view.ts` (the only
   scroll arithmetic); `SCENES` and `sceneFromLocation` in `dev/scenes.ts`;
-  `updateNotice` in `ui/updates.ts` (the update bar's words); the four `--pad-*`
+  `updateNotice` in `ui/updates.ts` (the update bar's words); `MIT_TEXT`, `GPL_TEXT` and `OTHER_DEPENDENCIES` in `ui/licences.ts` (every licence text the program shows, read from its file at build time) and the generator in `scripts/notices/` (the only source of the third-party notices, failing the build on a licence it does not know); `scripts/build-signed.mjs` (the only signed build) and `scripts/upgrade-walk.ps1` (the only install proof); the four `--pad-*`
   custom properties on `.app` (the page's safe-area padding, which the update bar
   reuses); `LOCAL_FOLDER` in `storage/paths.ts` (the Windows data folder, whose name
   is also in `src-tauri/src/lib.rs` and `installer-hooks.nsh` because neither can
@@ -299,6 +307,16 @@ scale).
   `C:\Users\nick2\Code\CLAUDE.md`.
 
 ## Standing hazards
+
+- **This session's shell writes the registry and LocalAppData into a PRIVATE copy, and
+  reads them back from it.** An install, an uninstall or a check run from it changes and
+  sees nothing on Nick's real machine, and agrees with itself, which is what makes it
+  dangerous: on 2026-10-19 this session reported Tabiya Player installed and Simply Chess
+  uninstalled, and neither had happened. `dangerouslyDisableSandbox` does not escape it.
+  To touch or read the real machine, have Explorer start a script:
+  `Start-Process explorer.exe '"<path>.cmd"'`, write its result OUTSIDE LocalAppData (this
+  repo's `src-tauri/target/walk/` is gitignored), and wait for its `.finished` marker.
+  `scripts/upgrade-walk.cmd` is the install walk built that way.
 
 - **The engine file is bigger than Workbox's default precache limit.** Without
   `maximumFileSizeToCacheInBytes` the app opens offline and the engine never answers.

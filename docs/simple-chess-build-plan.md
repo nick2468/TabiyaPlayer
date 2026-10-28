@@ -892,14 +892,22 @@ confirmed by him directly: the name, desktop only, the data folder, and each out
       unsigned-installer note, how to run and build it, how it was built, the licence.
 - [x] 20.4 `.claude/launch.json` runs npm relatively, so the dev server survives the
       folder rename and a clone anywhere.
-- [x] 20.5 Version 1.5.0 built and Tabiya Player installed: `Tabiya Player_1.5.0_x64-setup.exe`,
+- [x] 20.5 **CORRECTED 2026-10-28: the install below happened only in this session's sandbox.**
+      A Claude Code session's shell writes the registry and LocalAppData into a private copy,
+      and reads them back from it, so the install and the checks that "confirmed" it agreed
+      with each other and not with the machine. Read through Explorer on 2026-10-28, the real
+      machine had no trace of this install. The build and the window's own checks hold; the
+      word "installed" does not. Version 1.5.0 built and "installed": `Tabiya Player_1.5.0_x64-setup.exe`,
       6,902,875 bytes, registered as "Tabiya Player 1.5.0" at `%LOCALAPPDATA%\Tabiya Player`,
       holding `tabiya-player.exe` and its uninstaller, with a Start menu entry of its own.
       The INSTALLED window, driven over its debugging port: title and header "Tabiya
       Player v1.5.0", opened at 1087 by 807 with the 416 board, the bar reading +0.4 on the
       opening position so the engine answers, a fresh profile in `Tabiya Player Data`, no
       service worker, no sideways scroll.
-- [x] 20.5b The old Simply Chess uninstalled, after Nick confirmed his game was saved,
+- [ ] 20.5b **CORRECTED 2026-10-28: this uninstall also happened only in the sandbox.** On
+      the real machine Simply Chess 1.4.1 was still registered, its files and uninstaller gone
+      some other way, so its entry is dead; Nick chose on 2026-10-28 to remove it himself.
+      What was reported: the old Simply Chess uninstalled, after Nick confirmed his game was saved,
       with `uninstall.exe /S`: a silent uninstall skips the confirm page, so the hook's
       `$DeleteAppDataCheckboxState` stays 0 and `Simply Chess Data` is left for him to
       delete. Afterwards the uninstall entry, the Start menu shortcut and the install
@@ -918,6 +926,41 @@ confirmed by him directly: the name, desktop only, the data folder, and each out
       the link the other way, `Tabiya@5622b37`; this session does not edit `../Tabiya`.
 - [ ] 20.8 Nick renames the folder `SimpleChess` to `TabiyaPlayer`, and the memory and
       the build cache follow it.
+
+---
+
+## Phase 21 - signed, with the notices the program owes
+
+**Goal: version 1.5.1, signed by Open Source Developer Nicholas Walker, with the publisher
+fixed for good, the licence notices inside the program, installed on the REAL machine
+through its own windows, and released in place of the unsigned 1.5.0. Spec section 25.**
+
+Requested by Nick through the Tabiya session on 2026-10-28 and done in the orchestrator
+session, with his rulings on the questions it raised taken from him directly.
+
+- [x] 21.1 The publisher and the copyright are Nicholas Walker in `tauri.conf.json`, and so
+      is the holder in `LICENSE`, `package.json` and `Cargo.toml` (S28).
+- [x] 21.2 The installer compresses with zlib (S29).
+- [x] 21.3 About, the licence texts, the dependency list and the third-party notices,
+      copied from Tabiya with an `Origin:` line each, and their tests (S30). Looked at in
+      the pane at 1400 by 980 in both themes: the game screen unmoved by the extra toggle
+      (board at y 167, bar, `.board` and `cg-board` ending on 583, no sideways scroll), About
+      in its place with both licence boxes scrolling inside themselves, and the 20-move
+      game back intact on Game.
+- [x] 21.4 Signing: `src-tauri/tauri.signing.conf.json`, the certificate's public half,
+      `npm run build:signed` and `docs/releasing.md`, from Tabiya, adapted. The preflight
+      found the certificate as Open Source Developer Nicholas Walker, valid to 28 October
+      2027.
+- [x] 21.5 `scripts/upgrade-walk.ps1` and `.cmd`, from Tabiya, adapted: this product's
+      names and keys, the log in `src-tauri/target/walk` rather than `%TEMP%`, which is
+      inside the sandboxed LocalAppData.
+- [x] 21.6 Version 1.5.1; the README says the installer is signed and names both GPL
+      libraries.
+- [ ] 21.7 The signed build, from a clean tree.
+- [ ] 21.8 Walked on the real machine through Explorer: a fresh install, then a reinstall
+      over the same version, the old uninstaller given the install folder.
+- [ ] 21.9 v1.5.0 deleted; pushed, tagged, released; the asset is the walked file.
+- [ ] 21.10 The Tabiya session told, for its downloads note.
 
 ## Progress
 
@@ -944,6 +987,7 @@ confirmed by him directly: the name, desktop only, the data folder, and each out
 | 18 - the window opens at the size it will use | **Complete** 2026-09-14, done in the orchestrator session. The window is declared at the small board's own 1087 by 807 and the launch asks for the remembered size, centred. A small-board launch resizes nothing; a large-board one resizes once. Version 1.4.0. |
 | 19 - the report scrolls, not the window | **Complete** 2026-09-14, done in the orchestrator session. The side panel has the board's height as a ceiling and scrolls itself, so a long report no longer takes the board, the rows and the move list up the screen with it. The board's pixels moved to the row, which both columns now read. Version 1.4.1. |
 | 20 - public, as Tabiya Player | **Complete but for the folder rename** 2026-10-19, in the orchestrator session. Spec section 24: renamed, MIT licensed, desktop only, version 1.5.0, installed here in place of Simply Chess, public at github.com/nick2468/TabiyaPlayer with the installer on release v1.5.0, and on Nick's landing page. Box 20.8 is Nick's. |
+| 21 - signed, with the notices the program owes | **In progress** 2026-10-28, in the orchestrator session. Spec section 25: signed by Open Source Developer Nicholas Walker, the publisher fixed, About with every licence, zlib, version 1.5.1. |
 
 ## Phase notes
 
