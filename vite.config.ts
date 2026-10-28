@@ -3,20 +3,48 @@ import { fileURLToPath } from 'node:url'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 import { defineConfig } from 'vitest/config'
+import { thirdPartyNotices } from './scripts/notices/plugin.ts'
 
 // Origin: London vite.config.ts, adapted: the port is 5185, the comments describe this app, and the PWA plugin is Conquest's vite.config.ts with this app's manifest and the engine in the precache.
 // The version the app shows comes from package.json, read here at BUILD time
 // and substituted into the bundle. Not from a Tauri call: the browser build has
 // no Tauri, and a number the app has to ask for at runtime is a number that can
 // be missing on the one screen that shows it.
-const { version } = JSON.parse(
-  readFileSync(new URL('./package.json', import.meta.url), 'utf8'),
-) as { version: string }
+interface Manifest {
+  version: string
+  license?: string
+  dependencies?: Record<string, string>
+}
+
+function manifest(path: string): Manifest {
+  return JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8')) as Manifest
+}
+
+const own = manifest('./package.json')
+const { version } = own
+
+// Every library the app ships, with the licence its OWN package.json declares,
+// for the About screen's list (spec 25, copied from Tabiya). Read here for the
+// same reason the version is: a list written out by hand drifts the first time
+// a dependency is added, and this one is a licence notice. Straight from
+// node_modules rather than through a resolver, because chessground's `exports`
+// map does not expose its package.json.
+const dependencyLicences = Object.keys(own.dependencies ?? {})
+  .sort()
+  .map((name) => {
+    const theirs = manifest(`./node_modules/${name}/package.json`)
+    return { name, version: theirs.version, licence: theirs.license ?? 'not stated' }
+  })
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
+
+    // The notices file every library the app ships is credited in (spec 25).
+    // Production builds only: it reads the finished bundle, so there is nothing
+    // to read in dev, and a test run has no bundle either.
+    thirdPartyNotices({ root: fileURLToPath(new URL('.', import.meta.url)), version }),
 
     // What turns the page into something you add to the Home Screen. It
     // writes the manifest and a service worker that stores the whole app, so
@@ -84,7 +112,10 @@ export default defineConfig({
       devOptions: { enabled: false },
     }),
   ],
-  define: { __APP_VERSION__: JSON.stringify(version) },
+  define: {
+    __APP_VERSION__: JSON.stringify(version),
+    __DEPENDENCY_LICENCES__: JSON.stringify(dependencyLicences),
+  },
   // Honour PORT so a launcher can place the dev server. The default is 5185,
   // not Vite's own 5173: 5173 is dc.web, 5175 is the trainer, and 5180 and
   // 5181 are Conquest, all on this machine, and the `dev` script names 5185

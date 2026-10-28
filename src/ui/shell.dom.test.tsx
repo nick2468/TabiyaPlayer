@@ -1,6 +1,6 @@
 import { screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
-import { renderApp } from '../test/dom'
+import { movesOnScreen, renderApp, seedGame } from '../test/dom'
 
 vi.mock('./Board', async () => await import('../test/board-stub'))
 
@@ -36,5 +36,35 @@ describe('the header', () => {
     await user.click(screen.getByRole('button', { name: 'Switch to the dark theme' }))
     expect(document.documentElement.dataset.theme).toBe('dark')
     expect(window.localStorage.getItem('simply-chess.theme')).toBe('dark')
+  })
+})
+
+/**
+ * About, in place of the game and back (spec 25).
+ *
+ * It is a toggle in the header, read as what it switches to, like the two
+ * beside it. The game lives in the provider above the screen, so a game in
+ * progress is exactly where it was when About is closed again: that is the
+ * thing worth holding, because showing About unmounts the board.
+ */
+describe('About', () => {
+  it('takes the place of the game, carries the licences, and gives the game back', async () => {
+    seedGame(['e4', 'e5', 'Nf3', 'Nc6'])
+    const { user } = renderApp()
+    await screen.findByTestId('board')
+    expect(movesOnScreen()).toEqual(['e4', 'e5', 'Nf3', 'Nc6'])
+
+    await user.click(screen.getByRole('button', { name: 'About Tabiya Player, and its licences' }))
+    expect(screen.queryByTestId('board')).toBeNull()
+    expect(screen.queryByLabelText('Difficulty')).toBeNull()
+    expect(screen.getByRole('heading', { level: 2 }).textContent).toContain('Tabiya Player')
+    expect(screen.getByText('github.com/nick2468/TabiyaPlayer')).toBeTruthy()
+
+    await user.click(screen.getByRole('button', { name: 'View the licences' }))
+    expect(screen.getByRole('heading', { name: /the GNU General Public License, version 3/ })).toBeTruthy()
+
+    await user.click(screen.getByRole('button', { name: 'Back to the game' }))
+    await screen.findByTestId('board')
+    expect(movesOnScreen()).toEqual(['e4', 'e5', 'Nf3', 'Nc6'])
   })
 })

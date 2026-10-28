@@ -1,0 +1,78 @@
+/* Origin: Tabiya src/ui/about.css, adapted: the reading width and heading
+   spacing it borrowed from Tabiya's help.css are written here, because this
+   app has no Help screen; and the link button is gone with the link.
+
+   The About screen (spec 25). */
+
+.about {
+  max-width: 62ch;
+}
+
+.about h2 {
+  margin-bottom: 12px;
+}
+
+.about h3 {
+  margin-top: 28px;
+}
+
+.about-address {
+  color: var(--text);
+  user-select: all;
+}
+
+.about-failed {
+  color: var(--warn);
+}
+
+/* The prose keeps a reading width; the licence boxes do not, because they
+   need their own. */
+.about:has(.licences) {
+  max-width: none;
+}
+
+.about > p,
+.licences > p,
+.licences ul {
+  max-width: 62ch;
+}
+
+/* The licence texts. Long, so each scrolls inside its own box rather than
+   pushing the screen to ten thousand pixels. NOT wrapped: both files break
+   their own lines at about 78 columns, and wrapping them again in a box
+   narrower than that breaks every line twice. So the box is as wide as the
+   text, and a window too narrow for it scrolls inside the box, never the page. */
+.licences h4 {
+  margin-top: 24px;
+}
+
+.licences pre {
+  width: fit-content;
+  max-width: 100%;
+  max-height: 24em;
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text-soft);
+  font-size: 0.8rem;
+  line-height: 1.45;
+  white-space: pre;
+}
+
+.licences ul {
+  padding-left: 20px;
+  color: var(--text-soft);
+}
+
+/* The third-party notices. Unlike the two texts above, this file holds licences
+   written every way there is, some of them a paragraph to a line, so it WRAPS:
+   unwrapped, one line ran to 5,300 px in Tabiya. It is as wide as the screen
+   allows, which at the app's own width is wider than the file's 78 columns, so
+   the lines that are short already are not broken again. */
+.licences pre.notices {
+  width: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

@@ -6,6 +6,7 @@ import { recallGame } from '../storage/current-game'
 import { openPgn, savePgn } from '../storage/files'
 import { isDesktop } from '../storage/paths'
 import { useBoardSize, useLevel, useSide, type BoardSizeName } from '../storage/prefs'
+import { About } from './About'
 import { DifficultyRow } from './DifficultyRow'
 import { asMessage } from './message'
 import { PlayProvider, usePlay } from './play-context'
@@ -16,7 +17,7 @@ import { matchWindowToBoard } from './window-size'
 import './app.css'
 
 /**
- * Origin: London src/ui/App.tsx, adapted: the header and its two toggles, the selector row chooses a difficulty, the App and Shell split, one screen, and the settings read here.
+ * Origin: London src/ui/App.tsx, adapted: the header and its toggles, the selector row chooses a difficulty, the App and Shell split, one screen with About in its place when asked for, and the settings read here.
  * The app shell: the header, the selector row, and the one screen under them
  * (spec 19.1).
  *
@@ -66,6 +67,11 @@ export function Shell() {
   const { side, setSide } = useSide()
   const { boardSize, setBoardSize } = useBoardSize()
   const [notice, setNotice] = useState<ScreenNotice | null>(null)
+  // The game, or About in its place (spec 25). Not remembered: the app opens
+  // on the game every time, because that is what it is for. The game itself
+  // lives in the provider above this component, so showing About and coming
+  // back loses nothing.
+  const [showing, setShowing] = useState<'game' | 'about'>('game')
   const switchTo = theme === 'dark' ? 'Switch to the light theme' : 'Switch to the dark theme'
   const switchSize =
     boardSize === 'small' ? 'Switch to the large board' : 'Switch to the small board'
@@ -244,10 +250,19 @@ export function Shell() {
           Tabiya Player <span className="app-version">v{__APP_VERSION__}</span>
         </h1>
         <nav className="app-nav">
-          {/* Each toggle reads the size or the theme it would switch TO, which
-              is the trainer's rule for its own. The size one goes first so the
-              theme toggle keeps the end of the row it has always had (spec
-              18.1, restored by Q27). */}
+          {/* Each toggle reads what it would switch TO, which is the
+              trainer's rule for its own: About or back to the Game, then the
+              board size, then the theme, which keeps the end of the row it has
+              always had (spec 18.1, restored by Q27; About added by spec 25). */}
+          <button
+            type="button"
+            className="nav-link theme-toggle"
+            onClick={() => setShowing(showing === 'game' ? 'about' : 'game')}
+            title={showing === 'game' ? 'About Tabiya Player, and its licences' : 'Back to the game'}
+            aria-label={showing === 'game' ? 'About Tabiya Player, and its licences' : 'Back to the game'}
+          >
+            {showing === 'game' ? 'About' : 'Game'}
+          </button>
           <button
             type="button"
             className="nav-link theme-toggle"
@@ -269,27 +284,32 @@ export function Shell() {
         </nav>
       </header>
 
-      <DifficultyRow level={level} onLevel={chooseLevel} />
+      {/* The difficulty is the game's, so it goes with the game. */}
+      {showing === 'game' ? <DifficultyRow level={level} onLevel={chooseLevel} /> : null}
 
       <main>
-        <Screen
-          settings={{
-            level,
-            side,
-            onSide: setSide,
-            boardSize,
-          }}
-          files={{
-            onSave: () => void save(),
-            onLoad: () => void load(),
-            thinking: game.thinking,
-          }}
-          notice={notice}
-          pgn={pgnNow(new Date().toISOString()) ?? ''}
-          onNewGame={newGame}
-          onDiscard={discardGame}
-          onPlayFrom={playFrom}
-        />
+        {showing === 'about' ? (
+          <About />
+        ) : (
+          <Screen
+            settings={{
+              level,
+              side,
+              onSide: setSide,
+              boardSize,
+            }}
+            files={{
+              onSave: () => void save(),
+              onLoad: () => void load(),
+              thinking: game.thinking,
+            }}
+            notice={notice}
+            pgn={pgnNow(new Date().toISOString()) ?? ''}
+            onNewGame={newGame}
+            onDiscard={discardGame}
+            onPlayFrom={playFrom}
+          />
+        )}
       </main>
 
       {/* Off the desktop only (spec S12). The condition is on the component
