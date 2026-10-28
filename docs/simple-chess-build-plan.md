@@ -956,9 +956,22 @@ session, with his rulings on the questions it raised taken from him directly.
       inside the sandboxed LocalAppData.
 - [x] 21.6 Version 1.5.1; the README says the installer is signed and names both GPL
       libraries.
-- [ ] 21.7 The signed build, from a clean tree.
-- [ ] 21.8 Walked on the real machine through Explorer: a fresh install, then a reinstall
-      over the same version, the old uninstaller given the install folder.
+- [x] 21.7 The signed build, from a clean tree at `3aa11dd`: `npm run build:signed`, the
+      preflight finding the certificate, Tauri signing the program, the uninstaller, every
+      NSIS plugin and the installer, and the check passing first time: signed by Open Source
+      Developer Nicholas Walker, sha256, timestamped. No timestamp retry was needed.
+      `Tabiya Player_1.5.1_x64-setup.exe`, 7,374,224 bytes, sha256 `da69bfaf9908ddd7ac7935328716e5e4aa487653416da40d6a9da359d275829c`.
+- [x] 21.8 Walked on the REAL machine with `scripts/upgrade-walk.cmd` started by Explorer,
+      twice. **Fresh** (Nick had uninstalled 1.5.0; only its unsigned `uninstall.exe` was left
+      in the folder): Welcome, Choose Install Location, done, exit 0; then the uninstall entry
+      reads 1.5.1 with publisher Nicholas Walker, `HKCU\Software\Nicholas Walker\Tabiya Player`
+      holds the install folder, no `nick` key exists, and `tabiya-player.exe` and
+      `uninstall.exe` are both 1.5.1 and Valid, signed by Open Source Developer Nicholas
+      Walker; the window opened as "Tabiya Player" and closed. **Over the same version**: the
+      Already Installed page, "Uninstall Tabiya Player" chosen, the old uninstaller started as
+      `uninstall.exe _?=C:\Users\nick2\AppData\Local\Tabiya Player` (the folder, not the bare
+      `_?=` that broke Tabiya 1.10.9), "Delete the application data" unticked and the data
+      folder still there afterwards, then the install, exit 0, and the same signatures.
 - [ ] 21.9 v1.5.0 deleted; pushed, tagged, released; the asset is the walked file.
 - [ ] 21.10 The Tabiya session told, for its downloads note.
 
