@@ -972,8 +972,16 @@ session, with his rulings on the questions it raised taken from him directly.
       `uninstall.exe _?=C:\Users\nick2\AppData\Local\Tabiya Player` (the folder, not the bare
       `_?=` that broke Tabiya 1.10.9), "Delete the application data" unticked and the data
       folder still there afterwards, then the install, exit 0, and the same signatures.
-- [ ] 21.9 v1.5.0 deleted; pushed, tagged, released; the asset is the walked file.
-- [ ] 21.10 The Tabiya session told, for its downloads note.
+- [x] 21.9 Pushed (`4e477fc..86f418c`), tagged `v1.5.1`, and released at
+      github.com/nick2468/TabiyaPlayer/releases/tag/v1.5.1. The asset,
+      `Tabiya.Player_1.5.1_x64-setup.exe`, is 7,374,224 bytes with sha256
+      `da69bfaf9908ddd7ac7935328716e5e4aa487653416da40d6a9da359d275829c`, the walked file byte
+      for byte, and `/releases/latest` resolves to it. v1.5.0 deleted with its tag, on
+      GitHub and here: it had 0 downloads (spec Q38).
+- [x] 21.10 The Tabiya Trainer reviewer session told on 2026-10-28, with the release, the
+      digest, the publisher and the deleted 1.5.0, so it can move Tabiya Player into the
+      signed sentence of the profile's \"About the downloads\". This session edited neither
+      the profile nor the showcase site.
 
 ## Progress
 
@@ -999,8 +1007,8 @@ session, with his rulings on the questions it raised taken from him directly.
 | 17 - the pixel the panel rounds by | **Complete** 2026-09-14, done in the orchestrator session. The allowance is 64 rather than 24, so the side panel sits at 349 px instead of 309.67 and its full-width children no longer round a pixel past it. The automatic windows are 1087 by 807 and 1503 by 1223. Version 1.3.2. |
 | 18 - the window opens at the size it will use | **Complete** 2026-09-14, done in the orchestrator session. The window is declared at the small board's own 1087 by 807 and the launch asks for the remembered size, centred. A small-board launch resizes nothing; a large-board one resizes once. Version 1.4.0. |
 | 19 - the report scrolls, not the window | **Complete** 2026-09-14, done in the orchestrator session. The side panel has the board's height as a ceiling and scrolls itself, so a long report no longer takes the board, the rows and the move list up the screen with it. The board's pixels moved to the row, which both columns now read. Version 1.4.1. |
-| 20 - public, as Tabiya Player | **Complete but for the folder rename** 2026-10-19, in the orchestrator session. Spec section 24: renamed, MIT licensed, desktop only, version 1.5.0, installed here in place of Simply Chess, public at github.com/nick2468/TabiyaPlayer with the installer on release v1.5.0, and on Nick's landing page. Box 20.8 is Nick's. |
-| 21 - signed, with the notices the program owes | **In progress** 2026-10-28, in the orchestrator session. Spec section 25: signed by Open Source Developer Nicholas Walker, the publisher fixed, About with every licence, zlib, version 1.5.1. |
+| 20 - public, as Tabiya Player | **Complete but for the folder rename** 2026-10-19, in the orchestrator session. Spec section 24: renamed, MIT licensed, desktop only, version 1.5.0, public at github.com/nick2468/TabiyaPlayer with the installer on release v1.5.0, and on Nick's landing page. Box 20.8 is Nick's. **Corrected 2026-10-28:** the install here and the Simply Chess uninstall happened only in this session's sandbox (20.5, 20.5b), and release v1.5.0 was deleted in phase 21. |
+| 21 - signed, with the notices the program owes | **Complete** 2026-10-28, in the orchestrator session. Spec section 25: signed by Open Source Developer Nicholas Walker, the publisher fixed, About with every licence, zlib, version 1.5.1, walked on the real machine through Explorer, released as v1.5.1 in place of 1.5.0. |
 
 ## Phase notes
 
