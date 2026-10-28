@@ -1,9 +1,9 @@
 # Origin: London src-tauri/Cargo.toml, adapted: the package name, the lib name, the description, and the licence and author, which match the trainer's since both went public.
 [package]
 name = "tabiya-player"
-version = "1.5.0"
+version = "1.5.1"
 description = "A no-frills chess game against Stockfish"
-authors = ["Nick Walker"]
+authors = ["Nicholas Walker"]
 license = "MIT"
 edition = "2021"
 rust-version = "1.77.2"
